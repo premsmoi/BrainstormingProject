@@ -96,7 +96,7 @@ class HomeScreen extends Component {
           }}>Group List</Text>
         </View>
         <View style = {{flex: 5 }}>
-          <TouchableWithoutFeedback onPress={() => this.props.navigation.navigate('Group',{name : 'Smoi'})}>
+          <TouchableWithoutFeedback onPress={() => this.props.navigation.navigate('Group',{groupName : 'GroupA'})}>
             <View>
               <Text style={{fontSize: 20, 
               color: 'black',  

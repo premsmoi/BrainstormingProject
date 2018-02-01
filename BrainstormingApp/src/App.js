@@ -3,6 +3,7 @@ import { Alert, AppRegistry, Button, StyleSheet, View, TextInput, Text } from 'r
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import HomeScreen from './HomeScreen';
 import GroupScreen from './GroupScreen';
+import TopicScreen from './TopicScreen';
 /*const HomeScreen = ({ navigation }) => (
   <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
     <Text>Home Screen</Text>
@@ -90,10 +91,10 @@ const myNavigator = StackNavigator({
     },
   },
   Group: {
-      screen: GroupScreen,
-      navigationOptions: {
-        headerTitle: 'My Group',
-      }
+    screen: GroupScreen,
+  },
+  Topic: {
+    screen: TopicScreen,
   }
 });
 
