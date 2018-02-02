@@ -3,17 +3,36 @@ import {
   StyleSheet,
   View,
   PanResponder,
-  Animated
+  Animated,
+  Text
 } from "react-native";
 
+/*
+### Color ### 
+red = '#ff9999'
+pink = '#ff99c2'
+green = '#99ff99'
+blue = '#99ffff'
+yellow = '#ffff99'
+*/
+
+var COLOR = 'blue';
+
 export default class Note extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this._panResponder = {};
-    this._previousLeft = 0;
-    this._previousTop = 0;
-    this._circleStyles = {};
-    this.circle = (null : ?{ setNativeProps(props: Object): void });
+    this.x = this.props.x;
+    this.y = this.props.y;
+    COLOR = this.props.color;
+    this.rectangle = (null : ?{ setNativeProps(props: Object): void });
+    this._rectangleStyles = {
+      style: {
+        left: this.x,
+        top: this.y,
+        backgroundColor: COLOR,
+      }
+    };
   }
 
  
@@ -26,31 +45,23 @@ export default class Note extends Component {
         this._highlight();
       },
       onPanResponderMove: (e, gesture) => {
-        this._circleStyles.style.left = this._previousLeft + gesture.dx;
-        this._circleStyles.style.top = this._previousTop + gesture.dy;
+        this._rectangleStyles.style.left = this.x + gesture.dx;
+        this._rectangleStyles.style.top = this.y + gesture.dy;
         this._updateNativeStyles();
       },
       onPanResponderRelease: (e, gesture) => {
         this._unHighlight();
-        this._previousLeft += gesture.dx;
-        this._previousTop += gesture.dy;
+        this.x += gesture.dx;
+        this.y += gesture.dy;
       },
       onPanResponderTerminate: (e, gesture) => {
         this._unHighlight();
-        this._previousLeft += gesture.dx;
-        this._previousTop += gesture.dy;
+        this.x += gesture.dx;
+        this.y += gesture.dy;
       },
     });
 
-    this._previousLeft = 0;
-    this._previousTop = 0;
-    this._circleStyles = {
-      style: {
-        left: this._previousLeft,
-        top: this._previousTop,
-        backgroundColor: 'green',
-      }
-    };
+    
   };
 
   componentDidMount() {
@@ -60,31 +71,34 @@ export default class Note extends Component {
   render() {
     return (
       <View
-        style={styles.container}>
+        //style={styles.container}
+      >
         <View
-          ref={(circle) => {
-            this.circle = circle;
+          ref={(rectangle) => {
+            this.rectangle = rectangle;
           }}
-          //style={styles.circle}
+          //style={styles.rectangle}
           style={styles.rectangle}
           {...this._panResponder.panHandlers}
-        />
+        >
+          <Text style={styles.text}>Sticky!</Text>
+        </View>
       </View>
     );
   }
 
   _highlight() {
-    this._circleStyles.style.backgroundColor = 'blue';
+    //this._rectangleStyles.style.backgroundColor = 'blue';
     this._updateNativeStyles();
   }
 
   _unHighlight() {
-    this._circleStyles.style.backgroundColor = 'green';
+    //this._rectangleStyles.style.backgroundColor = 'green';
     this._updateNativeStyles();
   }
 
   _updateNativeStyles() {
-    this.circle && this.circle.setNativeProps(this._circleStyles);
+    this.rectangle && this.rectangle.setNativeProps(this._rectangleStyles);
   }
 
 }
@@ -96,8 +110,16 @@ var styles = StyleSheet.create({
     paddingTop: 64,
   },
   rectangle: {
-    width: 100 * 2,
+    width: 100,
     height: 100,
-    backgroundColor: 'red'
+    position: 'absolute',
+    //backgroundColor: COLOR
+  },
+  text: {
+    marginTop   : 25,
+    marginLeft  : 5,
+    marginRight : 5,
+    textAlign   : 'center',
+    color       : 'black'
   },
 });
