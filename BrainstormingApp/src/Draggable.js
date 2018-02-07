@@ -13,7 +13,7 @@ export default class Draggable extends Component {
       pan: new Animated.ValueXY()
     };
   }
-
+  
   componentWillMount() {
     // Add a listener for the delta value change
     //this._val = { x:0, y:0 }

@@ -1,37 +1,37 @@
-var express = require('express');
-var app = express();
+var express = require('express'),
+    mongoose = require('mongoose'),
+	app = express(),
+	bodyParser = require('body-parser'),
+	User = require('./src/models/userModel');
+
+
+
+mongoose.connect('mongodb://localhost/Brainstorming');
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  // we're connected!
+  console.log("Database connnected!");
+});
 
 // This responds with "Hello World" on the homepage
 app.get('/', function (req, res) {
    console.log("Got a GET request for the homepage");
-   res.send('Hello GET');
+   res.send('INDEX');
 })
 
 // This responds a POST request for the homepage
-app.post('/', function (req, res) {
+app.post('/post', function (req, res) {
    console.log("Got a POST request for the homepage");
    res.send('Hello POST');
 })
 
-// This responds a DELETE request for the /del_user page.
-app.delete('/del_user', function (req, res) {
-   console.log("Got a DELETE request for /del_user");
-   res.send('Hello DELETE');
-})
 
-// This responds a GET request for the /list_user page.
-app.get('/list_user', function (req, res) {
-   console.log("Got a GET request for /list_user");
-   res.send('Page Listing');
-})
-
-// This responds a GET request for abcd, abxcd, ab123cd, and so on
-app.get('/ab*cd', function(req, res) {   
-   console.log("Got a GET request for /ab*cd");
-   res.send('Page Pattern Match');
-})
-
-var server = app.listen(8081, function () {
+var server = app.listen(8080, function () {
 
    var host = server.address().address
    var port = server.address().port
@@ -39,11 +39,16 @@ var server = app.listen(8081, function () {
    console.log("Example app listening at http://%s:%s", host, port)
 })
 
-var MongoClient = require('mongodb').MongoClient;
+var routes = require('./src/routes/userRoutes');
+routes(app);
+
+/*var MongoClient = require('mongodb').MongoClient;
 var url = "mongodb://localhost:27017/mydb";
 
 MongoClient.connect(url, function(err, db) {
   if (err) throw err;
-  console.log("Database created!");
+  console.log("Database connected!");
   db.close();
 });
+*/
+//console.log("Node Server Start!");
