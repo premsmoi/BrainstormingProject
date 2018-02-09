@@ -56,7 +56,7 @@ class GroupScreen extends Component {
           }}>Topic List</Text>
         </View>
         <View style = {{flex: 5 }}>
-          <TouchableWithoutFeedback onPress={() => this.props.navigation.navigate('Topic',{topicName : 'Active Learning'})}>
+          <TouchableWithoutFeedback onPress={() => this.props.navigation.navigate('Board',{topicName : 'Active Learning'})}>
             <View>
               <Text style={{fontSize: 20, 
               color: 'black',  

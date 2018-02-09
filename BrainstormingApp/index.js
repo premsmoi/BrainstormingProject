@@ -5,7 +5,8 @@ import Draggable from './src/Draggable';
 import Note from './src/Note';
 import HomeScreen from './src/HomeScreen';
 import GroupScreen from './src/GroupScreen';
-import TopicScreen from './src/TopicScreen';
+import BoardScreen from './src/BoardScreen';
+import MyComponent from './src/MyComponent'
 
 const myNavigator = StackNavigator({
   Login: {
@@ -23,11 +24,13 @@ const myNavigator = StackNavigator({
   Group: {
     screen: GroupScreen,
   },
-  Topic: {
-    screen: TopicScreen,
+  Board: {
+    screen: BoardScreen,
   }
 });
 
-AppRegistry.registerComponent('BrainstormingApp', () => myNavigator);
-//AppRegistry.registerComponent('BrainstormingApp', () => Note);
-export default myNavigator;
+//AppRegistry.registerComponent('BrainstormingApp', () => myNavigator);
+AppRegistry.registerComponent('BrainstormingApp', () => BoardScreen);
+//AppRegistry.registerComponent('BrainstormingApp', () => MyComponent);
+//export default MyComponent;
+export default BoardScreen;
