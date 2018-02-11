@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   TextInput
 } from "react-native";
+import BoardScreen from './BoardScreen';
 
 /*
 ### Color ### 
@@ -19,8 +20,11 @@ green = '#99ff99'
 blue = '#99ffff'
 yellow = '#ffff99'
 */
-var noteColor = {'red': '#ff9999', 'pink': '#ff99c2', 'green': '#99ff99', 'blue': '#99ffff', 'yellow': '#ffff99'}
-var borderColor = {'red': '#ff8080', 'pink': '#ff80b3', 'green': '#80ff80', 'blue': '#80ffff', 'yellow': '#ffff80'}
+
+import styles from "./app.style";
+import {noteColor, borderColor} from './colors'
+//var noteColor = {'red': '#ff9999', 'pink': '#ff99c2', 'green': '#99ff99', 'blue': '#99ffff', 'yellow': '#ffff99'}
+//var borderColor = {'red': '#ff8080', 'pink': '#ff80b3', 'green': '#80ff80', 'blue': '#80ffff', 'yellow': '#ffff80'}
 //var COLOR = 'blue';
 
 export default class Note extends Component {
@@ -29,6 +33,7 @@ export default class Note extends Component {
     this._panResponder = {};
     this.x = this.props.x;
     this.y = this.props.y;
+    this.id = this.props.id;
     //this.COLOR = this.props.color;
     this.rectangle = (null : ?{ setNativeProps(props: Object): void });
     this.state = {
@@ -56,22 +61,7 @@ export default class Note extends Component {
   );
 
    _renderModalContent = () => (
-    <View style={
-      {
-        //width: 300, 
-        //height: 300,
-        //flex: 1, 
-        //flexDirection: 'column',
-        backgroundColor: noteColor[this.state.COLOR],
-        //paddingTop: 8,
-        //paddingHorizontal: 22,
-        //justifyContent: "center",
-        //alignItems: "center",
-        //borderRadius: 8,
-        //borderColor: "rgba(0, 0, 0, 0.1)"
-      }
-    }>
-      
+    <View style={{backgroundColor: noteColor[this.state.COLOR],}}>
         <TextInput
           style={{ 
             fontSize: 20,
@@ -97,7 +87,7 @@ export default class Note extends Component {
         </View>  
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
-          {this._renderButton("Delete", () => this.setState({ isVisibleModal: false, nextText: this.state.text }))}
+          {this._renderButton("Delete", () => this.props.deleteNote(this.id))}
         </View>  
         <View style = {{flex: 1}}/>
       </View>  
@@ -114,13 +104,15 @@ export default class Note extends Component {
 
         if(delta < 200) {
           // double tap happend
-          console.log(borderColor[this.state.COLOR])
+          //console.log(borderColor[this.state.COLOR])
           this.setState({ isVisibleModal: true })
         }
 
         this.setState({
         lastPress: new Date().getTime()
-    })
+        })
+        this.props.focusNote(this.id)
+        console.log(this.id)
       },
       onPanResponderMove: (e, gesture) => {
         this._rectangleStyles.style.left = this.x + gesture.dx;
@@ -192,42 +184,3 @@ export default class Note extends Component {
   }
 
 }
-
-var styles = StyleSheet.create({
-  
-  container: {
-    flex: 1,
-    paddingTop: 64,
-  },
-  rectangle: {
-    top: 0, 
-    bottom: 0,
-    width: 150,
-    height: 150,
-    position: 'absolute',
-    elevation: 4,    
-  },
-  text: {
-    marginTop   : 5,
-    marginLeft  : 5,
-    marginRight : 5,
-    //textAlign   : 'center',
-    color       : 'black'
-  },
-  button: {
-    backgroundColor: "lightblue",
-    //padding: 12,
-    padding: 6,
-    margin: 8,
-    //margin: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 4,
-    borderColor: "rgba(0, 0, 0, 0.1)"
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-});
