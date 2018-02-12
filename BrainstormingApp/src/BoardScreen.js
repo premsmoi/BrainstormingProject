@@ -37,7 +37,7 @@ class BoardScreen extends Component {
     this.deleteNote = this.deleteNote.bind(this);
     this.focusNote = this.focusNote.bind(this);
   }
-
+  
   handleClick() {
     Alert.alert('This is awesome \n Double tap succeed');
   }

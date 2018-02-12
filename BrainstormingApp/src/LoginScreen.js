@@ -1,10 +1,21 @@
 import React, { Component } from 'react';
-import { Alert, AppRegistry, Button, StyleSheet, View, TextInput, Text } from 'react-native';
+import { 
+  Alert, 
+  AppRegistry, 
+  Button, 
+  StyleSheet, 
+  View, 
+  TextInput, 
+  Text,
+  TouchableOpacity, 
+} from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import HomeScreen from './HomeScreen';
 import RestAPI from './RestAPI';
+import Modal from "react-native-modal";
+import styles from "./app.style";
 
-var api = new RestAPI(); 
+var api = new RestAPI();
 
 class LoginScreen extends Component {
    static navigationOptions = {
@@ -12,43 +23,107 @@ class LoginScreen extends Component {
    }
   constructor(props) {
     super(props);
-    this.state = { username: '', password: '' };
-  }
-  _onPressButton(username, password) {
-    //Alert.alert(username + " " + password)
-    //console.log('Register!');
-    
-    /*  return fetch('https://facebook.github.io/react-native/movies.json')
-      .then((response) => response.json())
-      .then((responseJson) => {
-        //return responseJson.movies;
-       Alert.alert(JSON.stringify(responseJson));
-      })
-      .catch((error) => {
-        Alert.alert(JSON.stringify(error));
-      });
-    */
+    this.state = { 
+      loginUsername: '', 
+      loginPassword: '',
+      regUsername: '',
+      regPassword: '',
+      regPassword2: '',
+      regName: '',
+      regEmail: '',
+      visibleRegModal: false,
+
+    };
   }
 
-  login(username, password){
-    
-    /*console.log(params);
-    var success = fetch('http://10.0.2.2:8080/login?username='+username+'&password='+password)
-      .then((response) => response.json())
-      .then((responseJson) => {
-        console.log(responseJson);
-      })
-      .catch((error) => {
-        return false;
-      });
-    if(success)
-      this.props.navigation.navigate('Home',{name : 'Smoi'});
-    else
-      Alert.alert("Login Failed!");
-    */
+  testLogin(){
+    var ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
+
+
+    ws.onopen = () => {
+      // connection opened
+      ws.send('Hello Node Server!'); // send a message
+    };
+
+    ws.onmessage = (e) => {
+      // a message was received
+      console.log(e.data);
+    };
+
+    ws.onerror = (e) => {
+      // an error occurred
+      console.log(e.message);
+    };
+
+    ws.onclose = (e) => {
+      // connection closed
+      console.log(e.code, e.reason);
+      console.log('Closed!')
+    };
+  }
+
+  register(){
+    var params = {
+      username: this.state.regUsername,
+      password: this.state.regPassword,
+      password2: this.state.regPassword2,
+      name: this.state.regName,
+      email: this.state.regEmail,
+    };
+    /*var params = {
+      username: 'premsmoi',
+      password: 'prem393390',
+      password2: 'prem393390',
+      name: 'Passakorn',
+      email: 'premsmoi@gmail.com',
+    };*/
+
+    console.log('Register for '+JSON.stringify(params))
+
+    fetch('http://10.0.2.2:8080/register', {
+          method: "POST",
+          body: JSON.stringify(params),
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "same-origin"
+        })
+        .then((response) => {
+          var body = JSON.parse(response._bodyText);
+          console.log(body)
+          console.log(body['status'])
+          if(body['status']==0){
+            var errMsg = ''
+            for(i=0;i<body['errors'].length;i++){
+              errMsg = errMsg + body['errors'][i] + '\n';
+            }
+            Alert.alert(
+              'Alert',
+              errMsg,
+              [
+                {text: 'OK', onPress: () => console.log('OK Pressed')},
+              ],
+              { cancelable: false }
+            )
+          }
+          else{
+            Alert.alert(
+              'Alert',
+              'Register complete',
+              [
+                {text: 'OK', onPress: () => console.log('OK Pressed')},
+              ],
+              { cancelable: false }
+            )
+          }
+        });
+  }
+  
+  
+  login(){
     var params = {};
-    params['username'] = username;
-    params['password'] = password;
+    params['username'] = this.state.loginUsername;
+    params['password'] = this.state.loginPassword;
     
         fetch('http://10.0.2.2:8080/login', {
           method: "POST",
@@ -60,13 +135,18 @@ class LoginScreen extends Component {
         })
         //.then((response) => response.json())
         .then((response) => {
-          var obj = JSON.parse(response._bodyText);
-          console.log(obj.loginStatus);
-          if(obj.loginStatus == 1)
-            this.props.navigation.navigate('Home',{name : 'Smoi'});
+          //console.log(response);
+          var body = JSON.parse(response._bodyText);
+          console.log(body);
+          if(body.loginSuccess == true){
+            console.log(body.user.username)
+            this.props.navigation.navigate('Home',{username : body.user.username });
+          }
           else
-            Alert.alert('Login failed!');
+            Alert.alert(body['message']);
         });
+    this.loginUsernameInput.setNativeProps({ text: '' })
+    this.loginPasswordInput.setNativeProps({ text: '' })
     //console.log(success);
     /*var result = api.login(username, password)
     .then(response => response.token)
@@ -81,58 +161,153 @@ class LoginScreen extends Component {
     }*/
   }
 
+  _renderButton = (text, onPress) => (
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.button}>
+        <Text>{text}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  _renderTextInput = (placeholder, onChange) => (
+    <View>
+      <TextInput
+          style={{
+            height: 40, 
+            //borderColor: 'gray', 
+            //borderWidth: 1
+          }}
+          placeholderTextColor = 'gray'
+          placeholder = {placeholder}
+          onChangeText={onChange}
+      />
+    </View>
+  );
+
+  _renderPasswordInput = (placeholder, onChange) => (
+    <View>
+      <TextInput
+          style={{
+            height: 40, 
+            //borderColor: 'gray', 
+            //borderWidth: 1
+          }}
+          placeholderTextColor = 'gray'
+          placeholder = {placeholder}
+          onChangeText={onChange}
+          secureTextEntry = {true}
+      />
+    </View>
+  );
+
+  _renderRegModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+      {this._renderTextInput('Username', (regUsername) => this.setState({regUsername}))}
+      {this._renderPasswordInput('Password', (regPassword) => this.setState({regPassword}))}
+      {this._renderPasswordInput('Confirm Password', (regPassword2) => this.setState({regPassword2}))}
+      {this._renderTextInput('Name', (regName) => this.setState({regName}))}
+      {this._renderTextInput('Email', (regEmail) => this.setState({regEmail}))}
+   
+      <View style={{flexDirection: 'row'}}>
+        <View style = {{flex: 1}}/>
+        <View style = {{flex: 3}}>
+          {this._renderButton("Register", () => {
+            this.register()
+            console.log('Reg!!')
+            })
+          }
+        </View>
+        <View style = {{flex: 2}}/>
+        <View style = {{flex: 3}}>
+          {this._renderButton("Cancel", () => {
+            this.setState({ visibleRegModal: false })
+            this.setState({regUsername: '', regPassword: '', regPassword2: '', regName: '', regEmail: '',})
+            }
+          )}
+
+        </View>
+        <View style = {{flex: 1}}/>
+      </View>
+    </View>
+  );
+
   render() {
     return (
-      <View style={styles.container}>
-        <TextInput
-          style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-          placeholderTextColor = 'gray'
-          placeholder = 'username'
-          onChangeText={(username) => this.setState({username})}
-          //onChangeText={(text) => this.setState({text})}
-          //value={this.state.text1}
-        />
-         <TextInput
-          style={{height: 40, borderColor: 'gray', borderWidth: 1}}
-          placeholderTextColor = 'gray'
-          placeholder = 'password'
-          onChangeText={(password) => this.setState({password})}
-          secureTextEntry = {true}
-          //onChangeText={(text) => this.setState({text})}
-          //value={this.state.text2}
-        />
-        <View style={styles.buttonContainer}>
-          <Button
-            //onPress={() => this.login(this.state.username, this.state.password)}
-            onPress={() => this.props.navigation.navigate('Home',{name : 'Smoi'})}
-            title="Login"
-          />
+      <View style={{flex: 1, flexDirection: 'column'}}>
+        <Modal isVisible={this.state.visibleRegModal}>
+            {this._renderRegModal()}
+        </Modal>
+        <View style={{flex: 2}}/>
+        <View style={{flex: 1, flexDirection: 'row'}}>
+          <View style={{flex: 1}}/>
+          <View style={{flex: 2}}>
+            <View>
+              <TextInput
+                  style={{
+                    height: 40, 
+                  }}
+                  placeholderTextColor = 'gray'
+                  placeholder = 'Username'
+                  onChangeText=  {(loginUsername) => this.setState({loginUsername})}
+                   ref={element => {
+                    this.loginUsernameInput = element
+                  }}
+              />
+            </View>
+          </View>
+          <View style={{flex: 1}}/>
         </View>
-        <View style={styles.buttonContainer}>
-          <Button
-            onPress={() => Alert.alert('Register!')}
-            title="Register"
-          />
+        <View style={{flex: 1, flexDirection: 'row'}}>
+          <View style={{flex: 1}}/>
+          <View style={{flex: 2}}>
+            <View>
+              <TextInput
+                  style={{
+                    height: 40, 
+                  }}
+                  placeholderTextColor = 'gray'
+                  placeholder = 'Password'
+                  secureTextEntry = {true}
+                  onChangeText=  {(loginPassword) => this.setState({loginPassword})}
+                   ref={element => {
+                    this.loginPasswordInput = element
+                  }}
+              />
+            </View>
+          </View>
+          <View style={{flex: 1}}/>
         </View>
+        <View style={{flex:1, flexDirection: 'row'}}>
+          <View style={{flex: 1}}/>
+          <View style={{flex: 2}}>
+            {this._renderButton('Login', () => {
+              this.login()
+              //this.setState({ loginUsername: '', loginPassword: ''})
+            })}
+          </View>
+          <View style={{flex: 1}}/>
+        </View>
+        <View style={{flex:1, flexDirection: 'row'}}>
+          <View style={{flex: 1}}/>
+            <View style={{flex: 2}}>
+              {this._renderButton('Register', () => this.setState({visibleRegModal: true}))}
+            </View>
+          <View style={{flex: 1}}/>
+        </View>
+        <View style={{flex:2}}/>
       </View>
     );
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-   flex: 1,
-   justifyContent: 'center',
-  },
-  buttonContainer: {
-    margin: 20
-  },
-  alternativeLayoutButtonContainer: {
-    margin: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between'
-  }
-})
+//onPress={() => this.testLogin()}
+//onPress={() => this.login(this.state.loginUsername, this.state.loginPassword)}
 
 
 export default LoginScreen;

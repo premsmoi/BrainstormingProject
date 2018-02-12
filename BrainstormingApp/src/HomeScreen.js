@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Alert, AppRegistry, Button, StyleSheet, View, TextInput, Text, TouchableWithoutFeedback } from 'react-native';
+import { Alert, AppRegistry, Button, StyleSheet, View, TextInput, Text, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
+import styles from "./app.style";
 /*const HomeScreen = ({ navigation }) => (
   <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
     <Text>Home Screen</Text>
@@ -31,13 +32,33 @@ class HomeScreen extends Component {
   this.props.navigation.navigate('Group',{name : 'Smoi'})
 
   }*/
-
-   static navigationOptions = {
-    //title: 'Login',
-   }
+  static navigationOptions = ({ navigation }) => ({
+    title: navigation.state.params.username,
+  });
+   
   constructor(props) {
     super(props);
   }
+
+  logout() {
+    console.log('Logout');
+    fetch('http://10.0.2.2:8080/logout')
+    .then((response) => {
+      this.props.navigation.navigate('Login')
+      console.log(response);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  }
+
+   _renderButton = (text, onPress) => (
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.button}>
+        <Text>{text}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   render() {
     return (
@@ -47,13 +68,9 @@ class HomeScreen extends Component {
             marginHorizontal: 20,
             //width: 125, 
             height: 50,
-            flex: 2.75
+            flex: 2.5
           }}>
-        		<Button
-          			onPress={() => Alert.alert('Create Group!')}
-          			//onPress={() => NavigationActions.back()}
-          			title="Create Group"
-        		/>
+            {this._renderButton("Create Board", () => Alert.alert('Create Board!'))}
       		</View>
 
           <View style={{ flex: 1 }}>
@@ -64,13 +81,9 @@ class HomeScreen extends Component {
             marginHorizontal: 10, 
             //width: 40, 
             height: 50,
-            flex: 1
+            flex: 1.5
           }}>
-            <Button
-                onPress={() => Alert.alert('My Info!')}
-                //onPress={() => NavigationActions.back()}
-                title="Info"
-            />
+            {this._renderButton("Info", () => Alert.alert('My Info!'))}
           </View>
 
           <View style={{ 
@@ -81,11 +94,7 @@ class HomeScreen extends Component {
             height: 50,
             flex: 1.5
           }}>
-            <Button
-                onPress={() => Alert.alert('Logout!')}
-                //onPress={() => NavigationActions.back()}
-                title="Logout"
-            />
+            {this._renderButton("Logout", () => this.logout())}
           </View>
         </View>
         <View style = {{flex: 1 }}>
@@ -93,16 +102,16 @@ class HomeScreen extends Component {
             color: 'grey',  
             marginVertical: 20, 
             marginHorizontal: 20 
-          }}>Group List</Text>
+          }}>My Boards</Text>
         </View>
         <View style = {{flex: 5 }}>
-          <TouchableWithoutFeedback onPress={() => this.props.navigation.navigate('Group',{groupName : 'GroupA'})}>
+          <TouchableWithoutFeedback onPress={() => this.props.navigation.navigate('Board',{boardName : 'Board1'})}>
             <View>
               <Text style={{fontSize: 20, 
               color: 'black',  
               marginVertical: 10, 
               marginHorizontal: 30 
-          }}>GroupA</Text>
+          }}>Board1</Text>
             </View>
         </TouchableWithoutFeedback>
         </View>

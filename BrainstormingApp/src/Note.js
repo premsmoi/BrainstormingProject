@@ -11,16 +11,6 @@ import {
   TextInput
 } from "react-native";
 import BoardScreen from './BoardScreen';
-
-/*
-### Color ### 
-red = '#ff9999'
-pink = '#ff99c2'
-green = '#99ff99'
-blue = '#99ffff'
-yellow = '#ffff99'
-*/
-
 import styles from "./app.style";
 import {noteColor, borderColor} from './colors'
 //var noteColor = {'red': '#ff9999', 'pink': '#ff99c2', 'green': '#99ff99', 'blue': '#99ffff', 'yellow': '#ffff99'}

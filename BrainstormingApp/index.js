@@ -17,9 +17,6 @@ const myNavigator = StackNavigator({
   },
   Home: {
     screen: HomeScreen,
-    navigationOptions: {
-      headerTitle: 'Home',
-    },
   },
   Group: {
     screen: GroupScreen,
@@ -30,7 +27,7 @@ const myNavigator = StackNavigator({
 });
 
 //AppRegistry.registerComponent('BrainstormingApp', () => myNavigator);
-AppRegistry.registerComponent('BrainstormingApp', () => BoardScreen);
+AppRegistry.registerComponent('BrainstormingApp', () => HomeScreen);
 //AppRegistry.registerComponent('BrainstormingApp', () => MyComponent);
-//export default MyComponent;
-export default BoardScreen;
+//export default myNavigator;
+export default HomeScreen;
