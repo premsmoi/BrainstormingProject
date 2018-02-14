@@ -81,6 +81,7 @@ class LoginScreen extends Component {
     console.log('Register for '+JSON.stringify(params))
 
     fetch('http://10.0.2.2:8080/register', {
+    //fetch('http://192.168.43.143:8080/register', {
           method: "POST",
           body: JSON.stringify(params),
           headers: {
@@ -107,6 +108,7 @@ class LoginScreen extends Component {
             )
           }
           else{
+            this.setState({visibleRegModal: false})
             Alert.alert(
               'Alert',
               'Register complete',
@@ -116,6 +118,9 @@ class LoginScreen extends Component {
               { cancelable: false }
             )
           }
+        })
+        .catch((error) => {
+          throw error;
         });
   }
   
@@ -126,6 +131,7 @@ class LoginScreen extends Component {
     params['password'] = this.state.loginPassword;
     
         fetch('http://10.0.2.2:8080/login', {
+        //fetch('http://192.168.43.143:8080/login', {
           method: "POST",
           body: JSON.stringify(params),
           headers: {
@@ -139,11 +145,14 @@ class LoginScreen extends Component {
           var body = JSON.parse(response._bodyText);
           console.log(body);
           if(body.loginSuccess == true){
-            console.log(body.user.username)
-            this.props.navigation.navigate('Home',{username : body.user.username });
+            console.log(body.user.username + ' -> Login')
+            this.props.navigation.navigate('Home',{user : body.user});
           }
           else
             Alert.alert(body['message']);
+        })
+        .catch((error) => {
+          throw error;
         });
     this.loginUsernameInput.setNativeProps({ text: '' })
     this.loginPasswordInput.setNativeProps({ text: '' })

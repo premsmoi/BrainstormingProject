@@ -3,6 +3,7 @@ var express = require('express'),
     cookieParser = require('cookie-parser'),
   	bodyParser = require('body-parser'),
   	User = require('./src/models/UserModel')
+    Board = require('./src/models/BoardModel')
     WebSocketServer = require('websocket').server,
     validator = require('express-validator'),
     passport = require('passport'),
@@ -41,6 +42,8 @@ app.use(session({
 }));
 
 var routes = require('./src/routes/UserRoutes');
+routes(app);
+var routes = require('./src/routes/BoardRoutes');
 routes(app);
 
 // This responds with "Hello World" on the homepage

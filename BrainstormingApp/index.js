@@ -26,8 +26,8 @@ const myNavigator = StackNavigator({
   }
 });
 
-//AppRegistry.registerComponent('BrainstormingApp', () => myNavigator);
-AppRegistry.registerComponent('BrainstormingApp', () => HomeScreen);
+AppRegistry.registerComponent('BrainstormingApp', () => myNavigator);
+//AppRegistry.registerComponent('BrainstormingApp', () => HomeScreen);
 //AppRegistry.registerComponent('BrainstormingApp', () => MyComponent);
-//export default myNavigator;
-export default HomeScreen;
+export default myNavigator;
+//export default HomeScreen;

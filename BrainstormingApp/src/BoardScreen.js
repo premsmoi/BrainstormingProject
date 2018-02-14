@@ -19,15 +19,17 @@ import Note from './Note';
 //import DoubleClick from 'react-native-double-click';
 
 class BoardScreen extends Component {
-   static navigationOptions = {
-    //title: 'Login',
-   }
+  
+  static navigationOptions = ({ navigation }) => ({
+    title: navigation.state.params.boardName,
+  });
+
   constructor(props) {
     super(props);
     this.newId = 2;
     this.tempNote = null;
     this.state = {
-      topicName: '',
+      boardName: '',
       noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
                    {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
       visibleSelectColorModal: false,
@@ -36,7 +38,32 @@ class BoardScreen extends Component {
     this.handleClick = this.handleClick.bind(this);
     this.deleteNote = this.deleteNote.bind(this);
     this.focusNote = this.focusNote.bind(this);
+    console.log(this.props)
+
+    this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
+
+    this.ws.onopen = () => {
+      // connection opened
+      //ws.send('Hello Node Server!'); // send a message
+    };
+
+    this.ws.onmessage = (e) => {
+      // a message was received
+      console.log(e.data);
+    };
+
+    this.ws.onerror = (e) => {
+      // an error occurred
+      console.log(e.message);
+    };
+
+    this.ws.onclose = (e) => {
+      // connection closed
+      console.log(e.code, e.reason);
+      console.log('Closed!')
+    };
   }
+
   
   handleClick() {
     Alert.alert('This is awesome \n Double tap succeed');
@@ -72,12 +99,9 @@ class BoardScreen extends Component {
     console.log(this.state.noteList)
     //console.log(this.state.noteList)
     //Alert.alert('Create Idea!');
+    var noteObj = JSON.stringify(newNote)
+    this.ws.send(noteObj)
   }
-
-  static navigationOptions = ({ navigation }) => ({
-    title: navigation.state.params.topicName,
-    //headerRight: 
-  });
 
   _renderColorPicker = (color) => (
     <TouchableOpacity onPress={() => this.setState({newColor: color})}>
@@ -140,17 +164,25 @@ class BoardScreen extends Component {
           <Modal isVisible={this.state.visibleSelectColorModal}>
             {this._renderModalContent()}
           </Modal>
-          <View style={{flex: 1, flexDirection: 'row'}}>
-            <View style={{flex: 2}}></View>
-            <View style={{ marginVertical: 10, 
+          <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
+            <View style={{ 
+              marginVertical: 10, 
               marginHorizontal: 20,
               flex: 1 
             }}>
-              <Button
-                onPress={()=> this.setState({visibleSelectColorModal: true})}
-                //onPress={}
-                title="Add note"
-              />
+              {this._renderButton('Add note', ()=> this.setState({visibleSelectColorModal: true}))}
+            </View>
+            <View style={{flex: 1}}></View>
+            <View style={{ 
+              marginVertical: 10, 
+              marginHorizontal: 20,
+              flex: 1 
+            }}>
+              {this._renderButton('Exit', () => {
+                this.props.navigation.navigate('Home', { user: this.props.navigation.state.params.user })
+                this.ws.close()
+                }
+              )}
             </View>  
           </View>
           

@@ -68,9 +68,10 @@ module.exports = function(app) {
         });
 */  
     app.get('/user_list', userList.list_all_user);
-
+    app.post('/get_user', userList.get_user);
     app.post('/register', userList.create_a_user);
         //.put(dormList.update_a_dorm)
+    app.post('/user_add_board', userList.add_board);
         //.delete(dormList.delete_a_dorm);
     
 };

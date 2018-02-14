@@ -10,7 +10,7 @@ exports.create_a_user = function(req, res) {
   var password = req.body.password;
   var password2 = req.body.password2;
   var name = req.body.name;
-  var email = req.body.name;
+  var email = req.body.email;
 
   // Validation
   req.checkBody('name', 'Name is required').notEmpty();
@@ -55,6 +55,15 @@ exports.create_a_user = function(req, res) {
   }
 };
 
+exports.get_user = function(req, res){
+  User.findOne({username: req.body.username}, function(err, user){
+    if(err)
+      res.send(err)
+    res.json(user)
+
+    //console.log(user)
+  })
+}
 
 exports.list_all_user = function(req, res) {
   User.find({}, function(err, user) {
@@ -63,3 +72,37 @@ exports.list_all_user = function(req, res) {
     res.json(user);
   });
 };
+
+exports.add_board = function(req, res){
+  //var inputJSON = {}
+  //inputJSON.username = req.body.username;
+  /*User.find(inputJSON, function(err, user){
+    if (err)
+      res.send(err);
+    console.log('user: '+user)
+    console.log('boardId: '+req.body.newBoardId)
+    var newBoardList = user.boards
+    //newBoardList.push(req.body.newBoardId)
+    //user.boards = newBoardList
+    //user.save()
+    console.log('boardList: '+user.boards)
+    //newBoardList.push(req.body.newBoardId)
+  })*/
+  console.log('username: '+req.body.username)
+  console.log('boardId: '+req.body.newBoardId)
+  console.log('boardName: '+req.body.newBoardName)
+
+  var newBoard = {
+    boardId: req.body.newBoardId,
+    boardName: req.body.newBoardName
+  }
+
+  User.update({ username: req.body.username}, 
+    {
+      $push: { boards: newBoard }
+    },
+    function(err, numAffected){
+      //console.log('updated documents: '+numAffected)
+    }
+  )
+}

@@ -25,6 +25,11 @@ var userSchema = new Schema({
     	type: String,
     	required : true, 
     },
+    boards: [{ 
+        _id: false,
+        boardId: { type: Schema.Types.ObjectId, ref: 'Board' },
+        boardName: String,
+    }],
 });
 userSchema.plugin(uniqueValidator);
 
