@@ -36,32 +36,6 @@ class LoginScreen extends Component {
     };
   }
 
-  testLogin(){
-    var ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
-
-
-    ws.onopen = () => {
-      // connection opened
-      ws.send('Hello Node Server!'); // send a message
-    };
-
-    ws.onmessage = (e) => {
-      // a message was received
-      console.log(e.data);
-    };
-
-    ws.onerror = (e) => {
-      // an error occurred
-      console.log(e.message);
-    };
-
-    ws.onclose = (e) => {
-      // connection closed
-      console.log(e.code, e.reason);
-      console.log('Closed!')
-    };
-  }
-
   register(){
     var params = {
       username: this.state.regUsername,
@@ -118,6 +92,7 @@ class LoginScreen extends Component {
               { cancelable: false }
             )
           }
+          return response.json()
         })
         .catch((error) => {
           throw error;
@@ -143,13 +118,14 @@ class LoginScreen extends Component {
         .then((response) => {
           //console.log(response);
           var body = JSON.parse(response._bodyText);
-          console.log(body);
+          //console.log(body);
           if(body.loginSuccess == true){
             console.log(body.user.username + ' -> Login')
             this.props.navigation.navigate('Home',{user : body.user});
           }
           else
             Alert.alert(body['message']);
+          return response.json()
         })
         .catch((error) => {
           throw error;

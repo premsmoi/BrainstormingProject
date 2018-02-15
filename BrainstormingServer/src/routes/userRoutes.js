@@ -6,14 +6,14 @@ var express = require('express'),
 
 passport.use(new LocalStrategy(
     function(username, password, done){
-      console.log('USE')
+      //console.log('USE')
       User.getUserByUsername(username, function(err, user){
         if(err){ 
           console.log('err')
           throw(err);
         }
         if(!user){
-          console.log('!user')
+          //console.log('!user')
           return done(null, false, { loginSuccess: false, message: 'Unknown User' });
         }
         User.comparePassword(password, user.password, function(err, isMatch){
@@ -21,7 +21,7 @@ passport.use(new LocalStrategy(
           if(isMatch){
             //console.log(user)
             user['loginSuccess'] = true;
-            console.log(user)
+            //console.log(user)
             return done(null, {loginSuccess: true, user: user});
           } else {
             console.log('Invalid password')
@@ -33,12 +33,12 @@ passport.use(new LocalStrategy(
 );
 
 passport.serializeUser(function(user, done) {
-  console.log('SE')
+  //console.log('SE')
   done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done) {
-  console.log('DESE')
+  //console.log('DESE')
   User.getUerById(id, function(err, user) {
     done(err, user);
   });
@@ -56,8 +56,9 @@ module.exports = function(app) {
     });
 
     app.get('/logout', function(req, res){
+
         req.logout();
-        res.send({ logutSuccess: true})
+        res.send({ logoutSuccess: true})
     });
     /*
     app.post('/login', 

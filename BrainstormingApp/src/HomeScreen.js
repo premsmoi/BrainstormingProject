@@ -17,31 +17,22 @@ class HomeScreen extends Component {
       myBoards: [],
       newBoardName: '',
       visibleNewBoardModal: false,
+      createSuccess: false,
+      newBoardId: null,
     }
     this.getUser()
-    console.log(this.props.navigation.state.params.user)
+    //console.log(this.props.navigation.state.params.user)
   }
 
-  getBoards(){
-     fetch('http://10.0.2.2:8080/all_boards')
-    //fetch('http://192.168.43.143:8080/board_list')
-    .then((response) => {
-      var body = JSON.parse(response._bodyText)
-      console.log(body)
-    })
-    .catch((error) => {
-      throw error;
-    });
-  }
-
-  getUser(){
+  async getUser(){
     console.log('exec getUser')
     var params = {
       username: this.props.navigation.state.params.user.username
     }
 
-    fetch('http://10.0.2.2:8080/get_user', {
-    //fetch('http://192.168.43.143:8080/register', {
+    try{
+      let response = await fetch('http://10.0.2.2:8080/get_user', {
+          //fetch('http://192.168.43.143:8080/register', {
           method: "POST",
           body: JSON.stringify(params),
           headers: {
@@ -49,23 +40,24 @@ class HomeScreen extends Component {
           },
           credentials: "same-origin"
         })
-        .then((response) => {
-          var user = JSON.parse(response._bodyText)
-          console.log(user)
-          this.setState({myBoards: user.boards})
-        })
-        .catch((error) => {
-          throw error;
-        });
+      var user = JSON.parse(response._bodyText)
+          //console.log(user)
+      this.setState({myBoards: user.boards})
+    } catch (error) {
+        throw error;
+      }
   }
 
-  createNewBoard(){
+  async createNewBoard(){
+    console.log('createNewBoard')
+
     var params = {
       creator: this.props.navigation.state.params.user.username,
       boardName: this.state.newBoardName,
     }
 
-    fetch('http://10.0.2.2:8080/create_board', {
+    try{
+      let response = await fetch('http://10.0.2.2:8080/create_board', {
     //fetch('http://192.168.43.143:8080/register', {
           method: "POST",
           body: JSON.stringify(params),
@@ -74,9 +66,9 @@ class HomeScreen extends Component {
           },
           credentials: "same-origin"
         })
-        .then((response) => {
-          var body = JSON.parse(response._bodyText);
-          //console.log(body)
+
+        var body = JSON.parse(response._bodyText);
+          //console.log('body: '+body)
           //console.log(body['status'])
           if(body['status']==0){
             var errMsg = ''
@@ -100,39 +92,45 @@ class HomeScreen extends Component {
                 {text: 'OK',},
               ],
               { cancelable: false }
-            )
+            );
+            this.setState({createSuccess: true, newBoardId:  body['newBoardId']})
             
-
-            params = {
-              username: this.props.navigation.state.params.user.username,
-              newBoardId: body['newBoardId'],
-              newBoardName: this.state.newBoardName,
-            }
-            console.log('newBoardId: '+body['newBoardId'])
-
-            fetch('http://10.0.2.2:8080/user_add_board', {
-            //fetch('http://192.168.43.143:8080/register', {
-              method: "POST",
-              body: JSON.stringify(params),
-              headers: {
-                "Content-Type": "application/json"
-              },
-              credentials: "same-origin"
-            })
-            .then((response) => {
-             
-            })
-            .catch((error) => {
-              throw error;
-            });
-          this.getUser()
-          this.setState({newBoardName: ''})
-          this.setState({visibleNewBoardModal: false})
+            //console.log('newBoardId: '+body['newBoardId'])
           }
-        })
-        .catch((error) => {
-          throw error;
-        });
+    } catch (error) {
+        throw error;
+      }
+    
+        
+    console.log('createSuccess: '+this.state.createSuccess)
+    console.log('newBoardId: '+this.state.newBoardId)
+    if(this.state.createSuccess){
+      console.log('Here')
+      params = {
+        username: this.props.navigation.state.params.user.username,
+        newBoardId: this.state.newBoardId,
+        newBoardName: this.state.newBoardName,
+      }
+      try{
+        let response = await fetch('http://10.0.2.2:8080/user_add_board', {
+              //fetch('http://192.168.43.143:8080/register', {
+                method: "POST",
+                body: JSON.stringify(params),
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+              })
+        console.log('response: '+response)
+      } catch (error) {
+          console.log(error)
+        }
+      console.log('Above')
+      this.setState({newBoardName: ''})
+      this.setState({visibleNewBoardModal: false})
+      await this.getUser()
+      console.log('Below')
+    }   
   }
 
   logout() {
@@ -141,7 +139,8 @@ class HomeScreen extends Component {
     //fetch('http://192.168.43.143:8080/logout')
     .then((response) => {
       this.props.navigation.navigate('Login')
-      console.log(response);
+      //console.log(response);
+      return response.json()
     })
     .catch((error) => {
       throw error;
@@ -256,7 +255,7 @@ class HomeScreen extends Component {
             return(
               <TouchableWithoutFeedback 
                 onPress={() => 
-                  this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board._id})
+                  this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board.boardId})
                 }
                 key = {board.boardId}  
               >

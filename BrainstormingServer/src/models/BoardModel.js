@@ -9,16 +9,21 @@ var Schema = mongoose.Schema;
 var boardSchema = new Schema({
     boardName: {
     	type: String,
-    	unique: true,
+    	//unique: true,
     	required : true, 
-    	dropDups: true
+    	//dropDups: true
     },
     hasPassword: Boolean,
     password: {
     	type: String,
     },
     members: [String],
-    notes: [{ type: Schema.Types.ObjectId, ref: 'Note' }],
+    notes: [{ 
+        type: Schema.Types.ObjectId, 
+        ref: 'Note',
+        //unique: true,
+        //dropDups: true,
+    }],
 });
 //userSchema.plugin(uniqueValidator);
 
@@ -26,7 +31,7 @@ var boardSchema = new Schema({
 var Board = module.exports = mongoose.model('Board', boardSchema );
 
 module.exports.createBoard = function(newBoard, callback){
-	
+	console.log('Create Board in Model')
     newBoard.save(callback);
 }
 

@@ -77,7 +77,10 @@ export default class Note extends Component {
         </View>  
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
-          {this._renderButton("Delete", () => this.props.deleteNote(this.id))}
+          {this._renderButton("Delete", () => {
+            this.props.deleteNote(this.id)
+            this.setState({isVisibleModal: false})
+          })}
         </View>  
         <View style = {{flex: 1}}/>
       </View>  

@@ -102,7 +102,7 @@ exports.add_board = function(req, res){
       $push: { boards: newBoard }
     },
     function(err, numAffected){
-      //console.log('updated documents: '+numAffected)
+      res.send(numAffected)
     }
   )
 }

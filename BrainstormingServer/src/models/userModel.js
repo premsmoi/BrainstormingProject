@@ -27,7 +27,12 @@ var userSchema = new Schema({
     },
     boards: [{ 
         _id: false,
-        boardId: { type: Schema.Types.ObjectId, ref: 'Board' },
+        boardId: { 
+            type: Schema.Types.ObjectId, 
+            ref: 'Board',
+            unique: true,
+            dropDups: true,
+        },
         boardName: String,
     }],
 });

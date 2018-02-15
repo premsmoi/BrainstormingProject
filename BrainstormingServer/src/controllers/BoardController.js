@@ -49,6 +49,13 @@ exports.create_a_board = function(req, res) {
   }
 };
 
+module.exports.getBoard = function(boardId, callback){
+  //var returnedBoard;
+  Board.findOne({_id: boardId}, callback)
+  //console.log('find board: '+board)
+  //return returnedBoard;
+}
+
 
 
 exports.list_all_boards = function(req, res) {

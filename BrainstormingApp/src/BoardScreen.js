@@ -30,26 +30,35 @@ class BoardScreen extends Component {
     this.tempNote = null;
     this.state = {
       boardName: '',
-      noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
-                   {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
+      //noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
+      //             {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
+      noteList: [],
       visibleSelectColorModal: false,
       newColor: 'red',
     }
-    this.handleClick = this.handleClick.bind(this);
     this.deleteNote = this.deleteNote.bind(this);
     this.focusNote = this.focusNote.bind(this);
-    console.log(this.props)
+
+    //console.log(this.props)
 
     this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
 
-    this.ws.onopen = () => {
-      // connection opened
-      //ws.send('Hello Node Server!'); // send a message
-    };
 
     this.ws.onmessage = (e) => {
       // a message was received
-      console.log(e.data);
+      //console.log("e.data: "+e.data);
+      var obj = JSON.parse(e.data)
+      //console.log(obj.body.notes)
+
+      if(obj.body.code == 'updatedNotes'){
+        this.setState({noteList: obj.body.notes})
+        //console.log('notes: '+this.state.noteList)
+      }
+      console.log('###############')
+      for(i=0;i<obj.body.notes.length;i++){
+        console.log(obj.body.notes[i]._id)
+      }
+      console.log('###############')
     };
 
     this.ws.onerror = (e) => {
@@ -62,25 +71,49 @@ class BoardScreen extends Component {
       console.log(e.code, e.reason);
       console.log('Closed!')
     };
+
+    this.ws.onopen = () => {
+      // connection opened
+      this.getNotes();
+      //ws.send('Hello Node Server!'); // send a message
+    };
+
+
+  }
+
+  getNotes(){
+    var getNotesRequest = {
+      code: 'getNotes',
+      boardId: this.props.navigation.state.params.boardId,
+    }
+    var requestString = JSON.stringify(getNotesRequest)
+    //console.log('props: '+this.props)
+    this.ws.send(requestString)
   }
 
   
-  handleClick() {
-    Alert.alert('This is awesome \n Double tap succeed');
-  }
-
   deleteNote = (deletedId) => {
-    var tempList = this.state.noteList
-    var deletedIndex = this.state.noteList.findIndex(function(id) {return id == deletedId})
-    tempList.splice(deletedIndex, 1)
-    this.setState({noteList: tempList})
+    //var tempList = this.state.noteList
+    //var deletedIndex = this.state.noteList.findIndex(function(_id) {return _id == deletedId})
+    //tempList.splice(deletedIndex, 1)
+    //this.setState({noteList: tempList})
+
+    var deleteNoteRequest = {
+      code: 'deleteNote',
+      noteId: deletedId,
+      boardId: this.props.navigation.state.params.boardId,
+    }
+    var requestString = JSON.stringify(deleteNoteRequest)
+    console.log('delete')
+    this.ws.send(requestString)
+    this.getNotes()
   }
 
   focusNote = (focusId) => {
     //console.log('focusId: '+focusId)
     var tempList = this.state.noteList
-    var deletedNote = this.state.noteList.find(function(note) {return note.id == focusId})
-    var deletedIndex = this.state.noteList.findIndex(function(note) {return note.id == focusId})
+    var deletedNote = this.state.noteList.find(function(note) {return note._id == focusId})
+    var deletedIndex = this.state.noteList.findIndex(function(note) {return note._id == focusId})
     //console.log('deletedIndex: '+deletedIndex)
     tempList.splice(deletedIndex, 1)
     tempList.push(deletedNote)
@@ -88,7 +121,14 @@ class BoardScreen extends Component {
   }
 
   createNewNote = () => {
-    var newNote = {id:++this.newId, x: 100, y: 200, color: this.state.newColor, text: ''}
+    var newNote = {
+      boardId: this.props.navigation.state.params.boardId,
+      writer: this.props.navigation.state.params.user.username, 
+      x: 100, 
+      y: 200, 
+      color: this.state.newColor, 
+      text: ''
+    }
     this.setState(previousState => {
       //console.log(previousState.noteList)
       var newNoteList = previousState.noteList
@@ -96,11 +136,16 @@ class BoardScreen extends Component {
       //console.log('newNoteList'+newNoteList)
       return {noteList: newNoteList}
     });
-    console.log(this.state.noteList)
+    //console.log(this.state.noteList)
     //console.log(this.state.noteList)
     //Alert.alert('Create Idea!');
-    var noteObj = JSON.stringify(newNote)
-    this.ws.send(noteObj)
+    var newNoteRequest = {
+      code: 'createNote',
+      note: newNote,
+    }
+    var requestString = JSON.stringify(newNoteRequest)
+    //console.log('props: '+this.props)
+    this.ws.send(requestString)
   }
 
   _renderColorPicker = (color) => (
@@ -113,7 +158,7 @@ class BoardScreen extends Component {
         height: 50,}}>
       </View>
     </TouchableOpacity>
-  );
+  )
 
   _renderButton = (text, onPress) => (
     <TouchableOpacity onPress={onPress}>
@@ -121,7 +166,7 @@ class BoardScreen extends Component {
         <Text>{text}</Text>
       </View>
     </TouchableOpacity>
-  );
+  )
 
   _renderModalContent = () => (
     <View style={{
@@ -155,7 +200,7 @@ class BoardScreen extends Component {
         <View style = {{flex: 1}}/>
       </View>
     </View>
-  );
+  )
 
   render() {
     return (
@@ -227,8 +272,8 @@ class BoardScreen extends Component {
                         <Note 
                           deleteNote = {this.deleteNote} 
                           focusNote = {this.focusNote}
-                          key = {note.id} 
-                          id = {note.id}
+                          key = {note._id} 
+                          id = {note._id}
                           x = {note.x} 
                           y = {note.y} 
                           color = {note.color} 

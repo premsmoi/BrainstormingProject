@@ -6,7 +6,12 @@ var bcrypt = require('bcryptjs')
 //Define a schema
 var Schema = mongoose.Schema;
 
-var notedSchema = new Schema({
+var noteSchema = new Schema({
+    boardId: {
+            type: Schema.Types.ObjectId, 
+            ref: 'Board',
+            required : true,
+    },  
     writer: {
             type: String,
             required : true,
@@ -23,9 +28,14 @@ var notedSchema = new Schema({
     y: {
         type: Number,
         required : true,
-    } 
+    },
 });
 //userSchema.plugin(uniqueValidator);
 
 // Compile model from schema
 var Note = module.exports = mongoose.model('Note', noteSchema );
+
+module.exports.createNote = function(newNote, callback){
+    //console.log('noteTest: '+newNote)
+    newNote.save(callback);
+}
