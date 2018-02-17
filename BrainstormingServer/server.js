@@ -174,6 +174,36 @@ wsServer.on('request', function(request) {
             })
         }
 
+        else if(obj.code == 'updateNotePosition'){
+          console.log('updateNotePosition')
+          Note.update({_id: obj.noteId}, 
+            { $set: { x: obj.newX, y: obj.newY, updated: obj.updated}},
+            function(err, note){
+            if(err)
+              console.log(err)
+          })
+        }
+
+        else if(obj.code == 'updateNoteText'){
+          console.log(obj)
+          Note.update({_id: obj.noteId}, 
+            { $set: { text: obj.newText, updated: obj.updated}},
+            function(err, note){
+            if(err)
+              console.log(err)
+          })
+        }
+
+        else if(obj.code == 'updateNoteList'){
+          console.log(obj)
+          Board.update({_id: obj.boardId}, 
+            { $set: { notes: obj.newNoteList}},
+            function(err, board){
+            if(err)
+              console.log(err)
+          })
+        }
+
         /*
         if (message.type === 'utf8') {
             //console.log('Received Message: ' + message.utf8Data);

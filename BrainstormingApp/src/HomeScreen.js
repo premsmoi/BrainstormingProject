@@ -153,7 +153,7 @@ class HomeScreen extends Component {
         <Text>{text}</Text>
       </View>
     </TouchableOpacity>
-  );
+  )
 
    _renderTextInput = (placeholder, onChange) => (
     <View>
@@ -166,7 +166,9 @@ class HomeScreen extends Component {
           onChangeText={onChange}
       />
     </View>
-  );
+  )
+
+
 
    _renderNewBoardModal = () => (
     <View style={{

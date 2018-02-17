@@ -33,11 +33,14 @@ class BoardScreen extends Component {
       //noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
       //             {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
       noteList: [],
-      visibleSelectColorModal: false,
+      visibleNewNoteModal: false,
+      visibleEditNoteModal: false,
       newColor: 'red',
     }
     this.deleteNote = this.deleteNote.bind(this);
     this.focusNote = this.focusNote.bind(this);
+    this.updateNotePosition = this.updateNotePosition.bind(this);
+    this.updateNoteText = this.updateNoteText.bind(this);
 
     //console.log(this.props)
 
@@ -91,22 +94,40 @@ class BoardScreen extends Component {
     this.ws.send(requestString)
   }
 
-  
-  deleteNote = (deletedId) => {
-    //var tempList = this.state.noteList
-    //var deletedIndex = this.state.noteList.findIndex(function(_id) {return _id == deletedId})
-    //tempList.splice(deletedIndex, 1)
-    //this.setState({noteList: tempList})
-
-    var deleteNoteRequest = {
-      code: 'deleteNote',
-      noteId: deletedId,
-      boardId: this.props.navigation.state.params.boardId,
+  updateNotePosition(id, x, y){
+    var newNoteRequest = {
+      code: 'updateNotePosition',
+      noteId: id,
+      newX: x,
+      newY: y,
+      updated: new Date().getTime(),
     }
-    var requestString = JSON.stringify(deleteNoteRequest)
-    console.log('delete')
+    var requestString = JSON.stringify(newNoteRequest)
+    //console.log('props: '+this.props)
     this.ws.send(requestString)
-    this.getNotes()
+  }
+
+  updateNoteText(id, text){
+    var newNoteRequest = {
+      code: 'updateNoteText',
+      noteId: id,
+      newText: text,
+      updated: new Date().getTime(),
+    }
+    var requestString = JSON.stringify(newNoteRequest)
+    //console.log('props: '+this.props)
+    this.ws.send(requestString)
+  }
+
+  updateNoteList(){
+    var newNoteRequest = {
+      code: 'updateNoteList',
+      boardId: this.props.navigation.state.params.boardId,
+      newNoteList: this.state.noteList,
+    }
+    var requestString = JSON.stringify(newNoteRequest)
+    //console.log('props: '+this.props)
+    this.ws.send(requestString)
   }
 
   focusNote = (focusId) => {
@@ -118,6 +139,7 @@ class BoardScreen extends Component {
     tempList.splice(deletedIndex, 1)
     tempList.push(deletedNote)
     this.setState({noteList: tempList})
+    this.updateNoteList();
   }
 
   createNewNote = () => {
@@ -127,7 +149,8 @@ class BoardScreen extends Component {
       x: 100, 
       y: 200, 
       color: this.state.newColor, 
-      text: ''
+      text: '',
+      updated: new Date().getTime(),
     }
     this.setState(previousState => {
       //console.log(previousState.noteList)
@@ -146,6 +169,23 @@ class BoardScreen extends Component {
     var requestString = JSON.stringify(newNoteRequest)
     //console.log('props: '+this.props)
     this.ws.send(requestString)
+  }
+
+  deleteNote = (deletedId) => {
+    //var tempList = this.state.noteList
+    //var deletedIndex = this.state.noteList.findIndex(function(_id) {return _id == deletedId})
+    //tempList.splice(deletedIndex, 1)
+    //this.setState({noteList: tempList})
+
+    var deleteNoteRequest = {
+      code: 'deleteNote',
+      noteId: deletedId,
+      boardId: this.props.navigation.state.params.boardId,
+    }
+    var requestString = JSON.stringify(deleteNoteRequest)
+    console.log('delete')
+    this.ws.send(requestString)
+    this.getNotes()
   }
 
   _renderColorPicker = (color) => (
@@ -168,7 +208,7 @@ class BoardScreen extends Component {
     </TouchableOpacity>
   )
 
-  _renderModalContent = () => (
+  _renderNewNoteModal = () => (
     <View style={{
       backgroundColor: noteColor[this.state.newColor],
       padding: 22,
@@ -188,14 +228,14 @@ class BoardScreen extends Component {
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
           {this._renderButton("OK", () => {
-            this.setState({ visibleSelectColorModal: false })
+            this.setState({ visibleNewNoteModal: false })
             this.createNewNote()
             })
           }
         </View>
         <View style = {{flex: 2}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Cancel", () => this.setState({ visibleSelectColorModal: false }))}
+          {this._renderButton("Cancel", () => this.setState({ visibleNewNoteModal: false }))}
         </View>
         <View style = {{flex: 1}}/>
       </View>
@@ -206,8 +246,8 @@ class BoardScreen extends Component {
     return (
       
         <View style={{flex: 1}}>
-          <Modal isVisible={this.state.visibleSelectColorModal}>
-            {this._renderModalContent()}
+          <Modal isVisible={this.state.visibleNewNoteModal}>
+            {this._renderNewNoteModal()}
           </Modal>
           <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
             <View style={{ 
@@ -215,7 +255,7 @@ class BoardScreen extends Component {
               marginHorizontal: 20,
               flex: 1 
             }}>
-              {this._renderButton('Add note', ()=> this.setState({visibleSelectColorModal: true}))}
+              {this._renderButton('Add note', ()=> this.setState({visibleNewNoteModal: true}))}
             </View>
             <View style={{flex: 1}}></View>
             <View style={{ 
@@ -268,10 +308,11 @@ class BoardScreen extends Component {
                   {this.state.noteList.map((note) => {
                     return(
                       //<DoubleClick onClick={this.handleClick}>
-                      
                         <Note 
                           deleteNote = {this.deleteNote} 
                           focusNote = {this.focusNote}
+                          updateNotePosition = {this.updateNotePosition}
+                          updateNoteText = {this.updateNoteText}
                           key = {note._id} 
                           id = {note._id}
                           x = {note.x} 

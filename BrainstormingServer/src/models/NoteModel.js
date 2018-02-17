@@ -29,6 +29,10 @@ var noteSchema = new Schema({
         type: Number,
         required : true,
     },
+    updated: { 
+        type: Date, 
+        default: Date.now 
+    },
 });
 //userSchema.plugin(uniqueValidator);
 

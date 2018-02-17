@@ -20,7 +20,9 @@ exports.create_a_note = function(newNote) {
 module.exports.getNotes = function(id_arr, callback){
   
   Note.find({
-    '_id': { $in: id_arr}}, 
+    '_id': { $in: id_arr}},
+    {},
+    {sort: {updated: 1}}, 
     callback)
   //console.log('find board: '+board)
   //return returnedBoard;
@@ -37,7 +39,7 @@ module.exports.deleteNote = function(id, callback){
 }
 
 exports.list_all_notes = function(req, res) {
-  Note.find({}, function(err, note) {
+  Note.find({}, null, {sort: {updated: 1}}, function(err, note) {
     if (err)
       res.send(err);
     res.json(note);

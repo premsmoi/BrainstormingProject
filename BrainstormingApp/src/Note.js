@@ -31,7 +31,8 @@ export default class Note extends Component {
       text: this.props.text,
       nextText: this.props.text,
       COLOR: this.props.color,
-      isVisibleModal: false,
+      isVisibleOpenNoteModal: false,
+      canMount: true,
     }
     this._rectangleStyles = {
       style: {
@@ -50,8 +51,9 @@ export default class Note extends Component {
     </TouchableOpacity>
   );
 
-   _renderModalContent = () => (
+   _renderOpenNoteModal = () => (
     <View style={{backgroundColor: noteColor[this.state.COLOR],}}>
+      <View>
         <TextInput
           style={{ 
             fontSize: 20,
@@ -65,21 +67,25 @@ export default class Note extends Component {
           numberOfLines = {8}
           maxLength = {100}
         />
+      </View>
       
       <View style = {{flexDirection: 'row'}} >
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
-          {this._renderButton("OK", () => this.setState({ isVisibleModal: false, text: this.state.nextText}))}
+          {this._renderButton("OK", () => {
+            this.setState({ isVisibleOpenNoteModal: false, text: this.state.nextText})
+            this.props.updateNoteText(this.id, this.state.nextText)
+          })}
         </View>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
-          {this._renderButton("Cancel", () => this.setState({ isVisibleModal: false, nextText: this.state.text }))}
+          {this._renderButton("Cancel", () => this.setState({ isVisibleOpenNoteModal: false, nextText: this.state.text }))}
         </View>  
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
           {this._renderButton("Delete", () => {
             this.props.deleteNote(this.id)
-            this.setState({isVisibleModal: false})
+            this.setState({isVisibleOpenNoteModal: false})
           })}
         </View>  
         <View style = {{flex: 1}}/>
@@ -98,7 +104,8 @@ export default class Note extends Component {
         if(delta < 200) {
           // double tap happend
           //console.log(borderColor[this.state.COLOR])
-          this.setState({ isVisibleModal: true })
+          this.setState({ isVisibleOpenNoteModal: true })
+        
         }
 
         this.setState({
@@ -116,6 +123,7 @@ export default class Note extends Component {
         this._unHighlight();
         this.x += gesture.dx;
         this.y += gesture.dy;
+        this.props.updateNotePosition(this.id, this.x, this.y);
       },
       onPanResponderTerminate: (e, gesture) => {
         this._unHighlight();
@@ -131,11 +139,15 @@ export default class Note extends Component {
     this._updateNativeStyles();
   }
 
+  /*
+  
+  */
+
   render() {
     return (
       <View>
-        <Modal isVisible={this.state.isVisibleModal}>
-          {this._renderModalContent()}
+        <Modal isVisible={this.state.isVisibleOpenNoteModal}>
+          {this._renderOpenNoteModal()}
         </Modal>
         <View
           ref={(rectangle) => {
