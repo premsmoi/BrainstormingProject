@@ -73,6 +73,7 @@ module.exports = function(app) {
     app.post('/register', userList.create_a_user);
         //.put(dormList.update_a_dorm)
     app.post('/user_add_board', userList.add_board);
+    app.post('/user_delete_board', userList.delete_board)
         //.delete(dormList.delete_a_dorm);
     
 };

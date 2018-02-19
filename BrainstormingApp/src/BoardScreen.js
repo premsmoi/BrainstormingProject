@@ -313,7 +313,7 @@ class BoardScreen extends Component {
                           focusNote = {this.focusNote}
                           updateNotePosition = {this.updateNotePosition}
                           updateNoteText = {this.updateNoteText}
-                          key = {note._id} 
+                          key = {note._id}
                           id = {note._id}
                           x = {note.x} 
                           y = {note.y} 

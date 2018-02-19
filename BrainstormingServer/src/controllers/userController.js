@@ -90,19 +90,30 @@ exports.add_board = function(req, res){
   })*/
   console.log('username: '+req.body.username)
   console.log('boardId: '+req.body.newBoardId)
-  console.log('boardName: '+req.body.newBoardName)
 
   var newBoard = {
     boardId: req.body.newBoardId,
-    boardName: req.body.newBoardName
   }
 
   User.update({ username: req.body.username}, 
     {
-      $push: { boards: newBoard }
+      $push: { boards: req.body.newBoardId }
     },
     function(err, numAffected){
       res.send(numAffected)
     }
   )
 }
+
+exports.delete_board = function(req, res){
+  User.update({},
+            {
+              $pull: { boards: req.body.boardId }
+            },
+            {multi: true},
+            function(err, numAffected){
+              //console.log('use delete board id :'+req.body.boardId)
+              console.log(numAffected)
+            })
+}
+

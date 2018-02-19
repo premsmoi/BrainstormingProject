@@ -49,11 +49,43 @@ exports.create_a_board = function(req, res) {
   }
 };
 
-module.exports.getBoard = function(boardId, callback){
+module.exports.getBoardList = function(req, res){
+  var obj = {}
+  Board.find({
+    '_id': { $in: req.body.idList}},
+    {},
+    function(err, boardList){
+      if(err)
+        res.send(err)
+      obj['boardList'] = boardList
+      res.send(obj)
+      //console.log('boardList: '+JSON.stringify(obj))
+    }
+  )
+}
+
+module.exports.getBoardById = function(boardId, callback){
   //var returnedBoard;
-  Board.findOne({_id: boardId}, callback)
+  Board.findById(boardId, callback)
   //console.log('find board: '+board)
   //return returnedBoard;
+}
+
+module.exports.updateName = function(req, res){
+  Board.update({_id: req.body.boardId}, 
+    { $set: {boardName: req.body.boardName}}, 
+    function(err, board){
+      if(err)
+        console.log(err)
+
+  })
+}
+
+module.exports.deleteBoard = function(req, res){
+  console.log('deleteBoard')
+  Board.findById(req.body.boardId).remove(function(err, board){
+    
+  });
 }
 
 

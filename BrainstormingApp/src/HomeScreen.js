@@ -14,20 +14,25 @@ class HomeScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      user: this.props.navigation.state.params.user,
       myBoards: [],
       newBoardName: '',
       visibleNewBoardModal: false,
+      visibleBoardDetailModal: false,
       createSuccess: false,
       newBoardId: null,
+      changeBoardName: '',
+      showDetailBoard: {},
     }
-    this.getUser()
-    //console.log(this.props.navigation.state.params.user)
+    //this.getUser()
+    this.getBoards();
+    console.log('I am '+this.state.user)
   }
 
   async getUser(){
     console.log('exec getUser')
     var params = {
-      username: this.props.navigation.state.params.user.username
+      username: this.state.user.username
     }
 
     try{
@@ -42,9 +47,37 @@ class HomeScreen extends Component {
         })
       var user = JSON.parse(response._bodyText)
           //console.log(user)
-      this.setState({myBoards: user.boards})
+      //this.setState({myBoards: user.boards})
+      this.setState({user: user})
+
     } catch (error) {
         throw error;
+      }
+  }
+
+  async getBoards(){
+    var params = {
+      idList: this.state.user.boards
+    }
+    console.log('id_list: '+JSON.stringify(this.state.user.boards))
+
+    try{
+      let response = await fetch('http://10.0.2.2:8080/get_board_list', {
+          //fetch('http://192.168.43.143:8080/register', {
+          method: "POST",
+          body: JSON.stringify(params),
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "same-origin"
+        })
+
+      var body = JSON.parse(response._bodyText)
+      var boardList = body['boardList']
+      //console.log(response._bodyText)
+      this.setState({myBoards: boardList})
+    } catch (error) {
+        console.log(error)
       }
   }
 
@@ -52,7 +85,7 @@ class HomeScreen extends Component {
     console.log('createNewBoard')
 
     var params = {
-      creator: this.props.navigation.state.params.user.username,
+      creator: this.state.user.username,
       boardName: this.state.newBoardName,
     }
 
@@ -107,9 +140,8 @@ class HomeScreen extends Component {
     if(this.state.createSuccess){
       console.log('Here')
       params = {
-        username: this.props.navigation.state.params.user.username,
+        username: this.state.user.username,
         newBoardId: this.state.newBoardId,
-        newBoardName: this.state.newBoardName,
       }
       try{
         let response = await fetch('http://10.0.2.2:8080/user_add_board', {
@@ -128,13 +160,15 @@ class HomeScreen extends Component {
       console.log('Above')
       this.setState({newBoardName: ''})
       this.setState({visibleNewBoardModal: false})
-      await this.getUser()
+      //await this.getUser()
+      await this.getUser();
+      await this.getBoards();
       console.log('Below')
     }   
   }
 
   logout() {
-    console.log(this.props.navigation.state.params.user.username+' -> Logout');
+    console.log(this.state.user.username+' -> Logout');
     fetch('http://10.0.2.2:8080/logout')
     //fetch('http://192.168.43.143:8080/logout')
     .then((response) => {
@@ -155,7 +189,83 @@ class HomeScreen extends Component {
     </TouchableOpacity>
   )
 
-   _renderTextInput = (placeholder, onChange) => (
+  async updateBoardName(){
+    var params = {
+      boardId: this.state.showDetailBoard._id,
+      boardName: this.state.changeBoardName,
+    }
+
+    try{
+        response = await fetch('http://10.0.2.2:8080/board_update_name', {
+              //fetch('http://192.168.43.143:8080/register', {
+                method: "POST",
+                body: JSON.stringify(params),
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+              })
+        console.log('response: '+response)
+      } catch (error) {
+          console.log(error)
+        }
+        this.getBoards();
+        //this.getUser();
+  }
+
+  async deleteBoard(){
+    var params = {
+      boardId: this.state.showDetailBoard._id,
+    }
+
+    try{
+        response = await fetch('http://10.0.2.2:8080/delete_board', {
+              //fetch('http://192.168.43.143:8080/register', {
+                method: "POST",
+                body: JSON.stringify(params),
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+              })
+        console.log('response: '+response)
+      } catch (error) {
+          console.log(error)
+        }
+
+    try{
+        response = await fetch('http://10.0.2.2:8080/user_delete_board', {
+              //fetch('http://192.168.43.143:8080/register', {
+                method: "POST",
+                body: JSON.stringify(params),
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+              })
+        console.log('response: '+response)
+      } catch (error) {
+          console.log(error)
+        }
+
+    try{
+        response = await fetch('http://10.0.2.2:8080/delete_notes', {
+              //fetch('http://192.168.43.143:8080/register', {
+                method: "POST",
+                body: JSON.stringify(params),
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+              })
+        console.log('response: '+response)
+      } catch (error) {
+          console.log(error)
+        }
+    this.getBoards();
+  }
+
+   _renderTextInput = (placeholder, onChange, value) => (
     <View>
       <TextInput
           style={{
@@ -164,6 +274,7 @@ class HomeScreen extends Component {
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
           onChangeText={onChange}
+          value = {value}
       />
     </View>
   )
@@ -200,6 +311,62 @@ class HomeScreen extends Component {
         <View style = {{flex: 1}}/>
       </View>
     </View>
+  )
+
+   _renderBoardDetailModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+      {this._renderTextInput('Board Name', 
+        (changeBoardName) => { this.setState({changeBoardName})},
+        this.state.changeBoardName
+        )}
+   
+      <View style={{flexDirection: 'row'}}>
+        <View style = {{flex: 1}}/>
+        <View style = {{flex: 3}}>
+          {this._renderButton("Enter", () => {
+            this.setState({ visibleBoardDetailModal: false })
+            this.setState({changeBoardName: ''})
+            this.props.navigation.navigate('Board',{user: this.state.user, boardName : this.state.showDetailBoard.boardName, boardId : this.state.showDetailBoard._id})
+            }
+          )}
+        </View>
+        <View style = {{flex: 2}}/>
+        <View style = {{flex: 3}}>
+          {this._renderButton("Delete", () => {
+            this.setState({ visibleBoardDetailModal: false })
+            this.deleteBoard();
+            //this.setState({changeBoardName: ''})
+            }
+          )}
+        </View>
+        <View style = {{flex: 1}}/>
+      </View>
+      <View style={{flexDirection: 'row'}}>
+        <View style = {{flex: 1}}/>
+        <View style = {{flex: 3}}>
+          {this._renderButton("OK", () => {
+            this.setState({ visibleBoardDetailModal: false })
+            this.updateBoardName()
+            })
+          }
+        </View>
+        <View style = {{flex: 2}}/>
+        <View style = {{flex: 3}}>
+          {this._renderButton("Cancel", () => {
+            this.setState({ visibleBoardDetailModal: false })
+            this.setState({changeBoardName: ''})
+            }
+          )}
+        </View>
+        <View style = {{flex: 1}}/>
+      </View>
+    </View>
   );
 
   render() {
@@ -207,6 +374,9 @@ class HomeScreen extends Component {
       <View style={{flex: 1, flexDirection: 'column'}}>
         <Modal isVisible={this.state.visibleNewBoardModal}>
             {this._renderNewBoardModal()}
+        </Modal>
+        <Modal isVisible={this.state.visibleBoardDetailModal}>
+            {this._renderBoardDetailModal()}
         </Modal>
         <View style={{flex: 1, flexDirection: 'row'}}>
         	<View style={{ marginVertical: 20, 
@@ -256,10 +426,14 @@ class HomeScreen extends Component {
           {this.state.myBoards.map((board) => {
             return(
               <TouchableWithoutFeedback 
-                onPress={() => 
-                  this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board.boardId})
+                onPress={() => {
+                  this.setState({showDetailBoard: board})
+                  this.setState({changeBoardName: board.boardName})
+                  this.setState({visibleBoardDetailModal: true})
+                  //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board.boardId})
+                  }
                 }
-                key = {board.boardId}  
+                key = {board._id}  
               >
                 <View>
                   <Text 

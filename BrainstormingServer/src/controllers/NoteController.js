@@ -28,6 +28,19 @@ module.exports.getNotes = function(id_arr, callback){
   //return returnedBoard;
 }
 
+module.exports.deleteNoteByBoardId = function(req, res){
+  Note.remove(
+    {
+      boardId: req.body.boardId,
+    },
+    function(err, note) {
+      if (err)
+        throw err;
+      console.log('delete all notes from boardId: '+req.body.boardId);
+    }
+  )
+}
+
 module.exports.deleteNote = function(id, callback){
   Note.remove({
     _id: id

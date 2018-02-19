@@ -89,6 +89,8 @@ function originIsAllowed(origin) {
   return true;
 }
 
+var connectionList = []
+
 
 wsServer.on('request', function(request) {
     if (!originIsAllowed(request.origin)) {
@@ -99,6 +101,8 @@ wsServer.on('request', function(request) {
     }
     
     var connection = request.accept('echo-protocol', request.origin);
+
+    console.log(connection)
     console.log((new Date()) + ' Connection accepted.');
     connection.on('message', function(message) {
       var obj = JSON.parse(message.utf8Data)
@@ -114,7 +118,7 @@ wsServer.on('request', function(request) {
               $push: { notes: newNote._id }
             },
             function(err, numAffected){
-              boardList.getBoard(newNote.boardId, function(err, board){
+              boardList.getBoardById(newNote.boardId, function(err, board){
                 if(err)
                   console.log(err)
                 //console.log('find board: '+board)
@@ -139,7 +143,7 @@ wsServer.on('request', function(request) {
           });
         }
         else if(obj.code == 'getNotes'){
-          boardList.getBoard(obj.boardId, function(err, board){
+          boardList.getBoardById(obj.boardId, function(err, board){
             if(err)
               console.log(err)
               var id_arr = []
