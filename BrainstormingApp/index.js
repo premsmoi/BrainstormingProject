@@ -6,7 +6,8 @@ import Note from './src/Note';
 import HomeScreen from './src/HomeScreen';
 import GroupScreen from './src/GroupScreen';
 import BoardScreen from './src/BoardScreen';
-import MyComponent from './src/MyComponent'
+import MyComponent from './src/MyComponent';
+import Test from './src/Test'
 
 const myNavigator = StackNavigator({
   Login: {
@@ -28,6 +29,6 @@ const myNavigator = StackNavigator({
 
 AppRegistry.registerComponent('BrainstormingApp', () => myNavigator);
 //AppRegistry.registerComponent('BrainstormingApp', () => HomeScreen);
-//AppRegistry.registerComponent('BrainstormingApp', () => MyComponent);
+//AppRegistry.registerComponent('BrainstormingApp', () => Test);
 export default myNavigator;
-//export default HomeScreen;
+//export default Test;

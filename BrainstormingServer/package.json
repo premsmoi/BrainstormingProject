@@ -412,6 +412,7 @@
       "resolved": "https://registry.npmjs.org/unpipe/-/unpipe-1.0.0.tgz",
       "version": "1.0.0"
     },
+    "util": "^0.10.3",
     "utils-merge": {
       "integrity": "sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM=",
       "resolved": "https://registry.npmjs.org/utils-merge/-/utils-merge-1.0.1.tgz",
@@ -422,6 +423,7 @@
       "resolved": "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz",
       "version": "1.1.2"
     },
-    "websocket": "^1.0.25"
+    "websocket": "^1.0.25",
+    "ws": "^4.0.0"
   }
 }

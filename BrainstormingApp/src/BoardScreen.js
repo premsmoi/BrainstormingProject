@@ -18,6 +18,13 @@ import { StackNavigator, NavigationActions } from 'react-navigation';
 import Note from './Note';
 //import DoubleClick from 'react-native-double-click';
 
+import io from 'socket.io-client';
+ 
+const ip = '10.0.2.2:8080'
+//const ip = '192.168.43.143:8080'
+const socket = io('http://localhost');
+ //import IO from 'socket.io-client/socket.io';
+
 class BoardScreen extends Component {
   
   static navigationOptions = ({ navigation }) => ({
@@ -41,27 +48,35 @@ class BoardScreen extends Component {
     this.focusNote = this.focusNote.bind(this);
     this.updateNotePosition = this.updateNotePosition.bind(this);
     this.updateNoteText = this.updateNoteText.bind(this);
+    this.updateNoteList = this.updateNoteList.bind(this);
 
     //console.log(this.props)
 
-    this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
-
+    //this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
+    this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
 
     this.ws.onmessage = (e) => {
       // a message was received
       //console.log("e.data: "+e.data);
       var obj = JSON.parse(e.data)
       //console.log(obj.body.notes)
+      if(obj.body.code == 'getNotes'){
+        console.log('I got notes')
+        this.getNotes();
+      }
 
       if(obj.body.code == 'updatedNotes'){
+        this.setState({noteList: []})
         this.setState({noteList: obj.body.notes})
-        //console.log('notes: '+this.state.noteList)
+        console.log('updated notes')
+        //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : this.props.navigation.state.params.boardName, boardId : this.props.navigation.state.params.boardId})
+        //console.log(JSON.stringify(this.state.noteList))
       }
-      console.log('###############')
+      /*console.log('###############')
       for(i=0;i<obj.body.notes.length;i++){
         console.log(obj.body.notes[i]._id)
       }
-      console.log('###############')
+      console.log('###############')*/
     };
 
     this.ws.onerror = (e) => {
@@ -79,9 +94,16 @@ class BoardScreen extends Component {
       // connection opened
       this.getNotes();
       //ws.send('Hello Node Server!'); // send a message
+      var tagClientRequest = {
+        code: 'tagBoard',
+        username: this.props.navigation.state.params.user.username,
+        boardId: this.props.navigation.state.params.boardId
+      }
+      var requestString = JSON.stringify(tagClientRequest)
+      //console.log('props: '+this.props)
+      this.ws.send(requestString)
+      console.log('req: '+requestString)
     };
-
-
   }
 
   getNotes(){
@@ -139,7 +161,7 @@ class BoardScreen extends Component {
     tempList.splice(deletedIndex, 1)
     tempList.push(deletedNote)
     this.setState({noteList: tempList})
-    this.updateNoteList();
+    //this.updateNoteList();
   }
 
   createNewNote = () => {
@@ -243,6 +265,7 @@ class BoardScreen extends Component {
   )
 
   render() {
+    console.log('render')
     return (
       
         <View style={{flex: 1}}>
@@ -306,6 +329,7 @@ class BoardScreen extends Component {
                   <Text style={{fontSize:16}}></Text>
                 
                   {this.state.noteList.map((note) => {
+                    console.log(JSON.stringify(note))
                     return(
                       //<DoubleClick onClick={this.handleClick}>
                         <Note 
@@ -313,6 +337,7 @@ class BoardScreen extends Component {
                           focusNote = {this.focusNote}
                           updateNotePosition = {this.updateNotePosition}
                           updateNoteText = {this.updateNoteText}
+                          updateNoteList = {this.updateNoteList}
                           key = {note._id}
                           id = {note._id}
                           x = {note.x} 

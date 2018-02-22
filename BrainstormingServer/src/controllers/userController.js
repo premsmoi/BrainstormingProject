@@ -65,6 +65,20 @@ exports.get_user = function(req, res){
   })
 }
 
+exports.searchUsers = function(req, res){
+  //console.log(req)
+  var inputJson={};
+  if(req.body.username)inputJson.username={ $regex: req.body.username, "$options": "i" };
+  //console.log('req.query.username: '+req.body.username)
+  //console.log('inputJson: '+inputJson.username)
+  User.find(inputJson, function(err,userList){
+    if(err)
+      res.send(err)
+    res.send(userList)
+    //console.log('userList: '+userList)
+  })
+}
+
 exports.list_all_user = function(req, res) {
   User.find({}, function(err, user) {
     if (err)
@@ -112,8 +126,8 @@ exports.delete_board = function(req, res){
             },
             {multi: true},
             function(err, numAffected){
-              //console.log('use delete board id :'+req.body.boardId)
-              console.log(numAffected)
+              console.log('use delete board id :'+req.body.boardId)
+              res.send(numAffected)
             })
 }
 

@@ -9,5 +9,6 @@ module.exports = function(app) {
 	app.post('/board_update_name', boardList.updateName);
 	app.post('/get_board_list', boardList.getBoardList);
 	app.post('/delete_board', boardList.deleteBoard)
+	app.post('/board_add_member', boardList.addMember)
 
 }

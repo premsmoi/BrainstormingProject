@@ -77,20 +77,34 @@ module.exports.updateName = function(req, res){
     function(err, board){
       if(err)
         console.log(err)
-
+      res.send(board)
   })
 }
 
 module.exports.deleteBoard = function(req, res){
   console.log('deleteBoard')
   Board.findById(req.body.boardId).remove(function(err, board){
-    
+    res.send(board)
   });
 }
 
+module.exports.addMember = function(req, res){
+  console.log('addMember')
+  console.log('req.body.boardId'+req.body.boardId)
+  console.log('req.body.username'+req.body.username)
+  Board.update({_id: req.body.boardId},
+    { $push: {members: req.body.username}},
+    function(err, board){
+      if(err)
+        console.log(err)
+      console.log(board)
+      res.send(board)
+    }
+  )}
 
 
-exports.list_all_boards = function(req, res) {
+
+module.exports.list_all_boards = function(req, res) {
   Board.find({}, function(err, board) {
     if (err)
       res.send(err);

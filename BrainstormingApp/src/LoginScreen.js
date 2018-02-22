@@ -15,6 +15,8 @@ import RestAPI from './RestAPI';
 import Modal from "react-native-modal";
 import styles from "./app.style";
 
+const ip = '10.0.2.2:8080'
+//const ip = '192.168.43.143:8080'
 var api = new RestAPI();
 
 class LoginScreen extends Component {
@@ -54,8 +56,8 @@ class LoginScreen extends Component {
 
     console.log('Register for '+JSON.stringify(params))
 
-    fetch('http://10.0.2.2:8080/register', {
-    //fetch('http://192.168.43.143:8080/register', {
+    //fetch('http://10.0.2.2:8080/register', {
+    fetch('http://'+ip+'/register', {
           method: "POST",
           body: JSON.stringify(params),
           headers: {
@@ -105,8 +107,8 @@ class LoginScreen extends Component {
     params['username'] = this.state.loginUsername;
     params['password'] = this.state.loginPassword;
     
-        fetch('http://10.0.2.2:8080/login', {
-        //fetch('http://192.168.43.143:8080/login', {
+        //fetch('http://10.0.2.2:8080/login', {
+        fetch('http://'+ip+'/login', {
           method: "POST",
           body: JSON.stringify(params),
           headers: {

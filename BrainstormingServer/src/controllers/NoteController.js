@@ -36,6 +36,7 @@ module.exports.deleteNoteByBoardId = function(req, res){
     function(err, note) {
       if (err)
         throw err;
+      res.send('delete all notes from boardId: '+req.body.boardId)
       console.log('delete all notes from boardId: '+req.body.boardId);
     }
   )

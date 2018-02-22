@@ -124,6 +124,7 @@ export default class Note extends Component {
         this.x += gesture.dx;
         this.y += gesture.dy;
         this.props.updateNotePosition(this.id, this.x, this.y);
+        this.props.updateNoteList();
       },
       onPanResponderTerminate: (e, gesture) => {
         this._unHighlight();

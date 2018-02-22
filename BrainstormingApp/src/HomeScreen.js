@@ -5,6 +5,9 @@ import GroupScreen from './GroupScreen';
 import styles from "./app.style";
 import Modal from "react-native-modal";
 
+const ip = '10.0.2.2:8080'
+//const ip = '192.168.43.143:8080'
+
 class HomeScreen extends Component {
 
   static navigationOptions = ({ navigation }) => ({
@@ -19,10 +22,14 @@ class HomeScreen extends Component {
       newBoardName: '',
       visibleNewBoardModal: false,
       visibleBoardDetailModal: false,
+      visibleInviteModal: false,
       createSuccess: false,
       newBoardId: null,
       changeBoardName: '',
-      showDetailBoard: {},
+      showDetailBoard: {boardName: '', members: []},
+      usernameSearchResult: [],
+      selectedUserToInvite: '',
+      usernameSearchQuery: '',
     }
     //this.getUser()
     this.getBoards();
@@ -36,8 +43,9 @@ class HomeScreen extends Component {
     }
 
     try{
-      let response = await fetch('http://10.0.2.2:8080/get_user', {
-          //fetch('http://192.168.43.143:8080/register', {
+      let response = await 
+          //fetch('http://10.0.2.2:8080/get_user', {
+          fetch('http://'+ip+'/get_user', {
           method: "POST",
           body: JSON.stringify(params),
           headers: {
@@ -62,8 +70,9 @@ class HomeScreen extends Component {
     console.log('id_list: '+JSON.stringify(this.state.user.boards))
 
     try{
-      let response = await fetch('http://10.0.2.2:8080/get_board_list', {
-          //fetch('http://192.168.43.143:8080/register', {
+      let response = await 
+          //fetch('http://10.0.2.2:8080/get_board_list', {
+          fetch('http://'+ip+'/get_board_list', {
           method: "POST",
           body: JSON.stringify(params),
           headers: {
@@ -90,8 +99,9 @@ class HomeScreen extends Component {
     }
 
     try{
-      let response = await fetch('http://10.0.2.2:8080/create_board', {
-    //fetch('http://192.168.43.143:8080/register', {
+      let response = await 
+        //fetch('http://10.0.2.2:8080/create_board', {
+          fetch('http://'+ip+'/create_board', {
           method: "POST",
           body: JSON.stringify(params),
           headers: {
@@ -144,8 +154,9 @@ class HomeScreen extends Component {
         newBoardId: this.state.newBoardId,
       }
       try{
-        let response = await fetch('http://10.0.2.2:8080/user_add_board', {
-              //fetch('http://192.168.43.143:8080/register', {
+        let response = await 
+              //fetch('http://10.0.2.2:8080/user_add_board', {
+              fetch('http://'+ip+'/user_add_board', {
                 method: "POST",
                 body: JSON.stringify(params),
                 headers: {
@@ -169,8 +180,8 @@ class HomeScreen extends Component {
 
   logout() {
     console.log(this.state.user.username+' -> Logout');
-    fetch('http://10.0.2.2:8080/logout')
-    //fetch('http://192.168.43.143:8080/logout')
+    //fetch('http://10.0.2.2:8080/logout')
+    fetch('http://'+ip+'/logout')
     .then((response) => {
       this.props.navigation.navigate('Login')
       //console.log(response);
@@ -196,8 +207,9 @@ class HomeScreen extends Component {
     }
 
     try{
-        response = await fetch('http://10.0.2.2:8080/board_update_name', {
-              //fetch('http://192.168.43.143:8080/register', {
+        response = await 
+              //fetch('http://10.0.2.2:8080/board_update_name', {
+              fetch('http://'+ip+'/board_update_name', {
                 method: "POST",
                 body: JSON.stringify(params),
                 headers: {
@@ -205,11 +217,11 @@ class HomeScreen extends Component {
                 },
                 credentials: "same-origin"
               })
-        console.log('response: '+response)
+        console.log('update board name')
       } catch (error) {
           console.log(error)
         }
-        this.getBoards();
+        await this.getBoards();
         //this.getUser();
   }
 
@@ -219,8 +231,100 @@ class HomeScreen extends Component {
     }
 
     try{
-        response = await fetch('http://10.0.2.2:8080/delete_board', {
-              //fetch('http://192.168.43.143:8080/register', {
+        response = await 
+              //fetch('http://10.0.2.2:8080/delete_board', {
+              fetch('http://'+ip+'/delete_board', {
+                method: "POST",
+                body: JSON.stringify(params),
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+              })
+        console.log('pass delete board')
+        //console.log('response: '+response)
+      } catch (error) {
+          console.log(error)
+        }
+
+    try{
+        response = await 
+              //fetch('http://10.0.2.2:8080/user_delete_board', {
+              fetch('http://'+ip+'/user_delete_board', {
+                method: "POST",
+                body: JSON.stringify(params),
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+              })
+          console.log('pass user delete board')
+        //console.log('response: '+response)
+      } catch (error) {
+          console.log(error)
+        }
+
+    try{
+        response = await 
+              //fetch('http://10.0.2.2:8080/delete_notes', {
+              fetch('http://'+ip+'/delete_notes', {
+                method: "POST",
+                body: JSON.stringify(params),
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                credentials: "same-origin"
+              })
+        console.log('pass delete notes')
+        //console.log('response: '+response)
+      } catch (error) {
+          console.log(error)
+        }
+    await this.getUser();
+    await this.getBoards();
+  }
+
+  async searchUsername(){
+    var params = {
+      username: this.state.usernameSearchQuery,
+    }
+
+    try{
+      let response = await 
+          //fetch('http://10.0.2.2:8080/get_board_list', {
+          fetch('http://'+ip+'/search_users', {
+          method: "POST",
+          body: JSON.stringify(params),
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "same-origin"
+        })
+
+      var body = JSON.parse(response._bodyText)
+      var userList = body
+      var usernameList = []
+
+      userList.map((user) => {
+        usernameList.push(user.username)
+      })
+
+      //console.log(response._bodyText)
+      this.setState({usernameSearchResult: usernameList})
+    } catch (error) {
+        console.log(error)
+      }
+  }
+
+  async inviteUser(username){
+    params = {
+        username: this.state.selectedUserToInvite,
+        boardId: this.state.showDetailBoard._id,
+      }
+      try{
+        let response = await 
+              //fetch('http://10.0.2.2:8080/user_add_board', {
+              fetch('http://'+ip+'/board_add_member', {
                 method: "POST",
                 body: JSON.stringify(params),
                 headers: {
@@ -233,9 +337,14 @@ class HomeScreen extends Component {
           console.log(error)
         }
 
-    try{
-        response = await fetch('http://10.0.2.2:8080/user_delete_board', {
-              //fetch('http://192.168.43.143:8080/register', {
+      params = {
+        username: this.state.selectedUserToInvite,
+        newBoardId: this.state.showDetailBoard,
+      }
+      try{
+        let response = await 
+              //fetch('http://10.0.2.2:8080/user_add_board', {
+              fetch('http://'+ip+'/user_add_board', {
                 method: "POST",
                 body: JSON.stringify(params),
                 headers: {
@@ -247,29 +356,13 @@ class HomeScreen extends Component {
       } catch (error) {
           console.log(error)
         }
-
-    try{
-        response = await fetch('http://10.0.2.2:8080/delete_notes', {
-              //fetch('http://192.168.43.143:8080/register', {
-                method: "POST",
-                body: JSON.stringify(params),
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                credentials: "same-origin"
-              })
-        console.log('response: '+response)
-      } catch (error) {
-          console.log(error)
-        }
-    this.getBoards();
   }
 
    _renderTextInput = (placeholder, onChange, value) => (
     <View>
       <TextInput
           style={{
-            height: 40, 
+            height: 36, 
           }}
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
@@ -279,7 +372,69 @@ class HomeScreen extends Component {
     </View>
   )
 
-
+   _renderInviteModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{borderWidth: 3, borderColor: 'white'}}>
+            <Text style={{fontSize: 16, textAlign: 'center'}}>Search username : </Text>
+          </View>
+          {this._renderTextInput('Search Input', 
+            (usernameSearchQuery) => { this.setState({usernameSearchQuery})},
+            this.state.usernameSearchQuery
+          )}
+          <View>
+            {this._renderButton("Search", () => {this.searchUsername()})}
+          </View>
+        </View>
+        <View style={{}}>
+            {this.state.usernameSearchResult.map((username) => {
+              return(
+                  <TouchableWithoutFeedback
+                    onPress = {() => {this.setState({selectedUserToInvite: username})}}
+                    key = {username}
+                  >
+                    <View style = {{backgroundColor: username==this.state.selectedUserToInvite ? 'lightblue':'white'}}>
+                      <Text 
+                        style={{
+                          fontSize: 16, 
+                          color: 'black',  
+                          marginVertical: 4, 
+                          marginHorizontal: 8 
+                        }}
+                      >
+                          {username}
+                      </Text> 
+                    </View>
+                  </TouchableWithoutFeedback>
+              )
+            })}
+        </View>
+        <View style={{flexDirection: 'row'}}>
+          <View>
+            {this._renderButton("Invite", () => {
+              this.setState({visibleInviteModal: false})
+              this.inviteUser()
+            })
+            }
+          </View>
+          <View>
+            {this._renderButton("Close", () => {
+              this.setState({visibleInviteModal: false, 
+                usernameSearchQuery: '', 
+                usernameSearchResult: [],
+                selectedUserToInvite: '',
+              })
+            })}
+          </View>
+        </View>
+      </View>
+    )
 
    _renderNewBoardModal = () => (
     <View style={{
@@ -321,11 +476,56 @@ class HomeScreen extends Component {
       //alignItems: "center",
       //borderRadius: 4,
     }}>
-      {this._renderTextInput('Board Name', 
-        (changeBoardName) => { this.setState({changeBoardName})},
-        this.state.changeBoardName
+      <View style={{flexDirection: 'row'}}>
+        <View style={{borderWidth: 3, borderColor: 'white'}}>
+          <Text style={{fontSize: 16, textAlign: 'center'}}>Board Name : </Text>
+        </View>
+        {this._renderTextInput('Board Name', 
+          (changeBoardName) => { this.setState({changeBoardName})},
+          this.state.changeBoardName
         )}
-   
+      </View>
+      <View style = {{flexDirection: 'row'}}>
+        <View style={{borderWidth: 3, borderColor: 'white'}}>
+          <Text style={{fontSize: 16, textAlign: 'center'}}>Members : </Text>
+        </View>
+        <View style ={{width: 150}}>
+          {this.state.showDetailBoard.members.map((member) => {
+            return(
+                <View>
+                  <Text 
+                    style={{
+                      fontSize: 16, 
+                      color: 'black',  
+                      marginVertical: 4, 
+                      marginHorizontal: 8 
+                    }}
+                    key = {member}
+                    >
+                      {member}
+                  </Text> 
+                </View>
+            )
+          })}
+        </View>
+        <View>
+          <TouchableWithoutFeedback
+            onPress = {() => {this.setState({visibleInviteModal: true})}}
+          >
+            <View>
+              <Text 
+                style={{
+                  fontSize: 16, 
+                  color: '#1ac6ff',  
+                  marginVertical: 4, 
+                  marginHorizontal: 8, 
+                }}>
+                  Invite
+              </Text> 
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
+      </View>
       <View style={{flexDirection: 'row'}}>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
@@ -377,6 +577,9 @@ class HomeScreen extends Component {
         </Modal>
         <Modal isVisible={this.state.visibleBoardDetailModal}>
             {this._renderBoardDetailModal()}
+        </Modal>
+        <Modal isVisible={this.state.visibleInviteModal}>
+          {this._renderInviteModal()}
         </Modal>
         <View style={{flex: 1, flexDirection: 'row'}}>
         	<View style={{ marginVertical: 20, 

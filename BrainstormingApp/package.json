@@ -16,7 +16,8 @@
     "react-native-prompt": "^1.0.0",
     "react-native-rest-client": "^0.1.1",
     "react-native-view-transformer": "0.0.28",
-    "react-navigation": "^1.0.0-beta.27"
+    "react-navigation": "^1.0.0-beta.27",
+    "socket.io-client": "^2.0.4"
   },
   "devDependencies": {
     "babel-jest": "22.1.0",
