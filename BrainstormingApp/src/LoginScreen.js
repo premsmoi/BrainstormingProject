@@ -15,8 +15,8 @@ import RestAPI from './RestAPI';
 import Modal from "react-native-modal";
 import styles from "./app.style";
 
-const ip = '10.0.2.2:8080'
-//const ip = '192.168.43.143:8080'
+//const ip = '10.0.2.2:8080'
+const ip = '192.168.43.143:8080'
 var api = new RestAPI();
 
 class LoginScreen extends Component {

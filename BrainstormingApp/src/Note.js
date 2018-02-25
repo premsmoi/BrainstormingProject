@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   TextInput
 } from "react-native";
+import TimerMixin from 'react-timer-mixin';
 import BoardScreen from './BoardScreen';
 import styles from "./app.style";
 import {noteColor, borderColor} from './colors'
@@ -75,17 +76,22 @@ export default class Note extends Component {
           {this._renderButton("OK", () => {
             this.setState({ isVisibleOpenNoteModal: false, text: this.state.nextText})
             this.props.updateNoteText(this.id, this.state.nextText)
+            this.props.setVisibleOpenNoteModal(false)
           })}
         </View>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
-          {this._renderButton("Cancel", () => this.setState({ isVisibleOpenNoteModal: false, nextText: this.state.text }))}
+          {this._renderButton("Cancel", () => {
+            this.setState({ isVisibleOpenNoteModal: false, nextText: this.state.text })
+           this.props.setVisibleOpenNoteModal(false)
+          })}
         </View>  
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
           {this._renderButton("Delete", () => {
             this.props.deleteNote(this.id)
             this.setState({isVisibleOpenNoteModal: false})
+            this.props.setVisibleOpenNoteModal(false)
           })}
         </View>  
         <View style = {{flex: 1}}/>
@@ -105,8 +111,10 @@ export default class Note extends Component {
           // double tap happend
           //console.log(borderColor[this.state.COLOR])
           this.setState({ isVisibleOpenNoteModal: true })
+          this.props.setVisibleOpenNoteModal(true)
         
         }
+        console.log('Look ! isVisibleOpenNoteModal: '+this.props.isVisibleOpenNoteModal)
 
         this.setState({
         lastPress: new Date().getTime()
@@ -125,6 +133,7 @@ export default class Note extends Component {
         this.y += gesture.dy;
         this.props.updateNotePosition(this.id, this.x, this.y);
         this.props.updateNoteList();
+        
       },
       onPanResponderTerminate: (e, gesture) => {
         this._unHighlight();
@@ -138,6 +147,11 @@ export default class Note extends Component {
 
   componentDidMount() {
     this._updateNativeStyles();
+  }
+
+  deleyForUpdate(){
+    this.props.updateNotePosition(this.id, this.x, this.y);
+    this.props.updateNoteList();
   }
 
   /*

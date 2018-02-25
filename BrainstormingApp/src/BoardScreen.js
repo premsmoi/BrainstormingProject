@@ -20,9 +20,9 @@ import Note from './Note';
 
 import io from 'socket.io-client';
  
-const ip = '10.0.2.2:8080'
-//const ip = '192.168.43.143:8080'
-const socket = io('http://localhost');
+//const ip = '10.0.2.2:8080'
+const ip = '192.168.43.143:8080'
+const socket = io(ip);
  //import IO from 'socket.io-client/socket.io';
 
 class BoardScreen extends Component {
@@ -44,11 +44,13 @@ class BoardScreen extends Component {
       visibleEditNoteModal: false,
       newColor: 'red',
     }
+    this.isVisibleOpenNoteModal = false;
     this.deleteNote = this.deleteNote.bind(this);
     this.focusNote = this.focusNote.bind(this);
     this.updateNotePosition = this.updateNotePosition.bind(this);
     this.updateNoteText = this.updateNoteText.bind(this);
     this.updateNoteList = this.updateNoteList.bind(this);
+    this.setVisibleOpenNoteModal = this.setVisibleOpenNoteModal.bind(this);
 
     //console.log(this.props)
 
@@ -66,9 +68,13 @@ class BoardScreen extends Component {
       }
 
       if(obj.body.code == 'updatedNotes'){
-        this.setState({noteList: []})
-        this.setState({noteList: obj.body.notes})
-        console.log('updated notes')
+        console.log('isVisibleOpenNoteModal: '+this.isVisibleOpenNoteModal)
+        if(this.isVisibleOpenNoteModal==false){
+          this.setState({noteList: []})
+          this.setState({noteList: obj.body.notes})
+          console.log('updated notes')
+        }
+        
         //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : this.props.navigation.state.params.boardName, boardId : this.props.navigation.state.params.boardId})
         //console.log(JSON.stringify(this.state.noteList))
       }
@@ -104,6 +110,10 @@ class BoardScreen extends Component {
       this.ws.send(requestString)
       console.log('req: '+requestString)
     };
+  }
+
+  setVisibleOpenNoteModal(bool){
+    this.isVisibleOpenNoteModal = bool;
   }
 
   getNotes(){
@@ -329,7 +339,7 @@ class BoardScreen extends Component {
                   <Text style={{fontSize:16}}></Text>
                 
                   {this.state.noteList.map((note) => {
-                    console.log(JSON.stringify(note))
+                    //console.log(JSON.stringify(note))
                     return(
                       //<DoubleClick onClick={this.handleClick}>
                         <Note 
@@ -338,6 +348,7 @@ class BoardScreen extends Component {
                           updateNotePosition = {this.updateNotePosition}
                           updateNoteText = {this.updateNoteText}
                           updateNoteList = {this.updateNoteList}
+                          setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
                           key = {note._id}
                           id = {note._id}
                           x = {note.x} 

@@ -14,7 +14,8 @@ var express = require('express'),
     passport = require('passport'),
     session = require('express-session'),
     LocalStrategy = require('passport-local').Strategy,
-    util = require('util');
+    util = require('util'),
+    sleep = require('sleep');
 
 
 
@@ -150,6 +151,7 @@ wsServer.on('connection', function connection(connection, request) {
                   console.log(json)
                   wsServer.clients.forEach(function each(client) {
                     if(client['boardId'] == connection['boardId']){
+                      sleep.msleep(100)
                       client.send(json)
                     }
                   });
@@ -176,6 +178,7 @@ wsServer.on('connection', function connection(connection, request) {
                   //console.log('This should print after')
                   var json = JSON.stringify({ body: {code: 'updatedNotes', notes: notes} });
                   //console.log(json)
+                  sleep.msleep(100)
                   connection.send(json);
                 })
           })
