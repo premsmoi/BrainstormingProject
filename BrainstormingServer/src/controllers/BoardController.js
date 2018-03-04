@@ -102,6 +102,20 @@ module.exports.addMember = function(req, res){
     }
   )}
 
+module.exports.addTag = function(req, res){
+  console.log('addTag')
+  console.log('req.body.boardId'+req.body.boardId)
+  console.log('req.body.tag'+req.body.tag)
+  Board.update({_id: req.body.boardId},
+    { $push: {tags: req.body.tag}},
+    function(err, board){
+      if(err)
+        console.log(err)
+      console.log(board)
+      res.send(board)
+    }
+  )}
+
 
 
 module.exports.list_all_boards = function(req, res) {

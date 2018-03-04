@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback, 
   TouchableOpacity,
   BackHandler,
+  Image,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
@@ -30,16 +31,22 @@ class BoardManagerScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-
+      newTag: '',
+      visibleNewTagModal: false,
+      tagList: [],
     }
 
     this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
 
     this.ws.onmessage = (e) => {
       // a message was received
-      //console.log("e.data: "+e.data);
       var obj = JSON.parse(e.data)
-      //console.log(obj.body.notes)
+    
+      if(obj.body.code == 'getTags'){
+        this.setState({tagList: obj.body.tags})
+        console.log('tagList: '+obj.body.tags)
+      }
+      
     };
 
     this.ws.onerror = (e) => {
@@ -62,6 +69,15 @@ class BoardManagerScreen extends Component {
         boardId: this.props.navigation.state.params.boardId
       }
       var requestString = JSON.stringify(tagClientRequest)
+      //console.log('props: '+this.props)
+      this.ws.send(requestString)
+
+      var getTagsRequest = {
+        from: 'BoardManager',
+        code: 'boardGetTags',
+        boardId: this.props.navigation.state.params.boardId
+      }
+      var requestString = JSON.stringify(getTagsRequest)
       //console.log('props: '+this.props)
       this.ws.send(requestString)
      
@@ -90,6 +106,32 @@ class BoardManagerScreen extends Component {
     return true;
   }
 
+  createNewTag(){
+    var newTagRequest = {
+        from: 'BoardManager',
+        code: 'boardAddTag',
+        tag: this.state.newTag,
+        boardId: this.props.navigation.state.params.boardId
+      }
+      var requestString = JSON.stringify(newTagRequest)
+      console.log('New Tag Request')
+      this.ws.send(requestString)
+  }
+
+  deleteTag(tag){
+    var deleteTagRequest = {
+        from: 'BoardManager',
+        code: 'deleteTag',
+        tag: tag,
+        boardId: this.props.navigation.state.params.boardId
+      }
+    var requestString = JSON.stringify(deleteTagRequest)
+    console.log('Delete Tag Request')
+    this.ws.send(requestString)
+
+    //Alert.alert('delete '+tag)
+  }
+
   
 
    _renderButton = (text, onPress) => (
@@ -115,12 +157,45 @@ class BoardManagerScreen extends Component {
   )
 
 
+  _renderNewTagModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+      {this._renderTextInput('Tag Name', (newTag) => this.setState({newTag}))}
    
+      <View style={{flexDirection: 'row'}}>
+        <View style = {{flex: 1}}/>
+        <View style = {{flex: 3}}>
+          {this._renderButton("Create", () => {
+            this.setState({ visibleNewTagModal: false })
+            this.createNewTag()
+            })
+          }
+        </View>
+        <View style = {{flex: 2}}/>
+        <View style = {{flex: 3}}>
+          {this._renderButton("Cancel", () => {
+            this.setState({ visibleNewTagModal: false })
+            this.setState({newTag: ''})
+            }
+          )}
+
+        </View>
+        <View style = {{flex: 1}}/>
+      </View>
+    </View>
+  )
 
   render() {
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
-        
+        <Modal isVisible={this.state.visibleNewTagModal}>
+          {this._renderNewTagModal()}
+        </Modal>
         <View style={{flex: 1, flexDirection: 'row'}}>
         	<View style={{ marginVertical: 20, 
             marginHorizontal: 20,
@@ -128,9 +203,13 @@ class BoardManagerScreen extends Component {
             height: 50,
             flex: 2.5
           }}>
+            {this._renderButton("Add tag", () => {
+            this.setState({visibleNewTagModal: true})
+            })}
       		</View>
 
           <View style={{ flex: 1 }}>
+
           </View>
 
           <View style={{ 
@@ -163,13 +242,44 @@ class BoardManagerScreen extends Component {
           </View>
         </View>
         <View style = {{flex: 1 }}>
-          <Text style={{fontSize: 30, 
+          <Text style={{fontSize: 20, 
             color: 'grey',  
             marginVertical: 20, 
             marginHorizontal: 20 
-          }}>Manager</Text>
+          }}>Members</Text>
         </View>
         <View style = {{flex: 5 }}>
+          <Text style={{fontSize: 20, 
+            color: 'grey',  
+            marginVertical: 5, 
+            marginHorizontal: 20 
+          }}>Tags</Text>
+          {this.state.tagList.map((tag) => {
+            return(
+                <View style={{flexDirection: 'row'}} key = {tag} >
+                  <TouchableWithoutFeedback 
+                    onPress={() => {
+                      this.deleteTag(tag)
+                     }
+                    }
+                  >
+                  <Image
+                    style={{width: 16, height: 16, marginTop: 8, marginLeft: 30}}
+                    source={require('../img/cross.png')}
+                  />
+                  </TouchableWithoutFeedback>
+                  <Text 
+                    style={{
+                      fontSize: 16, 
+                      color: 'black',  
+                      marginVertical: 5,
+                      marginLeft: 10,
+                    }}>
+                      {tag}
+                  </Text>
+              </View>
+            )
+          })}
         </View>
       </View>
     );

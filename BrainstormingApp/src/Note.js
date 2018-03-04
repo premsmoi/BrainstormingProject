@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Modal from "react-native-modal";
 import {
+  Alert,
   StyleSheet,
   View,
   PanResponder,
@@ -8,7 +9,8 @@ import {
   Text,
   TouchableWithoutFeedback,
   TouchableOpacity,
-  TextInput
+  TextInput,
+  Image,
 } from "react-native";
 import TimerMixin from 'react-timer-mixin';
 import BoardScreen from './BoardScreen';
@@ -35,6 +37,7 @@ export default class Note extends Component {
       isVisibleOpenNoteModal: false,
       canMount: true,
       newColor: this.props.color,
+      tags: ['A', 'B'],
     }
     this._rectangleStyles = {
       style: {
@@ -64,6 +67,23 @@ export default class Note extends Component {
       </View>
     </TouchableOpacity>
   );
+
+   _renderSelectTagsModal = () => (
+      <View style={{
+        backgroundColor: noteColor[this.state.newColor],
+        padding: 22,
+        //justifyContent: "center",
+        //alignItems: "center",
+        borderRadius: 4,
+      }}>
+        <Text style={{fontSize: 20, 
+            color: 'grey',  
+            marginVertical: 20, 
+            marginHorizontal: 20 
+          }}>Tag List</Text>
+
+      </View>
+    )
 
    _renderOpenNoteModal = () => (
     <View style={{
@@ -100,7 +120,34 @@ export default class Note extends Component {
           underlineColorAndroid = {noteColor[this.state.newColor]}
         />
       </View>
-      
+      <View style = {{flexDirection: 'row'}} >
+        <Text 
+          style={{
+            fontSize: 16, 
+            color: 'grey',  
+            marginVertical: 5, 
+            marginLeft: 20 
+          }}>Tags:</Text>
+          {this.state.tags.map((tag) => {
+            return(
+              <Text 
+                style={{
+                  fontSize: 16, 
+                  color: 'black',  
+                  marginVertical: 5, 
+                  marginHorizontal: 5 
+                }}>
+                {tag}
+              </Text>
+            )
+          })}
+          <TouchableOpacity onPress={}>
+            <Image
+              style={{width: 16, height: 16, marginTop: 8, marginLeft: 30}}
+              source={require('../img/pencil.png')}
+            />
+          </TouchableOpacity>
+      </View>
       <View style = {{flexDirection: 'row'}} >
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
