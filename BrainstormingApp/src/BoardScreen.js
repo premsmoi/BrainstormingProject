@@ -9,19 +9,22 @@ import {
   Text, 
   TouchableWithoutFeedback,
   ScrollView,
-  TouchableOpacity
+  TouchableOpacity,
+  BackHandler,
 } from 'react-native';
 import styles from "./app.style";
 import {noteColor, borderColor} from './colors'
 import Modal from "react-native-modal";
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import Note from './Note';
+import {ip} from './Configuration';
+
 //import DoubleClick from 'react-native-double-click';
 
 import io from 'socket.io-client';
  
 //const ip = '10.0.2.2:8080'
-const ip = '192.168.43.143:8080'
+//const ip = '192.168.43.143:8080'
 const socket = io(ip);
  //import IO from 'socket.io-client/socket.io';
 
@@ -40,18 +43,19 @@ class BoardScreen extends Component {
       //noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
       //             {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
       noteList: [],
+      tagList: [],
       visibleNewNoteModal: false,
       visibleEditNoteModal: false,
       newColor: 'red',
+      newNoteText: '',
     }
     this.isVisibleOpenNoteModal = false;
     this.deleteNote = this.deleteNote.bind(this);
     this.focusNote = this.focusNote.bind(this);
-    this.updateNotePosition = this.updateNotePosition.bind(this);
-    this.updateNoteText = this.updateNoteText.bind(this);
     this.updateNoteList = this.updateNoteList.bind(this);
+    this.updateNote = this.updateNote.bind(this);
     this.setVisibleOpenNoteModal = this.setVisibleOpenNoteModal.bind(this);
-
+    this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
     //console.log(this.props)
 
     //this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
@@ -74,15 +78,11 @@ class BoardScreen extends Component {
           this.setState({noteList: obj.body.notes})
           console.log('updated notes')
         }
-        
-        //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : this.props.navigation.state.params.boardName, boardId : this.props.navigation.state.params.boardId})
-        //console.log(JSON.stringify(this.state.noteList))
       }
-      /*console.log('###############')
-      for(i=0;i<obj.body.notes.length;i++){
-        console.log(obj.body.notes[i]._id)
+
+      if(obj.body.code == 'getTags'){
+        this.setState({tagList: obj.body.tags})
       }
-      console.log('###############')*/
     };
 
     this.ws.onerror = (e) => {
@@ -101,9 +101,10 @@ class BoardScreen extends Component {
       this.getNotes();
       //ws.send('Hello Node Server!'); // send a message
       var tagClientRequest = {
+        from: 'Board',
         code: 'tagBoard',
         username: this.props.navigation.state.params.user.username,
-        boardId: this.props.navigation.state.params.boardId
+        boardId: this.props.navigation.state.params.boardId,
       }
       var requestString = JSON.stringify(tagClientRequest)
       //console.log('props: '+this.props)
@@ -112,12 +113,27 @@ class BoardScreen extends Component {
     };
   }
 
+  componentWillMount() {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButtonClick);
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', this.handleBackButtonClick);
+  }
+
+  handleBackButtonClick() {
+    this.ws.close()
+    this.props.navigation.navigate('Home', { user: this.props.navigation.state.params.user })
+    return true;
+  }
+
   setVisibleOpenNoteModal(bool){
     this.isVisibleOpenNoteModal = bool;
   }
 
   getNotes(){
     var getNotesRequest = {
+      from: 'Board',
       code: 'getNotes',
       boardId: this.props.navigation.state.params.boardId,
     }
@@ -126,24 +142,11 @@ class BoardScreen extends Component {
     this.ws.send(requestString)
   }
 
-  updateNotePosition(id, x, y){
+  updateNote(updatedObj){
     var newNoteRequest = {
-      code: 'updateNotePosition',
-      noteId: id,
-      newX: x,
-      newY: y,
-      updated: new Date().getTime(),
-    }
-    var requestString = JSON.stringify(newNoteRequest)
-    //console.log('props: '+this.props)
-    this.ws.send(requestString)
-  }
-
-  updateNoteText(id, text){
-    var newNoteRequest = {
-      code: 'updateNoteText',
-      noteId: id,
-      newText: text,
+      from: 'Board',
+      code: 'updateNote',
+      updatedObj: updatedObj,
       updated: new Date().getTime(),
     }
     var requestString = JSON.stringify(newNoteRequest)
@@ -153,6 +156,7 @@ class BoardScreen extends Component {
 
   updateNoteList(){
     var newNoteRequest = {
+      from: 'Board',
       code: 'updateNoteList',
       boardId: this.props.navigation.state.params.boardId,
       newNoteList: this.state.noteList,
@@ -176,12 +180,13 @@ class BoardScreen extends Component {
 
   createNewNote = () => {
     var newNote = {
+      from: 'Board',
       boardId: this.props.navigation.state.params.boardId,
       writer: this.props.navigation.state.params.user.username, 
       x: 100, 
       y: 200, 
       color: this.state.newColor, 
-      text: '',
+      text: this.state.newNoteText,
       updated: new Date().getTime(),
     }
     this.setState(previousState => {
@@ -195,6 +200,7 @@ class BoardScreen extends Component {
     //console.log(this.state.noteList)
     //Alert.alert('Create Idea!');
     var newNoteRequest = {
+      from: 'Board',
       code: 'createNote',
       note: newNote,
     }
@@ -210,6 +216,7 @@ class BoardScreen extends Component {
     //this.setState({noteList: tempList})
 
     var deleteNoteRequest = {
+      from: 'Board',
       code: 'deleteNote',
       noteId: deletedId,
       boardId: this.props.navigation.state.params.boardId,
@@ -244,8 +251,8 @@ class BoardScreen extends Component {
     <View style={{
       backgroundColor: noteColor[this.state.newColor],
       padding: 22,
-      justifyContent: "center",
-      alignItems: "center",
+      //justifyContent: "center",
+      //alignItems: "center",
       borderRadius: 4,
     }}>
       <View style={{flexDirection: 'row', padding: 6, margin: 8,}}>
@@ -255,7 +262,43 @@ class BoardScreen extends Component {
         {this._renderColorPicker('blue')}
         {this._renderColorPicker('yellow')}
       </View>
-      <View/>
+      <View>
+        <TextInput
+            style={{ 
+              fontSize: 20,
+              marginTop   : 15,
+              marginLeft  : 15,
+              marginRight : 15,
+              textAlignVertical: "top",
+              //borderColor: 'black',
+              //borderWidth: 0.5,
+            }}
+            onChangeText={(newNoteText) => this.setState({newNoteText})}
+            value={this.state.newNoteText}
+            multiline = {true}
+            numberOfLines = {6}
+            maxLength = {100}
+            placeholder = {'Text Here..'}
+            underlineColorAndroid = {noteColor[this.state.newColor]}
+        />
+      </View>
+      <View>
+        <TouchableWithoutFeedback
+            onPress = {() => {Alert.alert('Add tag')}}
+          >
+            <View style = {styles.button}>
+              <Text 
+                style={{
+                  fontSize: 16, 
+                  color: '#1ac6ff',  
+                  marginVertical: 4, 
+                  marginHorizontal: 8, 
+                }}>
+                  Add tag
+              </Text> 
+            </View>
+          </TouchableWithoutFeedback>
+      </View>
       <View style={{flexDirection: 'row'}}>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
@@ -290,7 +333,22 @@ class BoardScreen extends Component {
             }}>
               {this._renderButton('Add note', ()=> this.setState({visibleNewNoteModal: true}))}
             </View>
-            <View style={{flex: 1}}></View>
+            <View style={{
+              flex: 1,
+              marginVertical: 10, 
+              marginHorizontal: 20,
+            }}>
+              {this._renderButton('Manage', ()=> {
+                this.props.navigation.navigate(
+                  'BoardManager', 
+                  { user: this.props.navigation.state.params.user, 
+                    boardId: this.props.navigation.state.params.boardId, 
+                    boardName: this.props.navigation.state.params.boardName 
+                  }
+                )
+                this.ws.close()
+              })}
+            </View>
             <View style={{ 
               marginVertical: 10, 
               marginHorizontal: 20,
@@ -348,6 +406,8 @@ class BoardScreen extends Component {
                           updateNotePosition = {this.updateNotePosition}
                           updateNoteText = {this.updateNoteText}
                           updateNoteList = {this.updateNoteList}
+                          updateNoteColor = {this.updateNoteColor}
+                          updateNote = {this.updateNote}
                           setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
                           key = {note._id}
                           id = {note._id}

@@ -7,16 +7,18 @@ import {
   View, 
   TextInput, 
   Text,
-  TouchableOpacity, 
+  TouchableOpacity,
+  BackHandler,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import HomeScreen from './HomeScreen';
 import RestAPI from './RestAPI';
 import Modal from "react-native-modal";
 import styles from "./app.style";
+import {ip} from './Configuration';
 
 //const ip = '10.0.2.2:8080'
-const ip = '192.168.43.143:8080'
+//onst ip = '192.168.43.143:8080'
 var api = new RestAPI();
 
 class LoginScreen extends Component {
@@ -36,6 +38,11 @@ class LoginScreen extends Component {
       visibleRegModal: false,
 
     };
+
+    BackHandler.addEventListener('hardwareBackPress', () => {
+       BackHandler.exitApp()
+    });
+   
   }
 
   register(){

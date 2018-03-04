@@ -34,6 +34,7 @@ export default class Note extends Component {
       COLOR: this.props.color,
       isVisibleOpenNoteModal: false,
       canMount: true,
+      newColor: this.props.color,
     }
     this._rectangleStyles = {
       style: {
@@ -44,6 +45,18 @@ export default class Note extends Component {
     };
   }
 
+  _renderColorPicker = (color) => (
+    <TouchableOpacity onPress={() => this.setState({newColor: color})}>
+      <View style={{
+        backgroundColor: noteColor[color],
+        borderColor: 'black',
+        borderWidth: 0.5,
+        width: 50,
+        height: 50,}}>
+      </View>
+    </TouchableOpacity>
+  );
+
    _renderButton = (text, onPress) => (
     <TouchableOpacity onPress={onPress}>
       <View style={styles.button}>
@@ -53,7 +66,20 @@ export default class Note extends Component {
   );
 
    _renderOpenNoteModal = () => (
-    <View style={{backgroundColor: noteColor[this.state.COLOR],}}>
+    <View style={{
+      backgroundColor: noteColor[this.state.newColor],
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      borderRadius: 4,
+    }}>
+      <View style={{flexDirection: 'row', padding: 6, margin: 8,}}>
+        {this._renderColorPicker('red')}
+        {this._renderColorPicker('pink')}
+        {this._renderColorPicker('green')}
+        {this._renderColorPicker('blue')}
+        {this._renderColorPicker('yellow')}
+      </View>
       <View>
         <TextInput
           style={{ 
@@ -61,12 +87,17 @@ export default class Note extends Component {
             marginTop   : 15,
             marginLeft  : 15,
             marginRight : 15,
+            textAlignVertical: "top",
+            //borderColor: 'black',
+            //borderWidth: 0.5,
           }}
           onChangeText={(nextText) => this.setState({nextText})}
           value={this.state.nextText}
           multiline = {true}
-          numberOfLines = {8}
+          numberOfLines = {6}
           maxLength = {100}
+          placeholder = {'Text Here..'}
+          underlineColorAndroid = {noteColor[this.state.newColor]}
         />
       </View>
       
@@ -74,15 +105,23 @@ export default class Note extends Component {
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
           {this._renderButton("OK", () => {
-            this.setState({ isVisibleOpenNoteModal: false, text: this.state.nextText})
-            this.props.updateNoteText(this.id, this.state.nextText)
+            this.setState({ isVisibleOpenNoteModal: false, text: this.state.nextText, COLOR: this.state.newColor})
+            var updatedObj = {
+              id: this.id,
+              color: this.state.newColor,
+              text: this.state.nextText,
+              updated: new Date().getTime(),
+            }
+            console.log('color: '+this.state.newColor)
+            //this.props.updateNoteText(this.id, this.state.nextText)
+            this.props.updateNote(updatedObj)
             this.props.setVisibleOpenNoteModal(false)
           })}
         </View>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
           {this._renderButton("Cancel", () => {
-            this.setState({ isVisibleOpenNoteModal: false, nextText: this.state.text })
+            this.setState({ isVisibleOpenNoteModal: false, nextText: this.state.text, newColor: this.state.COLOR})
            this.props.setVisibleOpenNoteModal(false)
           })}
         </View>  
@@ -131,7 +170,15 @@ export default class Note extends Component {
         this._unHighlight();
         this.x += gesture.dx;
         this.y += gesture.dy;
-        this.props.updateNotePosition(this.id, this.x, this.y);
+
+        //this.props.updateNotePosition(this.id, this.x, this.y);
+        var updatedObj = {
+              id: this.id,
+              x: this.x,
+              y: this.y,
+              updated: new Date().getTime(),
+            }
+        this.props.updateNote(updatedObj)
         this.props.updateNoteList();
         
       },
@@ -147,11 +194,6 @@ export default class Note extends Component {
 
   componentDidMount() {
     this._updateNativeStyles();
-  }
-
-  deleyForUpdate(){
-    this.props.updateNotePosition(this.id, this.x, this.y);
-    this.props.updateNoteList();
   }
 
   /*

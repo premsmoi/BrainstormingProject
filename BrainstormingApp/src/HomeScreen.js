@@ -1,12 +1,25 @@
 import React, { Component } from 'react';
-import { Alert, AppRegistry, Button, StyleSheet, View, TextInput, Text, TouchableWithoutFeedback, TouchableOpacity } from 'react-native';
+import { 
+  Alert, 
+  AppRegistry, 
+  Button, 
+  StyleSheet, 
+  View, 
+  TextInput, 
+  Text, 
+  TouchableWithoutFeedback, 
+  TouchableOpacity,
+  BackHandler,
+} from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
 import styles from "./app.style";
 import Modal from "react-native-modal";
+import {ip} from './Configuration';
+
 
 //const ip = '10.0.2.2:8080'
-const ip = '192.168.43.143:8080'
+//const ip = '192.168.43.143:8080'
 
 class HomeScreen extends Component {
 
@@ -33,7 +46,22 @@ class HomeScreen extends Component {
     }
     //this.getUser()
     this.getBoards();
+    this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
     console.log('I am '+this.state.user)
+
+  }
+
+  componentWillMount() {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackButtonClick);
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', this.handleBackButtonClick);
+  }
+
+  handleBackButtonClick() {
+    BackHandler.exitApp()
+    return true;
   }
 
   async getUser(){
@@ -532,7 +560,12 @@ class HomeScreen extends Component {
           {this._renderButton("Enter", () => {
             this.setState({ visibleBoardDetailModal: false })
             this.setState({changeBoardName: ''})
-            this.props.navigation.navigate('Board',{user: this.state.user, boardName : this.state.showDetailBoard.boardName, boardId : this.state.showDetailBoard._id})
+            this.props.navigation.navigate('Board',
+              {user: this.state.user, 
+                boardName : this.state.showDetailBoard.boardName, 
+                boardId : this.state.showDetailBoard._id
+              }
+            )
             }
           )}
         </View>

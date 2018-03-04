@@ -29,6 +29,10 @@ var userSchema = new Schema({
         type: Schema.Types.ObjectId, 
         ref: 'Board',
     }],
+    loginStatus: {
+        type: Number,
+        required: true,
+    }
 });
 userSchema.plugin(uniqueValidator);
 

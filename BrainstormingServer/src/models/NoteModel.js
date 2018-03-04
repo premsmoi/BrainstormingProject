@@ -29,6 +29,9 @@ var noteSchema = new Schema({
         type: Number,
         required : true,
     },
+    tags: [{ 
+        type: String, 
+    }],
     updated: { 
         type: Date, 
         default: Date.now 

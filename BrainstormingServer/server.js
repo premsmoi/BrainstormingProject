@@ -108,161 +108,211 @@ wsServer.on('connection', function connection(connection, request) {
         var obj = JSON.parse(message)  
         //console.log('message: '+obj)
         //console.log(obj)
-        if(obj.code == 'tagBoard'){
-          connection['boardId'] = obj.boardId
-          connection['username'] = obj.username
-          var cc = util.inspect(connection)
-          console.log('Client: '+connection['username'] + ' connect board: '+connection['boardId'])
-        }
+        if(obj.from == 'Board'){
+          if(obj.code == 'tagBoard'){
+            connection['boardId'] = obj.boardId
+            connection['username'] = obj.username
+            connection['from'] = obj.from
+            var cc = util.inspect(connection)
+            console.log('Client: '+connection['username'] + ' connect board: '+connection['boardId'])
+          }
 
-        else if(obj.code == 'createNote'){
-          /*wsServer.clients.forEach(function each(client) {
-            //client['username'] = 'premsmoi';
-            var str = util.inspect(client)
+          else if(obj.code == 'createNote'){
+            /*wsServer.clients.forEach(function each(client) {
+              //client['username'] = 'premsmoi';
+              var str = util.inspect(client)
 
-            console.log('clientGG: '+str)
-          });*/
-          console.log('in creteNote')
-          //console.log('In CreateNote')
-          var newNote = new Note(obj.note)
-           noteList.create_a_note(newNote);
+              console.log('clientGG: '+str)
+            });*/
+            console.log('in creteNote')
+            //console.log('In CreateNote')
+            var newNote = new Note(obj.note)
+             noteList.create_a_note(newNote);
 
-           Board.update({ _id: newNote.boardId}, 
-            {
-              $push: { notes: newNote._id }
-            },
-            function(err, numAffected){
-              boardList.getBoardById(newNote.boardId, function(err, board){
-                if(err)
-                  console.log(err)
-                //console.log('find board: '+board)
-
-                var id_arr = []
-                for(i=0;i<board.notes.length;i++){
-                  id_arr.push(board.notes[i])
-                }
-
-                noteList.getNotes(id_arr, function(err, notes){
+             Board.update({ _id: newNote.boardId}, 
+              {
+                $push: { notes: newNote._id }
+              },
+              function(err, numAffected){
+                boardList.getBoardById(newNote.boardId, function(err, board){
                   if(err)
                     console.log(err)
-                  console.log('note list: '+notes)
-                  console.log('This should print after')
-                  var json = JSON.stringify({ body: {code: 'updatedNotes', notes: notes} });
-                  console.log(json)
-                  wsServer.clients.forEach(function each(client) {
-                    if(client['boardId'] == connection['boardId']){
-                      sleep.msleep(100)
-                      client.send(json)
-                    }
+                  //console.log('find board: '+board)
+
+                  var id_arr = []
+                  board.notes.forEach(function(element){
+                    id_arr.push(element)
                   });
-                  //connection.send(json);
+
+
+                  noteList.getNotes(id_arr, function(err, notes){
+                    if(err)
+                      console.log(err)
+                    console.log('note list: '+notes)
+                    console.log('This should print after')
+                    var json = JSON.stringify({ body: {code: 'updatedNotes', notes: notes} });
+                    console.log(json)
+                    wsServer.clients.forEach(function each(client) {
+                      if(client['boardId'] == connection['boardId'] && client['from'] == 'Board'){
+                        sleep.msleep(100)
+                        client.send(json)
+                      }
+                    });
+                    //connection.send(json);
+                  })
+              }
+            )
+     
+            });
+          }
+          else if(obj.code == 'getNotes'){
+            boardList.getBoardById(obj.boardId, function(err, board){
+              if(err)
+                console.log(err)
+                var id_arr = []
+                board.notes.forEach(function(element){
+                  id_arr.push(element)
                 })
-            }
-          )
-   
-          });
-        }
-        else if(obj.code == 'getNotes'){
-          boardList.getBoardById(obj.boardId, function(err, board){
-            if(err)
-              console.log(err)
-              var id_arr = []
-                for(i=0;i<board.notes.length;i++){
-                  id_arr.push(board.notes[i])
-                }
 
-                noteList.getNotes(id_arr, function(err, notes){
-                  if(err)
-                    console.log(err)
-                  //console.log('note list: '+notes)
-                  //console.log('This should print after')
-                  var json = JSON.stringify({ body: {code: 'updatedNotes', notes: notes} });
-                  //console.log(json)
-                  sleep.msleep(100)
-                  connection.send(json);
-                })
-          })
-        }
+                  noteList.getNotes(id_arr, function(err, notes){
+                    if(err)
+                      console.log(err)
+                    //console.log('note list: '+notes)
+                    //console.log('This should print after')
+                    var json = JSON.stringify({ body: {code: 'updatedNotes', notes: notes} });
+                    //console.log(json)
+                    sleep.msleep(100)
+                    connection.send(json);
+                  })
+            })
+          }
 
-        else if(obj.code == 'deleteNote'){
-          noteList.deleteNote(obj.noteId, function(err, note){
-            if(err)
-              console.log(err)
-          })
+          else if(obj.code == 'deleteNote'){
+            noteList.deleteNote(obj.noteId, function(err, note){
+              if(err)
+                console.log(err)
+            })
 
-          Board.update({ _id: obj.boardId}, 
-            {
-              $pull: { notes: obj.noteId }
-            },
-            function(err, numAffected){
+            Board.update({ _id: obj.boardId}, 
+              {
+                $pull: { notes: obj.noteId }
+              },
+              function(err, numAffected){
+                var json = JSON.stringify({ body: {code: 'getNotes'}})
+                wsServer.clients.forEach(function each(client) {
+                  if(client['boardId'] == connection['boardId'] && client['from'] == 'Board'){
+                    client.send(json)
+                  }
+                });
+              })
+
+          }
+
+          else if(obj.code == 'updateNotePosition'){
+            console.log('updateNotePosition')
+            Note.update({_id: obj.noteId}, 
+              { $set: { x: obj.newX, y: obj.newY, updated: obj.updated}},
+              function(err, note){
+              if(err)
+                console.log(err)
               var json = JSON.stringify({ body: {code: 'getNotes'}})
               wsServer.clients.forEach(function each(client) {
-                if(client['boardId'] == connection['boardId']){
+                if(client['boardId'] == connection['boardId'] && client['from'] == 'Board'){
                   client.send(json)
                 }
               });
             })
+          }
 
+          else if(obj.code == 'updateNoteText'){
+            console.log(obj)
+            Note.update({_id: obj.noteId}, 
+              { $set: { text: obj.newText, updated: obj.updated}},
+              function(err, note){
+              if(err)
+                console.log(err)
+              var json = JSON.stringify({ body: {code: 'getNotes'}})
+              wsServer.clients.forEach(function each(client) {
+                if(client['boardId'] == connection['boardId'] && client['from'] == 'Board'){
+                  client.send(json)
+                }
+              });
+            })
+          }
+
+          else if(obj.code == 'updateNoteColor'){
+            console.log(obj)
+            Note.update({_id: obj.noteId}, 
+              { $set: { color: obj.color, updated: obj.updated}},
+              function(err, note){
+              if(err)
+                console.log(err)
+              var json = JSON.stringify({ body: {code: 'getNotes'}})
+              wsServer.clients.forEach(function each(client) {
+                if(client['boardId'] == connection['boardId'] && client['from'] == 'Board'){
+                  client.send(json)
+                }
+              });
+            })
+          }
+
+          else if(obj.code == 'updateNote'){
+            console.log(obj)
+            Note.update({_id: obj.updatedObj.id}, 
+              { $set: obj.updatedObj },
+              function(err, note){
+              if(err)
+                console.log(err)
+              var json = JSON.stringify({ body: {code: 'getNotes'}})
+              wsServer.clients.forEach(function each(client) {
+                if(client['boardId'] == connection['boardId'] && client['from'] == 'Board'){
+                  client.send(json)
+                }
+              });
+            })
+          }
+
+          else if(obj.code == 'updateNoteList'){
+            console.log(obj)
+            Board.update({_id: obj.boardId}, 
+              { $set: { notes: obj.newNoteList}},
+              function(err, board){
+              if(err)
+                console.log(err)
+              var json = JSON.stringify({ body: {code: 'getNotes'}})
+              wsServer.clients.forEach(function each(client) {
+                if(client['boardId'] == connection['boardId'] && client['from'] == 'Board'){
+                  client.send(json)
+                }
+              });
+            })
+          }
+
+          else if(obj.code == 'boardAddTags'){
+            console.log(obj)
+            Board.update({_id: obj.boardId}, 
+              { $set: { tags: obj.tags}},
+              function(err, board){
+              if(err)
+                console.log(err)
+              var json = JSON.stringify({ body: {code: 'getTags', tag: board.tags}})
+              wsServer.clients.forEach(function each(client) {
+                if(client['boardId'] == connection['boardId'] && client['from'] == 'Board'){
+                  client.send(json)
+                }
+              });
+            })
+          }
         }
 
-        else if(obj.code == 'updateNotePosition'){
-          console.log('updateNotePosition')
-          Note.update({_id: obj.noteId}, 
-            { $set: { x: obj.newX, y: obj.newY, updated: obj.updated}},
-            function(err, note){
-            if(err)
-              console.log(err)
-            var json = JSON.stringify({ body: {code: 'getNotes'}})
-            wsServer.clients.forEach(function each(client) {
-              if(client['boardId'] == connection['boardId']){
-                client.send(json)
-              }
-            });
-          })
+        if(obj.from == 'BoardManager'){
+          if(obj.code == 'tagBoardManager'){
+            connection['boardId'] = obj.boardId
+            connection['username'] = obj.username
+            var cc = util.inspect(connection)
+            console.log('Client: '+connection['username'] + ' connect board manager: '+connection['boardId'])
+          }
         }
-
-        else if(obj.code == 'updateNoteText'){
-          console.log(obj)
-          Note.update({_id: obj.noteId}, 
-            { $set: { text: obj.newText, updated: obj.updated}},
-            function(err, note){
-            if(err)
-              console.log(err)
-            var json = JSON.stringify({ body: {code: 'getNotes'}})
-            wsServer.clients.forEach(function each(client) {
-              if(client['boardId'] == connection['boardId']){
-                client.send(json)
-              }
-            });
-          })
-        }
-
-        else if(obj.code == 'updateNoteList'){
-          console.log(obj)
-          Board.update({_id: obj.boardId}, 
-            { $set: { notes: obj.newNoteList}},
-            function(err, board){
-            if(err)
-              console.log(err)
-            var json = JSON.stringify({ body: {code: 'getNotes'}})
-            wsServer.clients.forEach(function each(client) {
-              if(client['boardId'] == connection['boardId']){
-                client.send(json)
-              }
-            });
-          })
-        }
-
-        /*
-        if (message.type === 'utf8') {
-            //console.log('Received Message: ' + message.utf8Data);
-            //connection.sendUTF(message.utf8Data);
-        }
-        else if (message.type === 'binary') {
-            console.log('Received Binary Message of ' + message.binaryData.length + ' bytes');
-            connection.sendBytes(message.binaryData);
-        }
-        */
     });
     connection.on('close', function(reasonCode, description) {
       console.log('Client: '+connection['username'] + ' disconnect board: '+connection['boardId'])

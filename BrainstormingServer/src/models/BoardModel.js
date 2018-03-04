@@ -24,6 +24,7 @@ var boardSchema = new Schema({
         //unique: true,
         //dropDups: true,
     }],
+    tags: [String],
 });
 //userSchema.plugin(uniqueValidator);
 

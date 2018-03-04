@@ -7,6 +7,7 @@ import HomeScreen from './src/HomeScreen';
 import GroupScreen from './src/GroupScreen';
 import BoardScreen from './src/BoardScreen';
 import MyComponent from './src/MyComponent';
+import BoardManagerScreen from './src/BoardManagerScreen';
 import Test from './src/Test'
 
 const myNavigator = StackNavigator({
@@ -24,6 +25,9 @@ const myNavigator = StackNavigator({
   },
   Board: {
     screen: BoardScreen,
+  },
+  BoardManager: {
+    screen: BoardManagerScreen
   }
 });
 
