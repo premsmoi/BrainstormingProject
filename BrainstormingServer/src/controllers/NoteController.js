@@ -5,20 +5,13 @@ var mongoose = require('mongoose'),
 
  
 
-exports.create_a_note = function(newNote) {
-  
-  Note.createNote(newNote, function(err, note){
-    if(err){
-      console.log(err);
-    }
-    else{
-      console.log('Create Note: '+note);
-    }
-  })
+exports.create_a_note = function(note, callback) {
+  var newNote = new Note(note)
+  Note.createNote(newNote, callback)
 };
 
 module.exports.getNotes = function(id_arr, callback){
-  
+  console.log('notes in getNotes: '+id_arr)
   Note.find({
     '_id': { $in: id_arr}},
     {},
@@ -50,6 +43,18 @@ module.exports.deleteNote = function(id, callback){
       throw err;
     console.log({ message: 'Note successfully deleted' });
   });
+}
+
+module.exports.updateNote = function(updatedObj, callback){
+  Note.update(
+    {
+    _id: updatedObj.id
+    }, 
+    { 
+      $set: updatedObj 
+    },
+    callback
+  )
 }
 
 exports.list_all_notes = function(req, res) {

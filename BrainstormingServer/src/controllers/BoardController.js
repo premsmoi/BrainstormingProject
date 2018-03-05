@@ -102,6 +102,21 @@ module.exports.addMember = function(req, res){
     }
   )}
 
+module.exports.addNote = function(obj, callback){
+  Board.update({_id: obj.boardId},
+    { $push: {notes: obj.noteId}},
+    callback
+  )}
+
+module.exports.deleteNote = function(obj, callback){
+  console.log('obj: '+obj)
+  Board.update({ _id: obj.boardId}, 
+    {
+      $pull: { notes: obj.noteId }
+    },
+    callback
+)}
+
 module.exports.addTag = function(req, res){
   console.log('addTag')
   console.log('req.body.boardId'+req.body.boardId)
@@ -116,7 +131,26 @@ module.exports.addTag = function(req, res){
     }
   )}
 
+module.exports.updateNoteList = function(obj, callback){
+   Board.update(
+    {_id: obj.boardId}, 
+    { $set: { notes: obj.newNoteList}},
+    callback
+  )
+}
 
+module.exports.addTag = function(obj, callback){
+  Board.update({_id: obj.boardId}, 
+              { $push: { tags: obj.tag}},
+              callback)
+}
+
+module.exports.deleteTag = function(obj, callback){
+  Board.update({ _id: obj.boardId}, 
+              {
+                $pull: { tags: obj.tag }
+              }, callback)
+}
 
 module.exports.list_all_boards = function(req, res) {
   Board.find({}, function(err, board) {

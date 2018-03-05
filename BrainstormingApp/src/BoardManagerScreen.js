@@ -121,7 +121,7 @@ class BoardManagerScreen extends Component {
   deleteTag(tag){
     var deleteTagRequest = {
         from: 'BoardManager',
-        code: 'deleteTag',
+        code: 'boardDeleteTag',
         tag: tag,
         boardId: this.props.navigation.state.params.boardId
       }

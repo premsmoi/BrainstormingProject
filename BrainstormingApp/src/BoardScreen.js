@@ -129,7 +129,14 @@ class BoardScreen extends Component {
         boardId: this.props.navigation.state.params.boardId,
       }
       var requestString = JSON.stringify(getTagsRequest)
-      //console.log('props: '+this.props)
+      this.ws.send(requestString)
+
+      var getMembersRequest = {
+        from: 'Board',
+        code: 'boardGetMembers',
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(getMembersRequest)
       this.ws.send(requestString)
     };
   }
@@ -211,7 +218,6 @@ class BoardScreen extends Component {
           this.setState({newNoteTags: newTags})
       }
     })
-    this.setState({tagSelection: {}, newNoteTags: []})
     console.log('new tags: '+this.state.newNoteTags)
     var newNote = {
       boardId: this.props.navigation.state.params.boardId,
@@ -354,13 +360,17 @@ class BoardScreen extends Component {
         <View style = {{flex: 3}}>
           {this._renderButton("OK", () => {
             this.setState({ visibleNewNoteModal: false })
+            this.setState({tagSelection: {}, newNoteTags: [], newNoteText:''})
             this.createNewNote()
             })
           }
         </View>
         <View style = {{flex: 2}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Cancel", () => this.setState({ visibleNewNoteModal: false }))}
+          {this._renderButton("Cancel", () => {
+            this.setState({ visibleNewNoteModal: false })
+            this.setState({tagSelection: {}, newNoteTags: [], newNoteText:''})
+          })}
         </View>
         <View style = {{flex: 1}}/>
       </View>

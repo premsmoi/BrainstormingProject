@@ -87,6 +87,15 @@ exports.list_all_user = function(req, res) {
   });
 };
 
+module.exports.getUsers = function(username_arr, callback){
+  
+  User.find({
+    'username': { $in: username_arr}},
+    {},
+    {sort: {updated: 1}}, 
+    callback)
+}
+
 exports.add_board = function(req, res){
   //var inputJSON = {}
   //inputJSON.username = req.body.username;
