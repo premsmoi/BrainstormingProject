@@ -247,17 +247,12 @@ wsServer.on('connection', function connection(connection, request) {
 
           else if(obj.code == 'boardGetTags'){
             console.log(obj)
-            Board.find({_id: obj.boardId},
-              function(err, board){
+            Board.findOne({_id: obj.boardId},
+              function(err, result){
               if(err)
                 console.log(err)
-              console.log('tags: '+board.tags)
-              var json = JSON.stringify({ body: {code: 'getTags', tag: board.tags}})
-              wsServer.clients.forEach(function each(client) {
-                if(client['boardId'] == connection['boardId'] && client['from'] == 'Board'){
-                  client.send(json)
-                }
-              });
+              var json = JSON.stringify({ body: {code: 'getTags', tags: result.tags}})
+              connection.send(json)
             })
           }
         }

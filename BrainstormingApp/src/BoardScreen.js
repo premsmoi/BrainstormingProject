@@ -11,6 +11,8 @@ import {
   ScrollView,
   TouchableOpacity,
   BackHandler,
+  Image,
+  CheckBox,
 } from 'react-native';
 import styles from "./app.style";
 import {noteColor, borderColor} from './colors'
@@ -43,11 +45,14 @@ class BoardScreen extends Component {
       //noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
       //             {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
       noteList: [],
-      tagList: [],
       visibleNewNoteModal: false,
       visibleEditNoteModal: false,
+      visibleSelectTagsModal: false,
       newColor: 'red',
       newNoteText: '',
+      tags: [],
+      newNoteTags: [],
+      tagSelection: {},
     }
     this.isVisibleOpenNoteModal = false;
     this.deleteNote = this.deleteNote.bind(this);
@@ -56,6 +61,7 @@ class BoardScreen extends Component {
     this.updateNote = this.updateNote.bind(this);
     this.setVisibleOpenNoteModal = this.setVisibleOpenNoteModal.bind(this);
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+    this.getState = this.getState.bind(this);
     //console.log(this.props)
 
     //this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
@@ -81,7 +87,13 @@ class BoardScreen extends Component {
       }
 
       if(obj.body.code == 'getTags'){
-        this.setState({tagList: obj.body.tags})
+        this.setState({tags: obj.body.tags})
+        console.log('tag: '+this.state.tags)
+        this.state.tags.map((tag) => {
+          let newTagSelection = this.state.tagSelection
+          newTagSelection[tag] = false
+          this.setState({ tagSelection: newTagSelection })
+        })
       }
     };
 
@@ -110,7 +122,20 @@ class BoardScreen extends Component {
       //console.log('props: '+this.props)
       this.ws.send(requestString)
       console.log('req: '+requestString)
+
+      var getTagsRequest = {
+        from: 'Board',
+        code: 'boardGetTags',
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(getTagsRequest)
+      //console.log('props: '+this.props)
+      this.ws.send(requestString)
     };
+  }
+
+  getState(){
+    return this.state
   }
 
   componentWillMount() {
@@ -179,14 +204,23 @@ class BoardScreen extends Component {
   }
 
   createNewNote = () => {
+    this.state.tags.map((tag) => {
+      if(this.state.tagSelection[tag]){
+          let newTags = this.state.newNoteTags
+          newTags.push(tag)
+          this.setState({newNoteTags: newTags})
+      }
+    })
+    this.setState({tagSelection: {}, newNoteTags: []})
+    console.log('new tags: '+this.state.newNoteTags)
     var newNote = {
-      from: 'Board',
       boardId: this.props.navigation.state.params.boardId,
       writer: this.props.navigation.state.params.user.username, 
       x: 100, 
       y: 200, 
       color: this.state.newColor, 
       text: this.state.newNoteText,
+      tags: this.state.newNoteTags,
       updated: new Date().getTime(),
     }
     this.setState(previousState => {
@@ -282,22 +316,38 @@ class BoardScreen extends Component {
             underlineColorAndroid = {noteColor[this.state.newColor]}
         />
       </View>
-      <View>
-        <TouchableWithoutFeedback
-            onPress = {() => {Alert.alert('Add tag')}}
-          >
-            <View style = {styles.button}>
-              <Text 
-                style={{
-                  fontSize: 16, 
-                  color: '#1ac6ff',  
-                  marginVertical: 4, 
-                  marginHorizontal: 8, 
-                }}>
-                  Add tag
-              </Text> 
-            </View>
-          </TouchableWithoutFeedback>
+      <View style = {{flexDirection: 'row'}} >
+        <Text 
+          style={{
+            fontSize: 16, 
+            color: 'grey',  
+            marginVertical: 5, 
+            marginLeft: 20 
+          }}>Tags:</Text>
+          {
+            this.state.tags.map((tag) => {
+            if(this.state.tagSelection[tag]){
+              return(
+                <Text 
+                  key = {tag}
+                  style={{
+                    fontSize: 16, 
+                    color: 'black',  
+                    marginVertical: 5, 
+                    marginHorizontal: 5 
+                  }}>
+                  {tag}
+                </Text>
+              )
+            
+            }
+          })}
+          <TouchableOpacity onPress = {() => {this.setState({visibleSelectTagsModal: true})}}>
+            <Image
+              style={{width: 16, height: 16, marginTop: 8, marginLeft: 5}}
+              source={require('../img/pencil.png')}
+            />
+          </TouchableOpacity>
       </View>
       <View style={{flexDirection: 'row'}}>
         <View style = {{flex: 1}}/>
@@ -317,6 +367,38 @@ class BoardScreen extends Component {
     </View>
   )
 
+  _renderSelectTagsModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+      { 
+        this.state.tags.map((tag) => {
+        return(
+          <View style={{ flexDirection: 'row' }}>
+            <CheckBox
+              value={this.state.tagSelection[tag]}
+              onValueChange={() => {
+                let newTagSelection = this.state.tagSelection
+                newTagSelection[tag] = !newTagSelection[tag]
+                this.setState({ tagSelection: newTagSelection })
+                console.log(this.state.tagSelection)
+              }
+              }
+            />
+            <Text style={{marginTop: 5}}>{tag}</Text>
+          </View>
+        )
+      })}
+      {this._renderButton("OK", () => {
+        this.setState({ visibleSelectTagsModal: false })
+      })}
+    </View>
+  )
+
   render() {
     console.log('render')
     return (
@@ -324,6 +406,9 @@ class BoardScreen extends Component {
         <View style={{flex: 1}}>
           <Modal isVisible={this.state.visibleNewNoteModal}>
             {this._renderNewNoteModal()}
+          </Modal>
+          <Modal isVisible={this.state.visibleSelectTagsModal}>
+            {this._renderSelectTagsModal()}
           </Modal>
           <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
             <View style={{ 
@@ -408,14 +493,15 @@ class BoardScreen extends Component {
                           updateNoteList = {this.updateNoteList}
                           updateNoteColor = {this.updateNoteColor}
                           updateNote = {this.updateNote}
+                          getState = {this.getState}
                           setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
                           key = {note._id}
                           id = {note._id}
                           x = {note.x} 
                           y = {note.y} 
                           color = {note.color} 
-                          text = {note.text}/>
-                      
+                          text = {note.text}
+                          tags = {note.tags}/>
                       //</DoubleClick>
                     )
                   })}

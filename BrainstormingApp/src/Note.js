@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
+  CheckBox,
 } from "react-native";
 import TimerMixin from 'react-timer-mixin';
 import BoardScreen from './BoardScreen';
@@ -29,15 +30,19 @@ export default class Note extends Component {
     this.id = this.props.id;
     //this.COLOR = this.props.color;
     this.rectangle = (null : ?{ setNativeProps(props: Object): void });
+    this.boardState = this.props.getState()
     this.state = {
       lastPress: new Date().getTime(),
       text: this.props.text,
       nextText: this.props.text,
       COLOR: this.props.color,
       isVisibleOpenNoteModal: false,
+      visibleSelectTagsModal: false,
       canMount: true,
       newColor: this.props.color,
-      tags: ['A', 'B'],
+      tags: this.props.tags,
+      newNoteTags: [],
+      tagSelection: {},
     }
     this._rectangleStyles = {
       style: {
@@ -46,6 +51,16 @@ export default class Note extends Component {
         backgroundColor: noteColor[this.state.COLOR],
       }
     };
+    this.boardState.tags.map((tag) => {
+          let newTagSelection = this.state.tagSelection
+          newTagSelection[tag] = false
+          this.setState({ tagSelection: newTagSelection })
+        })
+    this.state.tags.map((tag) => {
+          let newTagSelection = this.state.tagSelection
+          newTagSelection[tag] = true
+          this.setState({ tagSelection: newTagSelection })
+        })
   }
 
   _renderColorPicker = (color) => (
@@ -67,23 +82,6 @@ export default class Note extends Component {
       </View>
     </TouchableOpacity>
   );
-
-   _renderSelectTagsModal = () => (
-      <View style={{
-        backgroundColor: noteColor[this.state.newColor],
-        padding: 22,
-        //justifyContent: "center",
-        //alignItems: "center",
-        borderRadius: 4,
-      }}>
-        <Text style={{fontSize: 20, 
-            color: 'grey',  
-            marginVertical: 20, 
-            marginHorizontal: 20 
-          }}>Tag List</Text>
-
-      </View>
-    )
 
    _renderOpenNoteModal = () => (
     <View style={{
@@ -141,9 +139,9 @@ export default class Note extends Component {
               </Text>
             )
           })}
-          <TouchableOpacity onPress={}>
+          <TouchableOpacity onPress = {() => {this.setState({visibleSelectTagsModal: true})}}>
             <Image
-              style={{width: 16, height: 16, marginTop: 8, marginLeft: 30}}
+              style={{width: 16, height: 16, marginTop: 8, marginLeft: 5}}
               source={require('../img/pencil.png')}
             />
           </TouchableOpacity>
@@ -153,16 +151,19 @@ export default class Note extends Component {
         <View style = {{flex: 4}}>
           {this._renderButton("OK", () => {
             this.setState({ isVisibleOpenNoteModal: false, text: this.state.nextText, COLOR: this.state.newColor})
-            var updatedObj = {
+           
+            console.log('color: '+this.state.newColor)
+             var updatedObj = {
               id: this.id,
               color: this.state.newColor,
               text: this.state.nextText,
+              tags: this.state.newNoteTags,
               updated: new Date().getTime(),
             }
-            console.log('color: '+this.state.newColor)
-            //this.props.updateNoteText(this.id, this.state.nextText)
+            console.log('tags me : '+this.state.newNoteTags)
             this.props.updateNote(updatedObj)
             this.props.setVisibleOpenNoteModal(false)
+            this.setState({newNoteTags: []})
           })}
         </View>
         <View style = {{flex: 1}}/>
@@ -184,6 +185,47 @@ export default class Note extends Component {
       </View>  
     </View>
   );
+
+   _renderSelectTagsModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+      { 
+        this.boardState.tags.map((tag) => {
+        return(
+          <View style={{ flexDirection: 'row' }}>
+            <CheckBox
+              value={this.state.tagSelection[tag]}
+              onValueChange={() => {
+                let newTagSelection = this.state.tagSelection
+                newTagSelection[tag] = !newTagSelection[tag]
+                this.setState({ tagSelection: newTagSelection })
+                console.log(this.state.tagSelection)
+              }
+              }
+            />
+            <Text style={{marginTop: 5}}>{tag}</Text>
+          </View>
+        )
+      })}
+      {this._renderButton("OK", () => {
+        this.setState({ visibleSelectTagsModal: false })
+        this.boardState.tags.map((tag) => {
+          if(this.state.tagSelection[tag]){
+              let newTags = this.state.newNoteTags
+              newTags.push(tag)
+              this.setState({newNoteTags: newTags})
+          }
+          this.setState({tags: this.state.newNoteTags})
+          console.log('newNoteTags: '+this.state.newNoteTags)
+        })
+      })}
+    </View>
+  )
 
   componentWillMount() {
     this._panResponder = PanResponder.create({
@@ -252,6 +294,9 @@ export default class Note extends Component {
       <View>
         <Modal isVisible={this.state.isVisibleOpenNoteModal}>
           {this._renderOpenNoteModal()}
+        </Modal>
+        <Modal isVisible={this.state.visibleSelectTagsModal}>
+          {this._renderSelectTagsModal()}
         </Modal>
         <View
           ref={(rectangle) => {
