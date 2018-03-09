@@ -40,7 +40,8 @@ exports.create_a_user = function(req, res) {
     });
     User.createUser(newUser, function(err, user){
       if(err){
-        console.log('Username already exists');
+        //console.log('Username already exists');
+        console.log(err);
         errorMsg.push('Username already exists')
         obj['status'] = 0;
         obj['errors'] = errorMsg;
@@ -65,18 +66,10 @@ exports.get_user = function(req, res){
   })
 }
 
-exports.searchUsers = function(req, res){
-  //console.log(req)
+exports.searchUsers = function(username, callback){
   var inputJson={};
-  if(req.body.username)inputJson.username={ $regex: req.body.username, "$options": "i" };
-  //console.log('req.query.username: '+req.body.username)
-  //console.log('inputJson: '+inputJson.username)
-  User.find(inputJson, function(err,userList){
-    if(err)
-      res.send(err)
-    res.send(userList)
-    //console.log('userList: '+userList)
-  })
+  inputJson.username={ $regex: username, "$options": "i" };
+  User.find(inputJson, callback)
 }
 
 exports.list_all_user = function(req, res) {
@@ -94,6 +87,22 @@ module.exports.getUsers = function(username_arr, callback){
     {},
     {sort: {updated: 1}}, 
     callback)
+}
+
+exports.addBoard = function(obj, callback){
+  console.log('username: '+obj.username)
+  console.log('boardId: '+obj.boardId)
+
+  var newBoard = {
+    boardId: obj.boardId,
+    started: 0,
+  }
+
+  User.update({ username: obj.username}, 
+    {
+      $push: { boards: newBoard }
+    },callback
+  )
 }
 
 exports.add_board = function(req, res){
@@ -116,11 +125,13 @@ exports.add_board = function(req, res){
 
   var newBoard = {
     boardId: req.body.newBoardId,
+    started: 0,
+    timeRemaining: 300,
   }
 
   User.update({ username: req.body.username}, 
     {
-      $push: { boards: req.body.newBoardId }
+      $push: { boards: newBoard }
     },
     function(err, numAffected){
       res.send(numAffected)
@@ -131,12 +142,74 @@ exports.add_board = function(req, res){
 exports.delete_board = function(req, res){
   User.update({},
             {
-              $pull: { boards: req.body.boardId }
+              $pull: { boards: { boardId: req.body.boardId }}
             },
             {multi: true},
             function(err, numAffected){
               console.log('use delete board id :'+req.body.boardId)
               res.send(numAffected)
             })
+}
+
+exports.enterBoard = function(obj, callback){
+  User.update({ username: obj.username}, 
+    {
+      $set: { currentBoard: obj.boardId }
+    },
+    callback
+  )
+}
+
+exports.exitBoard = function(username, callback){
+  User.update({ username: username}, 
+    {
+      $set: { currentBoard: null }
+    },
+    callback
+  )
+}
+
+exports.countTimer = function(username, callback){
+  User.updateMany({}, 
+    {
+      $inc: { 'boards.$[element].timeRemaining': -1 }
+    },
+    {
+      multi: true,
+      arrayFilters: [{ 'element.started': 1, 'element.timeRemaining': { $gt: 0 }}]
+    }
+    ,
+    callback
+  )
+}
+
+/*
+exports.countTimer = function(){
+  User.find({ boards: { $elemMatch: {started: 1, timeRemaining: { $gt: 0 }}}}, 
+  function(err, users){
+    if(err)
+      console.log(err)
+    users.forEach(function(user){
+      user.boards.forEach(function(board){
+        if(board.started==1){
+          board.timeRemaining--;
+        }
+      })
+      user.save(function(err){
+        if(err)
+          console.log(err)
+        console.log(user)
+      })
+    })
+  }
+  )
+}
+*/
+exports.startBoard = function(obj, callback){
+  User.update({ username: obj.username, 'boards.boardId': obj.boardId },
+  {
+    $set: { 'boards.$.started': 1}
+  }, callback
+  )
 }
 

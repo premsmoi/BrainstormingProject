@@ -25,13 +25,15 @@ var userSchema = new Schema({
     	type: String,
     	required : true, 
     },
-    boards: [{ 
-        type: Schema.Types.ObjectId, 
-        ref: 'Board',
-    }],
+    boards: [Schema.Types.Mixed],
     loginStatus: {
         type: Number,
         required: true,
+        default: 0,
+    },
+    currentBoard: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Board',
     }
 });
 userSchema.plugin(uniqueValidator);

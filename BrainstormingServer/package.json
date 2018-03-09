@@ -16,14 +16,7 @@
       "resolved": "https://registry.npmjs.org/array-flatten/-/array-flatten-1.1.1.tgz",
       "version": "1.1.1"
     },
-    "async": {
-      "integrity": "sha1-LSFgx3iAMuTdbL4lAvH5osj2zeQ=",
-      "requires": {
-        "lodash": "4.17.4"
-      },
-      "resolved": "https://registry.npmjs.org/async/-/async-2.1.4.tgz",
-      "version": "2.1.4"
-    },
+    "async": "^2.6.0",
     "bcryptjs": "^2.4.3",
     "bluebird": {
       "integrity": "sha1-eRQg1/VR7qKJdFOop3ZT+WYG1nw=",

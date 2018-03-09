@@ -33,7 +33,12 @@ class BoardManagerScreen extends Component {
     this.state = {
       newTag: '',
       visibleNewTagModal: false,
+      visibleInviteModal: false,
       tagList: [],
+      userSearchResult: [],
+      selectedUserToInvite: '',
+      usernameSearchQuery: '',
+      members: [],
     }
 
     this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
@@ -45,6 +50,16 @@ class BoardManagerScreen extends Component {
       if(obj.body.code == 'getTags'){
         this.setState({tagList: obj.body.tags})
         console.log('tagList: '+obj.body.tags)
+      }
+
+      if(obj.body.code == 'getUserSearchResult'){
+        this.setState({userSearchResult: obj.body.userList})
+        console.log(obj.body.userList)
+      }
+
+      if(obj.body.code == 'getMembers'){
+        console.log('members: '+obj.body.members)
+        this.setState({members: obj.body.members})
       }
       
     };
@@ -62,6 +77,8 @@ class BoardManagerScreen extends Component {
 
     this.ws.onopen = () => {
       // connection opened
+      this.getMembers()
+
       var tagClientRequest = {
         from: 'BoardManager',
         code: 'tagBoardManager',
@@ -132,6 +149,44 @@ class BoardManagerScreen extends Component {
     //Alert.alert('delete '+tag)
   }
 
+  async searchUsername(){
+    var searchUserRequest = {
+        from: 'BoardManager',
+        code: 'searchUser',
+        username: this.state.usernameSearchQuery,
+        boardId: this.props.navigation.state.params.boardId
+      }
+    var requestString = JSON.stringify(searchUserRequest)
+    console.log('Search User Request')
+    this.ws.send(requestString)
+  }
+
+  async inviteUser(){
+    var inviteUserRequest = {
+        from: 'BoardManager',
+        code: 'inviteUser',
+        username: this.state.selectedUserToInvite,
+        boardId: this.props.navigation.state.params.boardId,
+      }
+    var requestString = JSON.stringify(inviteUserRequest)
+    console.log('Invite User Request')
+    this.ws.send(requestString)
+    //this.getMembers()
+    this.setState({selectedUserToInvite: '',})
+  }
+
+  async getMembers(){
+     var getMembersRequest = {
+        from: 'BoardManager',
+        code: 'getMembers',
+        boardId: this.props.navigation.state.params.boardId
+      }
+      var requestString = JSON.stringify(getMembersRequest)
+      //console.log('props: '+this.props)
+      this.ws.send(requestString)
+  }
+
+
   
 
    _renderButton = (text, onPress) => (
@@ -190,26 +245,120 @@ class BoardManagerScreen extends Component {
     </View>
   )
 
+  _renderInviteModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{borderWidth: 3, borderColor: 'white'}}>
+            <Text style={{fontSize: 16, textAlign: 'center'}}>Search username : </Text>
+          </View>
+          {this._renderTextInput('Search Input', 
+            (usernameSearchQuery) => { this.setState({usernameSearchQuery})},
+            this.state.usernameSearchQuery
+          )}
+          <View>
+            {this._renderButton("Search", () => {this.searchUsername()})}
+          </View>
+        </View>
+        <View style={{}}>
+            {this.state.userSearchResult.map((user) => {
+              return(
+                  <TouchableWithoutFeedback
+                    onPress = {() => {
+                      user.joined == true? 
+                      this.setState({selectedUserToInvite: ''}) : this.setState({selectedUserToInvite: user.username})
+                    }}
+                    key = {user.username}
+                  >
+                    <View style = {{flexDirection: 'row', backgroundColor: user.username==this.state.selectedUserToInvite && user.joined == true? 
+                      'lightblue':'white'}}>
+                      <Text 
+                        style={{
+                          fontSize: 16, 
+                          color: 'black',  
+                          marginVertical: 4, 
+                          marginHorizontal: 8 
+                        }}
+                      >
+                          {user.username}
+                      </Text>
+                      <Text 
+                        style={{
+                          fontSize: 16, 
+                          color: 'red',  
+                          marginVertical: 4, 
+                          marginHorizontal: 8 
+                        }}
+                      >
+                          {(user.joined == true? ' has joined' : '')}
+                      </Text> 
+                    </View>
+                  </TouchableWithoutFeedback>
+              )
+            })}
+        </View>
+        <View style={{flexDirection: 'row'}}>
+          <View>
+            {this._renderButton("Invite", () => {
+              this.setState({visibleInviteModal: false,
+                usernameSearchQuery: '', 
+                userSearchResult: [],
+                })
+              if(this.state.selectedUserToInvite != ''){
+                this.inviteUser()
+              }
+            
+            })
+            }
+          </View>
+          <View>
+            {this._renderButton("Close", () => {
+              this.setState({visibleInviteModal: false, 
+                usernameSearchQuery: '', 
+                userSearchResult: [],
+                selectedUserToInvite: '',
+              })
+            })}
+          </View>
+        </View>
+      </View>
+    )
+
   render() {
     return (
       <View style={{flex: 1, flexDirection: 'column'}}>
         <Modal isVisible={this.state.visibleNewTagModal}>
           {this._renderNewTagModal()}
         </Modal>
+        <Modal isVisible={this.state.visibleInviteModal}>
+          {this._renderInviteModal()}
+        </Modal>
         <View style={{flex: 1, flexDirection: 'row'}}>
         	<View style={{ marginVertical: 20, 
             marginHorizontal: 20,
             //width: 125, 
             height: 50,
-            flex: 2.5
+            flex: 2
           }}>
             {this._renderButton("Add tag", () => {
             this.setState({visibleNewTagModal: true})
             })}
       		</View>
 
-          <View style={{ flex: 1 }}>
-
+          <View style={{ marginVertical: 20, 
+            marginHorizontal: 20,
+            //width: 125, 
+            height: 50,
+            flex: 2
+          }}>
+             {this._renderButton("Invite", () => {
+              this.setState({visibleInviteModal: true})
+              })}
           </View>
 
           <View style={{ 
@@ -241,12 +390,34 @@ class BoardManagerScreen extends Component {
             })}
           </View>
         </View>
-        <View style = {{flex: 1 }}>
+        <View style = {{flex: 3 }}>
           <Text style={{fontSize: 20, 
             color: 'grey',  
-            marginVertical: 20, 
+            marginVertical: 5, 
             marginHorizontal: 20 
           }}>Members</Text>
+          {this.state.members.map((user) => {
+            return(
+                <View style={{flexDirection: 'row'}} key = {user} >
+                  <TouchableWithoutFeedback 
+                    onPress={() => {
+                      Alert.alert(user.username)
+                     }
+                    }
+                  >
+                    <Text 
+                      style={{
+                        fontSize: 18, 
+                        color: 'black',  
+                        marginVertical: 5,
+                        marginLeft: 30,
+                      }}>
+                        {user.username}
+                    </Text>
+                  </TouchableWithoutFeedback>
+              </View>
+            )
+          })}
         </View>
         <View style = {{flex: 5 }}>
           <Text style={{fontSize: 20, 
@@ -270,7 +441,7 @@ class BoardManagerScreen extends Component {
                   </TouchableWithoutFeedback>
                   <Text 
                     style={{
-                      fontSize: 16, 
+                      fontSize: 18, 
                       color: 'black',  
                       marginVertical: 5,
                       marginLeft: 10,

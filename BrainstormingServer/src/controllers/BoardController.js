@@ -49,7 +49,7 @@ exports.create_a_board = function(req, res) {
   }
 };
 
-module.exports.getBoardList = function(req, res){
+module.exports.get_board_list = function(req, res){
   var obj = {}
   Board.find({
     '_id': { $in: req.body.idList}},
@@ -61,6 +61,20 @@ module.exports.getBoardList = function(req, res){
       res.send(obj)
       //console.log('boardList: '+JSON.stringify(obj))
     }
+  )
+}
+
+module.exports.getBoardList = function(idList, callback){
+  Board.find({
+    '_id': { $in: idList}},
+    {}, callback
+  )
+}
+
+module.exports.findBoard = function(query, callback){
+  Board.find(
+    query,
+    {}, callback
   )
 }
 
@@ -88,18 +102,13 @@ module.exports.deleteBoard = function(req, res){
   });
 }
 
-module.exports.addMember = function(req, res){
+module.exports.addMember = function(obj, callback){
   console.log('addMember')
-  console.log('req.body.boardId'+req.body.boardId)
-  console.log('req.body.username'+req.body.username)
-  Board.update({_id: req.body.boardId},
-    { $push: {members: req.body.username}},
-    function(err, board){
-      if(err)
-        console.log(err)
-      console.log(board)
-      res.send(board)
-    }
+  console.log('obj.boardId'+obj.boardId)
+  console.log('obj.username'+obj.username)
+  Board.update({_id: obj.boardId},
+    { $push: {members: obj.username}},
+    callback
   )}
 
 module.exports.addNote = function(obj, callback){

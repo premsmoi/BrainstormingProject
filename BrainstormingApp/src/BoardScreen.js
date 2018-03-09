@@ -31,10 +31,6 @@ const socket = io(ip);
  //import IO from 'socket.io-client/socket.io';
 
 class BoardScreen extends Component {
-  
-  static navigationOptions = ({ navigation }) => ({
-    title: navigation.state.params.boardName,
-  });
 
   constructor(props) {
     super(props);
@@ -42,18 +38,22 @@ class BoardScreen extends Component {
     this.tempNote = null;
     this.state = {
       boardName: '',
+      startButtonText: 'Start',
       //noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
       //             {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
       noteList: [],
       visibleNewNoteModal: false,
       visibleEditNoteModal: false,
       visibleSelectTagsModal: false,
+      visibleShowMembersModal: false,
       newColor: 'red',
       newNoteText: '',
       tags: [],
       newNoteTags: [],
       tagSelection: {},
+      members: [],
     }
+    this.user = this.props.navigation.state.params.user
     this.isVisibleOpenNoteModal = false;
     this.deleteNote = this.deleteNote.bind(this);
     this.focusNote = this.focusNote.bind(this);
@@ -62,6 +62,8 @@ class BoardScreen extends Component {
     this.setVisibleOpenNoteModal = this.setVisibleOpenNoteModal.bind(this);
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
     this.getState = this.getState.bind(this);
+    this.openShowMembersModal = this.openShowMembersModal.bind(this);
+    this.exitBoard = this.exitBoard.bind(this);
     //console.log(this.props)
 
     //this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
@@ -88,6 +90,17 @@ class BoardScreen extends Component {
 
       if(obj.body.code == 'getTags'){
         this.setState({tags: obj.body.tags})
+        console.log('tag: '+this.state.tags)
+        this.state.tags.map((tag) => {
+          let newTagSelection = this.state.tagSelection
+          newTagSelection[tag] = false
+          this.setState({ tagSelection: newTagSelection })
+        })
+      }
+
+
+      if(obj.body.code == 'getMembers'){
+        this.setState({members: obj.body.members})
         console.log('tag: '+this.state.tags)
         this.state.tags.map((tag) => {
           let newTagSelection = this.state.tagSelection
@@ -133,12 +146,61 @@ class BoardScreen extends Component {
 
       var getMembersRequest = {
         from: 'Board',
-        code: 'boardGetMembers',
+        code: 'getMembers',
         boardId: this.props.navigation.state.params.boardId,
       }
       var requestString = JSON.stringify(getMembersRequest)
       this.ws.send(requestString)
+
+      var enterBoardRequest = {
+        from: 'Board',
+        code: 'enterBoard',
+        username: this.user.username,
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(enterBoardRequest)
+      this.ws.send(requestString)
     };
+  }
+
+  static navigationOptions = ({ navigation }) => {
+    const {params = {}} = navigation.state;
+    return{
+      title: navigation.state.params.boardName,
+      headerRight: (
+        <View style= {{flexDirection: 'row'}}>
+          <TouchableWithoutFeedback
+            onPress={() => params.handleThis()}
+          >
+            <Image 
+              style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+              source={require('../img/members.png')}
+            />
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback
+            onPress={() => params.exitBoard()}
+          >
+            <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10}}>
+            Exit
+            </Text>
+          </TouchableWithoutFeedback>
+        </View>
+      ),
+    }
+    
+  };
+
+  componentDidMount() {
+        this.props.navigation.setParams({
+            handleThis: this.openShowMembersModal,
+            exitBoard: this.exitBoard
+        });
+    }
+
+  openShowMembersModal() {
+    this.setState({
+      visibleShowMembersModal: true,
+    })
   }
 
   getState(){
@@ -265,6 +327,31 @@ class BoardScreen extends Component {
     console.log('delete')
     this.ws.send(requestString)
     this.getNotes()
+  }
+
+  exitBoard(){
+    var exitBoardRequest = {
+      from: 'Board',
+      code: 'exitBoard',
+      username: this.user.username,
+    }
+    var requestString = JSON.stringify(exitBoardRequest)
+    console.log('exitBoard')
+    this.ws.send(requestString)
+    this.props.navigation.navigate('Home', { user: this.props.navigation.state.params.user })
+    this.ws.close()
+  }
+
+  startBoard(){
+    var starttBoardRequest = {
+      from: 'Board',
+      code: 'startBoard',
+      username: this.user.username,
+      boardId: this.props.navigation.state.params.boardId,
+    }
+    var requestString = JSON.stringify(starttBoardRequest)
+    console.log('Start Board !!!')
+    this.ws.send(requestString)
   }
 
   _renderColorPicker = (color) => (
@@ -409,6 +496,53 @@ class BoardScreen extends Component {
     </View>
   )
 
+  _renderShowMembersModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+      <Text style={{fontSize: 20, 
+            color: 'grey',  
+            marginVertical: 5, 
+            marginHorizontal: 20 
+          }}>Members</Text>
+          {this.state.members.map((user) => {
+            return(
+                <View style={{flexDirection: 'row'}} key = {user} >
+                  <View style={{flex: 1}}>
+                    <Text 
+                      style={{
+                        fontSize: 18, 
+                        color: 'black', 
+                        marginVertical: 5,
+                        marginLeft: 30,
+                      }}>
+                        {user.username}
+                    </Text>
+                  </View>
+                  <View style={{flex: 1}}>
+                    <Text 
+                      style={{
+                        fontSize: 18, 
+                        color: user.currentBoard == this.props.navigation.state.params.boardId? 'green' : 'red',  
+                        marginVertical: 5,
+                        marginLeft: 30,
+                      }}>
+                        {user.currentBoard == this.props.navigation.state.params.boardId? 'online' : 'offline'}
+                    </Text>
+                  </View>
+              </View>
+            )
+          })}
+      {this._renderButton("OK", () => {
+        this.setState({ visibleShowMembersModal: false })
+      })}
+    </View>
+  )
+
   render() {
     console.log('render')
     return (
@@ -419,6 +553,9 @@ class BoardScreen extends Component {
           </Modal>
           <Modal isVisible={this.state.visibleSelectTagsModal}>
             {this._renderSelectTagsModal()}
+          </Modal>
+          <Modal isVisible={this.state.visibleShowMembersModal}>
+            {this._renderShowMembersModal()}
           </Modal>
           <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
             <View style={{ 
@@ -449,9 +586,8 @@ class BoardScreen extends Component {
               marginHorizontal: 20,
               flex: 1 
             }}>
-              {this._renderButton('Exit', () => {
-                this.props.navigation.navigate('Home', { user: this.props.navigation.state.params.user })
-                this.ws.close()
+              {this._renderButton(this.state.startButtonText, () => {
+                this.startBoard()
                 }
               )}
             </View>  
