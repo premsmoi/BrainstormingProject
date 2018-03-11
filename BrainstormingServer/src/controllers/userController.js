@@ -89,6 +89,12 @@ module.exports.getUsers = function(username_arr, callback){
     callback)
 }
 
+module.exports.getUserByUsername = function(username, callback){
+  var query = {username: username};
+  User.findOne(query, callback);
+}
+
+
 exports.addBoard = function(obj, callback){
   console.log('username: '+obj.username)
   console.log('boardId: '+obj.boardId)
@@ -96,6 +102,7 @@ exports.addBoard = function(obj, callback){
   var newBoard = {
     boardId: obj.boardId,
     started: 0,
+    timeRemaining: 300,
   }
 
   User.update({ username: obj.username}, 
@@ -172,11 +179,11 @@ exports.exitBoard = function(username, callback){
 exports.countTimer = function(username, callback){
   User.updateMany({}, 
     {
-      $inc: { 'boards.$[element].timeRemaining': -1 }
+      $inc: { 'boards.$[elem].timeRemaining': -1 }
     },
     {
       multi: true,
-      arrayFilters: [{ 'element.started': 1, 'element.timeRemaining': { $gt: 0 }}]
+      arrayFilters: [{ 'elem.started': 1, 'elem.timeRemaining': { $gt: 0 }}]
     }
     ,
     callback

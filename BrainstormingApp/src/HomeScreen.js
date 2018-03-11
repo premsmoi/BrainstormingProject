@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback, 
   TouchableOpacity,
   BackHandler,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
@@ -26,6 +27,12 @@ class HomeScreen extends Component {
   static navigationOptions = ({ navigation }) => ({
     title: navigation.state.params.user.name,
   });
+
+  static navigatorStyle = {
+    drawUnderNavBar: true,
+    navBarTranslucent: true,
+    navBarBackgroundColor: 'blue',
+  };
    
   constructor(props) {
     super(props);

@@ -212,6 +212,25 @@ wsServer.on('connection', function connection(connection, request) {
             userList.enterBoard({username: obj.username, boardId: obj.boardId}, function(err, numAffected){
               if(err)
                 console.log(err)
+              boardList.getBoardById(obj.boardId, function(err, board){
+                  userList.getUsers(board.members, function(err, users){
+                    if(err)
+                      console.log(err)
+                    var user_arr = []
+                    users.forEach(function(user){
+                      user_arr.push({username: user.username, name: user.name, currentBoard: user.currentBoard})
+                    })
+                    var json = JSON.stringify({ body: {code: 'getMembers', members: user_arr}})
+                    connection.send(json)
+                    console.log('json: '+json)
+                    wsServer.clients.forEach(function each(client) {
+                      if(client['boardId'] == connection['boardId']){
+                        client.send(json)
+                        //console.log('sent json:'+json)
+                      }
+                    });
+                    })
+                })
             })
           }
 
@@ -220,6 +239,27 @@ wsServer.on('connection', function connection(connection, request) {
             userList.exitBoard(obj.username, function(err, numAffected){
               if(err)
                 console.log(err)
+              boardList.getBoardById(obj.boardId, function(err, board){
+                  userList.getUsers(board.members, function(err, users){
+                    if(err)
+                      console.log(err)
+                    var user_arr = []
+                    users.forEach(function(user){
+                      user_arr.push({username: user.username, name: user.name, currentBoard: user.currentBoard})
+                    })
+                    var json = JSON.stringify({ body: {code: 'getMembers', members: user_arr}})
+                    //connection.send(json)
+                    console.log('json: '+json)
+                    wsServer.clients.forEach(function each(client) {
+                      if(client['boardId'] == connection['boardId'] && client.readyState === WebSocket.OPEN){
+                        client.send(json)
+                        //console.log('sent json:'+json)
+                      }
+                    });
+                    var json = JSON.stringify({ body: {code: 'closeWebSocket',}})
+                    connection.send(json)
+                    })
+                })
             })
           }
 
@@ -229,6 +269,41 @@ wsServer.on('connection', function connection(connection, request) {
               if(err)
                 console.log(err)
               console.log('numAffected: '+JSON.stringify(numAffected))
+            })
+          }
+
+          else if(obj.code == 'getBoardStartStatus'){
+            console.log(obj)
+            userList.getUserByUsername(obj.username, function(err, user){
+              if(err)
+                console.log(err)
+              //console.log('board: '+JSON.stringify(user.boards))
+              user.boards.forEach(function(board){
+                //console.log('board: '+JSON.stringify(board))
+                if(board.boardId == obj.boardId){
+                  //console.log('Match!')
+                  var json = JSON.stringify({ body: {code: 'getBoardStartStatus', status: board.started}})
+                  connection.send(json)
+                  console.log(json)
+                }
+              })
+              
+            })
+          }
+
+          else if(obj.code == 'boardGetTimer'){
+            console.log(obj)
+            userList.getUserByUsername(obj.username, function(err, user){
+              if(err)
+                console.log(err)
+              user.boards.forEach(function(board){
+                if(board.boardId == obj.boardId){
+                  var json = JSON.stringify({ body: {code: 'getTimer', timeRemaining: board.timeRemaining}})
+                  connection.send(json)
+                  console.log(json)
+                }
+              })
+              
             })
           }
         }
@@ -254,7 +329,7 @@ wsServer.on('connection', function connection(connection, request) {
                 wsServer.clients.forEach(function each(client) {
                   if(client['boardId'] == connection['boardId']){
                     client.send(json)
-                    console.log('sent json:'+json)
+                    //console.log('sent json:'+json)
                   }
                 });
               })
@@ -340,7 +415,7 @@ wsServer.on('connection', function connection(connection, request) {
                       user_arr.push({username: user.username, name: user.name, currentBoard: user.currentBoard})
                     })
                     var json = JSON.stringify({ body: {code: 'getMembers', members: user_arr}})
-                    connection.send(json)
+                    //connection.send(json)
                     console.log('json: '+json)
                     wsServer.clients.forEach(function each(client) {
                       if(client['boardId'] == connection['boardId']){

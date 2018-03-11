@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   BackHandler,
   Image,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
@@ -275,7 +276,7 @@ class BoardManagerScreen extends Component {
                     }}
                     key = {user.username}
                   >
-                    <View style = {{flexDirection: 'row', backgroundColor: user.username==this.state.selectedUserToInvite && user.joined == true? 
+                    <View style = {{flexDirection: 'row', backgroundColor: user.username==this.state.selectedUserToInvite && user.joined == false? 
                       'lightblue':'white'}}>
                       <Text 
                         style={{

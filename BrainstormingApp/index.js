@@ -29,7 +29,11 @@ const myNavigator = StackNavigator({
   BoardManager: {
     screen: BoardManagerScreen
   }
-});
+},
+{
+  headerMode: 'none',
+}
+);
 
 AppRegistry.registerComponent('BrainstormingApp', () => myNavigator);
 //AppRegistry.registerComponent('BrainstormingApp', () => HomeScreen);

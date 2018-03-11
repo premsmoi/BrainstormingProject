@@ -9,6 +9,8 @@ import {
   Text,
   TouchableOpacity,
   BackHandler,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import HomeScreen from './HomeScreen';
@@ -233,18 +235,19 @@ class LoginScreen extends Component {
 
   render() {
     return (
+      <ScrollView contentContainerStyle = {{paddingVertical: 200}} keyboardShouldPersistTaps = {'always'}>
       <View style={{flex: 1, flexDirection: 'column'}}>
         <Modal isVisible={this.state.visibleRegModal}>
             {this._renderRegModal()}
         </Modal>
         <View style={{flex: 2}}/>
-        <View style={{flex: 1, flexDirection: 'row'}}>
+        <View style={{flex: 1, flexDirection: 'row', paddingVertical: 5}}>
           <View style={{flex: 1}}/>
           <View style={{flex: 2}}>
             <View>
               <TextInput
                   style={{
-                    height: 40, 
+                    height: 40, fontSize: 20,
                   }}
                   placeholderTextColor = 'gray'
                   placeholder = 'Username'
@@ -257,13 +260,13 @@ class LoginScreen extends Component {
           </View>
           <View style={{flex: 1}}/>
         </View>
-        <View style={{flex: 1, flexDirection: 'row'}}>
+        <View style={{flex: 1, flexDirection: 'row', paddingVertical: 5}}>
           <View style={{flex: 1}}/>
           <View style={{flex: 2}}>
             <View>
               <TextInput
                   style={{
-                    height: 40, 
+                    height: 40, fontSize: 20,
                   }}
                   placeholderTextColor = 'gray'
                   placeholder = 'Password'
@@ -277,7 +280,7 @@ class LoginScreen extends Component {
           </View>
           <View style={{flex: 1}}/>
         </View>
-        <View style={{flex:1, flexDirection: 'row'}}>
+        <View style={{flex:1, flexDirection: 'row', paddingVertical: 5}}>
           <View style={{flex: 1}}/>
           <View style={{flex: 2}}>
             {this._renderButton('Login', () => {
@@ -287,7 +290,7 @@ class LoginScreen extends Component {
           </View>
           <View style={{flex: 1}}/>
         </View>
-        <View style={{flex:1, flexDirection: 'row'}}>
+        <View style={{flex:1, flexDirection: 'row', paddingVertical: 5}}>
           <View style={{flex: 1}}/>
             <View style={{flex: 2}}>
               {this._renderButton('Register', () => this.setState({visibleRegModal: true}))}
@@ -296,6 +299,7 @@ class LoginScreen extends Component {
         </View>
         <View style={{flex:2}}/>
       </View>
+      </ScrollView>
     );
   }
 }

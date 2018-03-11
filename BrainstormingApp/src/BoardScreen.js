@@ -13,6 +13,7 @@ import {
   BackHandler,
   Image,
   CheckBox,
+  KeyboardAvoidingView,
 } from 'react-native';
 import styles from "./app.style";
 import {noteColor, borderColor} from './colors'
@@ -37,8 +38,11 @@ class BoardScreen extends Component {
     this.newId = 2;
     this.tempNote = null;
     this.state = {
+      openWebSocket: false,
       boardName: '',
       startButtonText: 'Start',
+      startedBoard: 0,
+      timeRemaining: 0,
       //noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
       //             {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
       noteList: [],
@@ -64,6 +68,10 @@ class BoardScreen extends Component {
     this.getState = this.getState.bind(this);
     this.openShowMembersModal = this.openShowMembersModal.bind(this);
     this.exitBoard = this.exitBoard.bind(this);
+    this.countTimer = this.countTimer.bind(this);
+    this.getTimeRemaining = this.getTimeRemaining.bind(this);
+    this.toBoardManager = this.toBoardManager.bind(this);
+    this.openNewNoteModal = this.openNewNoteModal.bind(this);
     //console.log(this.props)
 
     //this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
@@ -77,6 +85,11 @@ class BoardScreen extends Component {
       if(obj.body.code == 'getNotes'){
         console.log('I got notes')
         this.getNotes();
+      }
+
+      if(obj.body.code == 'closeWebSocket'){
+        console.log('closeWebSocket')
+        this.ws.close()
       }
 
       if(obj.body.code == 'updatedNotes'){
@@ -108,6 +121,14 @@ class BoardScreen extends Component {
           this.setState({ tagSelection: newTagSelection })
         })
       }
+
+      if(obj.body.code == 'getBoardStartStatus'){
+        this.setState({startedBoard: obj.body.status})
+      }
+
+       if(obj.body.code == 'getTimer'){
+        this.setState({timeRemaining: obj.body.timeRemaining})
+      }
     };
 
     this.ws.onerror = (e) => {
@@ -117,12 +138,14 @@ class BoardScreen extends Component {
 
     this.ws.onclose = (e) => {
       // connection closed
+      this.setState({openWebSocket: false})
       console.log(e.code, e.reason);
       console.log('Closed!')
     };
 
     this.ws.onopen = () => {
       // connection opened
+      this.setState({openWebSocket: true})
       this.getNotes();
       //ws.send('Hello Node Server!'); // send a message
       var tagClientRequest = {
@@ -160,48 +183,40 @@ class BoardScreen extends Component {
       }
       var requestString = JSON.stringify(enterBoardRequest)
       this.ws.send(requestString)
+
+      this.getBoardStartStatus()
     };
+
+    setInterval(this.countTimer, 1000)
+
+  }
+    
+
+  toBoardManager(){
+    this.props.navigation.navigate(
+                  'BoardManager', 
+                  { user: this.props.navigation.state.params.user, 
+                    boardId: this.props.navigation.state.params.boardId, 
+                    boardName: this.props.navigation.state.params.boardName 
+                  }
+                )
+                this.ws.close()
   }
 
-  static navigationOptions = ({ navigation }) => {
-    const {params = {}} = navigation.state;
-    return{
-      title: navigation.state.params.boardName,
-      headerRight: (
-        <View style= {{flexDirection: 'row'}}>
-          <TouchableWithoutFeedback
-            onPress={() => params.handleThis()}
-          >
-            <Image 
-              style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
-              source={require('../img/members.png')}
-            />
-          </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback
-            onPress={() => params.exitBoard()}
-          >
-            <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10}}>
-            Exit
-            </Text>
-          </TouchableWithoutFeedback>
-        </View>
-      ),
-    }
-    
-  };
-
-  componentDidMount() {
-        this.props.navigation.setParams({
-            handleThis: this.openShowMembersModal,
-            exitBoard: this.exitBoard
-        });
-    }
+  openNewNoteModal(){
+    this.setState({visibleNewNoteModal: true})
+  }
 
   openShowMembersModal() {
     this.setState({
       visibleShowMembersModal: true,
     })
   }
+
+  getTimeRemaining(){
+     console.log('timeRemaining: '+this.state.timeRemaining)
+  }
+
 
   getState(){
     return this.state
@@ -223,6 +238,36 @@ class BoardScreen extends Component {
 
   setVisibleOpenNoteModal(bool){
     this.isVisibleOpenNoteModal = bool;
+  }
+
+
+  countTimer(){
+    //console.log('startedBoard: '+this.state.startedBoard)
+    if(this.state.startedBoard == 1 && this.state.openWebSocket == true){
+      var boardGetTimerRequest = {
+        from: 'Board',
+        code: 'boardGetTimer',
+        username: this.user.username,
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(boardGetTimerRequest)
+      this.ws.send(requestString)
+    }
+  }
+
+  getBoardStartStatus(){
+     var getBoardStartStatusRequest = {
+        from: 'Board',
+        code: 'getBoardStartStatus',
+        username: this.user.username,
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(getBoardStartStatusRequest)
+      this.ws.send(requestString)
+  }
+
+  boardGetTimer(){
+
   }
 
   getNotes(){
@@ -330,16 +375,18 @@ class BoardScreen extends Component {
   }
 
   exitBoard(){
+    this.setState({openWebSocket:false})
     var exitBoardRequest = {
       from: 'Board',
       code: 'exitBoard',
       username: this.user.username,
+      boardId: this.props.navigation.state.params.boardId, 
     }
     var requestString = JSON.stringify(exitBoardRequest)
     console.log('exitBoard')
     this.ws.send(requestString)
     this.props.navigation.navigate('Home', { user: this.props.navigation.state.params.user })
-    this.ws.close()
+    //this.ws.close()
   }
 
   startBoard(){
@@ -558,45 +605,101 @@ class BoardScreen extends Component {
             {this._renderShowMembersModal()}
           </Modal>
           <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
+              <View style={{ 
+                marginVertical: 10, 
+                marginHorizontal: 20,
+                flex: 1 
+              }}>
+                <TouchableWithoutFeedback
+                onPress={() => this.openNewNoteModal()}
+                >
+                  <Image 
+                    style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                    source={require('../img/write.png')}
+                  />
+                </TouchableWithoutFeedback>
+              </View>
+              <View style={{ 
+                marginVertical: 10, 
+                marginHorizontal: 20,
+                flex: 1 
+              }}>
+                <TouchableWithoutFeedback
+                  onPress={() => {this.setState({visibleShowMembersModal: true})}}
+                >
+                  <Image 
+                    style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                    source={require('../img/members.png')}
+                  />
+                </TouchableWithoutFeedback>
+              </View>
+              <View style={{
+                flex: 1,
+                marginVertical: 10, 
+                marginHorizontal: 20,
+              }}>
+                <TouchableWithoutFeedback
+                  onPress={() => this.toBoardManager()}
+                >
+                  <Image 
+                    style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                    source={require('../img/setting.png')}
+                  />
+                </TouchableWithoutFeedback>
+              </View>
+              <View style={{ 
+                marginVertical: 10, 
+                marginHorizontal: 20,
+                //flex: 1 
+              }}>
+                <TouchableWithoutFeedback
+                  onPress={() => this.exitBoard()}
+                >
+                  <View>
+                    <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10, alignItems: 'center'}}>
+                      Exit
+                    </Text>
+                  </View>
+                </TouchableWithoutFeedback>
+              </View> 
+              
+          </View>
+          <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
+            <View style={{ 
+                marginVertical: 10, 
+                marginHorizontal: 20,
+                //flex: 1 
+              }}>
+                <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10}}>
+                  {this.state.timeRemaining}
+                </Text>
+            </View>
             <View style={{ 
               marginVertical: 10, 
               marginHorizontal: 20,
-              flex: 1 
+              flex: 2
             }}>
-              {this._renderButton('Add note', ()=> this.setState({visibleNewNoteModal: true}))}
-            </View>
-            <View style={{
-              flex: 1,
-              marginVertical: 10, 
-              marginHorizontal: 20,
-            }}>
-              {this._renderButton('Manage', ()=> {
-                this.props.navigation.navigate(
-                  'BoardManager', 
-                  { user: this.props.navigation.state.params.user, 
-                    boardId: this.props.navigation.state.params.boardId, 
-                    boardName: this.props.navigation.state.params.boardName 
-                  }
-                )
-                this.ws.close()
-              })}
             </View>
             <View style={{ 
-              marginVertical: 10, 
-              marginHorizontal: 20,
-              flex: 1 
-            }}>
-              {this._renderButton(this.state.startButtonText, () => {
-                this.startBoard()
+                marginVertical: 10, 
+                marginHorizontal: 20,
+                flex: 1 
+              }}>
+                {
+                      !this.state.startedBoard && this._renderButton(this.state.startButtonText, () => {
+                      this.startBoard()
+                      this.getBoardStartStatus()
+                      this.boardGetTimer()
+                      })
                 }
-              )}
-            </View>  
+              </View>  
           </View>
           
           
           <View style={{flex: 9}}>
             <ScrollView 
               showsVerticalScrollIndicator = {true} 
+              keyboardShouldPersistTaps = {'always'}
               style={{
 
               }}>
@@ -609,7 +712,8 @@ class BoardScreen extends Component {
               </View>
               <ScrollView 
                 horizontal = {true}
-                showsHorizontalScrollIndicator = {true} 
+                showsHorizontalScrollIndicator = {true}
+                keyboardShouldPersistTaps = {'always'} 
                 style = {{
                   backgroundColor: 'white',
                   top: 0, 
