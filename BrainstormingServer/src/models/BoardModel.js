@@ -18,6 +18,7 @@ var boardSchema = new Schema({
     	type: String,
     },
     members: [String],
+    pendingMembers: [String],
     notes: [{ 
         type: Schema.Types.ObjectId, 
         ref: 'Note',
@@ -25,6 +26,8 @@ var boardSchema = new Schema({
         //dropDups: true,
     }],
     tags: [String],
+    mode: String,
+    LimitedTime: Number,
 });
 //userSchema.plugin(uniqueValidator);
 

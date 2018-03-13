@@ -95,11 +95,9 @@ module.exports.updateName = function(req, res){
   })
 }
 
-module.exports.deleteBoard = function(req, res){
+module.exports.deleteBoard = function(obj, callback){
   console.log('deleteBoard')
-  Board.findById(req.body.boardId).remove(function(err, board){
-    res.send(board)
-  });
+  Board.findById(obj.boardId).remove(callback);
 }
 
 module.exports.addMember = function(obj, callback){
@@ -110,6 +108,25 @@ module.exports.addMember = function(obj, callback){
     { $push: {members: obj.username}},
     callback
   )}
+
+module.exports.addPendingMember = function(obj, callback){
+  console.log('addPendingMember')
+  console.log('obj.boardId'+obj.boardId)
+  console.log('obj.username'+obj.username)
+  Board.update({_id: obj.boardId},
+    { $push: {pendingMembers: obj.username}},
+    callback
+  )}
+
+module.exports.deletePendingMember = function(obj, callback){
+  console.log('obj: '+obj)
+  Board.update({ _id: obj.boardId}, 
+    {
+      $pull: { pendingMembers: obj.username }
+    },
+    callback
+)}
+
 
 module.exports.addNote = function(obj, callback){
   Board.update({_id: obj.boardId},

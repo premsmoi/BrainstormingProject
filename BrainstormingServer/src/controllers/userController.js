@@ -60,6 +60,7 @@ exports.get_user = function(req, res){
   User.findOne({username: req.body.username}, function(err, user){
     if(err)
       res.send(err)
+    console.log('get user !!')
     res.json(user)
 
     //console.log(user)
@@ -146,16 +147,13 @@ exports.add_board = function(req, res){
   )
 }
 
-exports.delete_board = function(req, res){
+exports.deleteBoard = function(obj, callback){
   User.update({},
             {
-              $pull: { boards: { boardId: req.body.boardId }}
+              $pull: { boards: { boardId: obj.boardId }}
             },
             {multi: true},
-            function(err, numAffected){
-              console.log('use delete board id :'+req.body.boardId)
-              res.send(numAffected)
-            })
+            callback)
 }
 
 exports.enterBoard = function(obj, callback){

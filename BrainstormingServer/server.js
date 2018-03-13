@@ -7,9 +7,11 @@ var express = require('express'),
     User = require('./src/models/UserModel'),
     Board = require('./src/models/BoardModel'),
     Note = require('./src/models/NoteModel'),
+    Notification = require('./src/models/NotificationModel')
     boardList = require('./src/controllers/BoardController'),
     noteList = require('./src/controllers/NoteController'),
     userList = require('./src/controllers/UserController'),
+    notificationList = require('./src/controllers/NotificationController'),
     WebSocket = require('ws'),
     validator = require('express-validator'),
     passport = require('passport'),
@@ -17,7 +19,9 @@ var express = require('express'),
     LocalStrategy = require('passport-local').Strategy,
     util = require('util'),
     async = require('async'),
-    sleep = require('sleep');
+    includes = require('array-includes'),
+    sleep = require('sleep'),
+    dateFormat = require('dateformat');
 
 
 
@@ -57,6 +61,8 @@ routes(app);
 var routes = require('./src/routes/BoardRoutes');
 routes(app);
 var routes = require('./src/routes/NoteRoutes');
+routes(app);
+var routes = require('./src/routes/NotificationRoutes');
 routes(app);
 
 // This responds with "Hello World" on the homepage
@@ -101,15 +107,142 @@ var connectionList = []
 
 wsServer.on('connection', function connection(connection, request) {
     
-    //var connection = request.accept('echo-protocol', request.origin);
-
-    //console.log(connection)
-    //console.log((new Date()) + ' Connection accepted.');
-    
     connection.on('message', function incomiing(message) {
         var obj = JSON.parse(message)  
-        //console.log('message: '+obj)
-        //console.log(obj)
+       
+        /*
+          ########## HOME ##########
+        */
+        if(obj.from == 'Home'){
+
+
+          if(obj.code == 'tagUser'){
+            connection['username'] = obj.username
+            connection['from'] = obj.from
+            var cc = util.inspect(connection)
+            console.log('Client: '+connection['username'] + ' connect to server')
+          }
+
+          else if(obj.code == 'getBoardList'){
+            console.log(obj)
+            boardList.getBoardList(obj.board_id_list, function(err, boards){
+              if(err)
+                console.log(err)
+              var json = JSON.stringify({ body: {code: 'getBoardList', boards: boards} });
+              connection.send(json);
+            })
+          }
+
+          else if(obj.code == 'getUser'){
+            console.log(obj)
+            userList.getUserByUsername(obj.username, function(err, user){
+              if(err)
+                console.log(err)
+              var json = JSON.stringify({ body: {code: 'getUser', user: user} });
+              connection.send(json);
+            })
+          }
+
+          else if(obj.code == 'acceptInvite'){
+            console.log(obj)
+            userList.addBoard({username: obj.username, boardId: obj.boardId}, function(err, numAffected){
+              if(err)
+                console.log(err)
+              userList.getUserByUsername(obj.username, function(err, user){
+                if(err)
+                  console.log(err)
+                var json = JSON.stringify({ body: {code: 'getUser', user: user}})
+                 wsServer.clients.forEach(function each(client) {
+                      if(client['username'] == obj.username){
+                        console.log('send get user to username: '+obj.username)
+                        client.send(json)
+                      }
+                    });
+              })
+              boardList.getBoardById(obj.boardId, function(err, board){
+                boardList.addMember({username: obj.username, boardId: obj.boardId}, function(err, numAffected){
+                  if(err)
+                    console.log(err)
+                  
+                    userList.getUsers(board.members, function(err, users){
+                      if(err)
+                        console.log(err)
+                      var user_arr = []
+                      users.forEach(function(user){
+                        user_arr.push({username: user.username, name: user.name, currentBoard: user.currentBoard})
+                      })
+                      var json = JSON.stringify({ body: {code: 'getMembers', members: user_arr}})
+                      var json2 = JSON.stringify({ body: {code: 'getBoardListTrigger'} });
+                      //connection.send(json)
+                      console.log('json: '+json)
+                      wsServer.clients.forEach(function each(client) {
+                        if(client['boardId'] == connection['boardId']){
+                          client.send(json)
+                        }
+                        if(client['username'] == obj.username){
+                          client.send(json2)
+                        }
+                    });
+                  })
+                })
+              })
+                
+            })
+          }
+
+          else if(obj.code == 'deleteBoard'){
+            console.log(obj)
+            var res_users = []
+            boardList.getBoardById(obj.boardId, function(err, board){
+              if(err)
+                console.log(err)
+              res_users = board.members
+              boardList.deleteBoard({boardId: obj.boardId}, function(err, removed){
+                if(err)
+                  console.log(err)
+                userList.deleteBoard({boardId: obj.boardId}, function(err, numAffected){
+                  if(err)
+                    console.log(err)
+
+                  var json = JSON.stringify({ body: {code: 'getBoardListTrigger'} });
+                  wsServer.clients.forEach(function each(client) {
+                    if(includes(res_users, client['username']) && client['from'] == 'Home'){
+                      client.send(json)
+                    }
+                  });
+                })
+               
+              }) 
+            })
+          }
+
+          else if(obj.code == 'getNotification'){
+            console.log(obj)
+            notificationList.getNotification({username: obj.username}, function(err, notifications){
+              if(err)
+                console.log(err)
+              var json = JSON.stringify({ body: {code: 'getNotification', notifications: notifications} });
+              connection.send(json);
+              console.log(json)
+            })
+          }
+
+          else if(obj.code == 'readNotification'){
+            console.log(obj)
+            notificationList.updateNotification({id: obj.id, updatedObj : {read: true}}, function(err, numAffected){
+              if(err)
+                console.log(err)
+              notificationList.getNotification({username: obj.username}, function(err, notifications){
+                if(err)
+                  console.log(err)
+                var json = JSON.stringify({ body: {code: 'getNotification', notifications: notifications} });
+                connection.send(json);
+                console.log(json)
+              })
+            })
+          }
+        }
+
         if(obj.from == 'Board'){
           if(obj.code == 'tagBoard'){
             connection['boardId'] = obj.boardId
@@ -141,6 +274,31 @@ wsServer.on('connection', function connection(connection, request) {
                         client.send(json)
                       }
                     });
+                    var now = new Date()
+                    var newNoti = {
+                      notificationType: 'normal',
+                      boardId: board._id,
+                      boardName: board.boardName,
+                      user: obj.note.writer,
+                      detail: 'There is a new note in board: '+board.boardName,
+                      date: dateFormat(now, 'd mmmm yyyy HH:MM')
+                    }
+                    var to_users = []
+                    board.members.map(function(member){
+                      if(member != note.writer){
+                        to_users.push(member)
+                      }
+                    })
+                    notificationList.createNotification({newNoti: newNoti, users: to_users}, function(err, noti){
+                      if(err)
+                        console.log(err)
+                      var json = JSON.stringify({ body: {code: 'getNotificationt', notification: noti}});
+                      wsServer.clients.forEach(function each(client) {
+                        if(includes(board.members, client['username']) && client['from'] == 'Home' && client['username'] != note.writer){
+                          client.send(json)
+                        }
+                      });
+                    })
                   })
                 })
               })
@@ -306,52 +464,6 @@ wsServer.on('connection', function connection(connection, request) {
               
             })
           }
-        }
-
-        else if(obj.from == 'BoardManager'){
-
-          if(obj.code == 'tagBoardManager'){
-            connection['boardId'] = obj.boardId
-            connection['username'] = obj.username
-            var cc = util.inspect(connection)
-            console.log('Client: '+connection['username'] + ' connect board manager: '+connection['boardId'])
-          }
-
-          else if(obj.code == 'boardAddTag'){
-            console.log(obj)
-            boardList.addTag({boardId: obj.boardId, tag: obj.tag}, function(err, numAffected){
-              if(err)
-                console.log(err)
-              boardList.getBoardById(obj.boardId, function(err, board){
-                if(err)
-                  console.log(err)
-                var json = JSON.stringify({ body: {code: 'getTags', tags: board.tags}})
-                wsServer.clients.forEach(function each(client) {
-                  if(client['boardId'] == connection['boardId']){
-                    client.send(json)
-                    //console.log('sent json:'+json)
-                  }
-                });
-              })
-            })
-          }
-
-          else if(obj.code == 'boardDeleteTag'){
-            console.log(obj)
-            boardList.deleteTag({boardId: obj.boardId, tag: obj.tag}, function(err, numAffected){
-                boardList.getBoardById(obj.boardId, function(err, board){
-                  if(err)
-                    console.log(err)
-                  var json = JSON.stringify({ body: {code: 'getTags', tags: board.tags}})
-                  wsServer.clients.forEach(function each(client) {
-                    if(client['boardId'] == connection['boardId']){
-                      client.send(json)
-                      console.log('sent json:'+json)
-                    }
-                  });
-                })
-                });
-          }
 
           else if(obj.code == 'searchUser'){
             console.log(obj)
@@ -430,6 +542,122 @@ wsServer.on('connection', function connection(connection, request) {
           }
         }
 
+        else if(obj.from == 'BoardManager'){
+
+          if(obj.code == 'tagBoardManager'){
+            connection['boardId'] = obj.boardId
+            connection['username'] = obj.username
+            var cc = util.inspect(connection)
+            console.log('Client: '+connection['username'] + ' connect board manager: '+connection['boardId'])
+          }
+
+          else if(obj.code == 'boardAddTag'){
+            console.log(obj)
+            boardList.addTag({boardId: obj.boardId, tag: obj.tag}, function(err, numAffected){
+              if(err)
+                console.log(err)
+              boardList.getBoardById(obj.boardId, function(err, board){
+                if(err)
+                  console.log(err)
+                var json = JSON.stringify({ body: {code: 'getTags', tags: board.tags}})
+                wsServer.clients.forEach(function each(client) {
+                  if(client['boardId'] == connection['boardId']){
+                    client.send(json)
+                    //console.log('sent json:'+json)
+                  }
+                });
+              })
+            })
+          }
+
+          else if(obj.code == 'searchUser'){
+            console.log(obj)
+            userList.searchUsers(obj.username, function(err, users){
+              if(err)
+                console.log(err)
+              var user_arr = []
+              var itemsProcessed = 0;
+              async.forEachOf(users, function (user, key, callback) {
+                boardList.findBoard({'_id': obj.boardId, 'members': user.username}, function(err, boards){
+                  if (err) 
+                    return callback(err);
+                  if(boards.length == 0){
+                    user_arr.push({username: user.username, joined: false})
+                  }
+                  else{
+                    user_arr.push({username: user.username, joined: true})
+                  }
+                  console.log('boards length: '+boards.length)
+                  itemsProcessed++;
+                  if(itemsProcessed == users.length){
+                    console.log('user_arr: '+user_arr)
+                    var json = JSON.stringify({ body: {code: 'getUserSearchResult', userList: user_arr}})
+                    connection.send(json)
+                  }
+                  callback()
+                })
+              }, function (err) {
+                if (err) console.error(err.message);
+              })
+              /*users.forEach(function each(user){
+                boardList.findBoard({'_id': obj.boardId, 'members': user.username}, function(err, boards){
+                  if(err)
+                    console.log(err)
+                  if(boards.length == 0){
+                    user_arr.push({username: user.username, joined: 0})
+                  }
+                  else{
+                    user_arr.push({username: user.username, joined: 1})
+                  }
+                  console.log('boards length: '+boards.length)
+                  user_arr.push(1)
+                })*/
+            })
+          }
+
+          else if(obj.code == 'inviteUser'){
+            console.log(obj)
+            var now = new Date()
+            var newNoti = {
+                      notificationType: 'reply',
+                      boardId: obj.boardId,
+                      boardName: obj.boardName,
+                      user: obj.username,
+                      detail: 'You are invited to board: '+obj.boardName,
+                      date: dateFormat(now, 'd mmmm yyyy HH:MM')
+                    }
+            notificationList.createNotification({newNoti: newNoti, users: [obj.username]}, function(err, noti){
+              if(err)
+                console.log(err)
+              var json = JSON.stringify({ body: {code: 'getNotificationt', notification: noti}});
+              wsServer.clients.forEach(function each(client) {
+                if(client['from'] == 'Home' && client['username'] == obj.username){
+                  client.send(json)
+                }
+              });
+            })
+          }
+
+          else if(obj.code == 'boardDeleteTag'){
+            console.log(obj)
+            boardList.deleteTag({boardId: obj.boardId, tag: obj.tag}, function(err, numAffected){
+                boardList.getBoardById(obj.boardId, function(err, board){
+                  if(err)
+                    console.log(err)
+                  var json = JSON.stringify({ body: {code: 'getTags', tags: board.tags}})
+                  wsServer.clients.forEach(function each(client) {
+                    if(client['boardId'] == connection['boardId']){
+                      client.send(json)
+                      console.log('sent json:'+json)
+                    }
+                  });
+                })
+                });
+          }
+
+          
+        }
+
         if(obj.code == 'boardGetTags'){
           console.log(obj)
           boardList.getBoardById(obj.boardId, function(err, board){
@@ -462,7 +690,7 @@ wsServer.on('connection', function connection(connection, request) {
 
     });
     connection.on('close', function(reasonCode, description) {
-      console.log('Client: '+connection['username'] + ' disconnect board: '+connection['boardId'])
+      console.log('Client: '+connection['username'] + ' disconnect')
         //console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
     });
 });
@@ -471,7 +699,9 @@ function countTimer(){
   userList.countTimer(0, function(err, numAffected){
     if(err)
       console.log(err)
-    console.log('Count')
+    var now = new Date()
+    dateFormat(now, 'default')
+    //console.log(dateFormat(now, 'd mmmm yyyy HH:MM'))
   })
 }
 

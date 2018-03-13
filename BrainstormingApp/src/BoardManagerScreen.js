@@ -40,6 +40,7 @@ class BoardManagerScreen extends Component {
       selectedUserToInvite: '',
       usernameSearchQuery: '',
       members: [],
+      openWebSocket: false,
     }
 
     this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
@@ -78,6 +79,7 @@ class BoardManagerScreen extends Component {
 
     this.ws.onopen = () => {
       // connection opened
+      this.setState({openWebSocket: true})
       this.getMembers()
 
       var tagClientRequest = {
@@ -168,6 +170,7 @@ class BoardManagerScreen extends Component {
         code: 'inviteUser',
         username: this.state.selectedUserToInvite,
         boardId: this.props.navigation.state.params.boardId,
+        boardName: this.props.navigation.state.params.boardName,
       }
     var requestString = JSON.stringify(inviteUserRequest)
     console.log('Invite User Request')
@@ -387,6 +390,7 @@ class BoardManagerScreen extends Component {
                     boardName: this.props.navigation.state.params.boardName 
                   }
               )
+              this.setState({openWebSocket: false})
               this.ws.close()
             })}
           </View>

@@ -11,6 +11,8 @@ import {
   TouchableOpacity,
   BackHandler,
   KeyboardAvoidingView,
+  Image,
+  ImageBackground,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
@@ -43,6 +45,7 @@ class HomeScreen extends Component {
       visibleNewBoardModal: false,
       visibleBoardDetailModal: false,
       visibleInviteModal: false,
+      visibleNotificationModal: false,
       createSuccess: false,
       newBoardId: null,
       changeBoardName: '',
@@ -50,10 +53,76 @@ class HomeScreen extends Component {
       usernameSearchResult: [],
       selectedUserToInvite: '',
       usernameSearchQuery: '',
+      numberOfUnreadNotification: 0,
+      notifications: [],
+      openWebSocket: false,
     }
-    //this.getUser()
-    this.getBoards();
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+
+    this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
+
+    this.ws.onmessage = (e) => {
+      // a message was received
+      //console.log("e.data: "+e.data);
+      var obj = JSON.parse(e.data)
+      //console.log(obj.body.notes)
+      if(obj.body.code == 'getBoardList'){
+        console.log('I got board list')
+        this.setState({myBoards: obj.body.boards})
+      }
+
+      if(obj.body.code == 'getUser'){
+        console.log('I got user')
+        this.setState({user: obj.body.user})
+      }
+
+      if(obj.body.code == 'getBoardListTrigger'){
+        console.log('I got board trigger')
+        this.getBoards();
+      }
+
+      if(obj.body.code == 'getUserTrigger'){
+        console.log('I got user trigger')
+        this.getUser();
+      }
+
+      if(obj.body.code == 'getNotification'){
+        console.log('I got notification')
+        console.log('notification: '+JSON.stringify(obj.body.notifications))
+        this.setState({
+          notifications: obj.body.notifications,
+        })
+        this.setState({numberOfUnreadNotification: this.countUnreadNotification()})
+      }
+      
+    };
+
+    this.ws.onerror = (e) => {
+      // an error occurred
+      console.log(e.message);
+    };
+
+    this.ws.onclose = (e) => {
+      // connection closed
+      this.setState({openWebSocket: false})
+      console.log(e.code, e.reason);
+      console.log('Closed!')
+    };
+
+    this.ws.onopen = () => {
+      // connection opened
+      this.setState({openWebSocket: true})
+      var tagClientRequest = {
+        from: 'Home',
+        code: 'tagUser',
+        username: this.props.navigation.state.params.user.username,
+      }
+      var requestString = JSON.stringify(tagClientRequest)
+      //console.log('props: '+this.props)
+      this.ws.send(requestString)
+      this.getNotification()
+      this.getBoards();
+    };
     console.log('I am '+this.state.user)
 
   }
@@ -98,6 +167,21 @@ class HomeScreen extends Component {
       }
   }
 
+  getBoards(){
+    var board_id_list = []
+    this.state.user.boards.map(function(board){
+      board_id_list.push(board.boardId)
+    })
+    var getBoardsRequest = {
+      from: 'Home',
+      code: 'getBoardList',
+      board_id_list: board_id_list,
+    }
+    var requestString = JSON.stringify(getBoardsRequest)
+    //console.log('props: '+this.props)
+    this.ws.send(requestString)
+  }
+/*
   async getBoards(){
     var idList = []
     for (let board of this.state.user.boards){
@@ -128,7 +212,7 @@ class HomeScreen extends Component {
         console.log(error)
       }
   }
-
+*/
   async createNewBoard(){
     console.log('createNewBoard')
 
@@ -229,15 +313,8 @@ class HomeScreen extends Component {
     .catch((error) => {
       throw error;
     });
+    this.ws.close()
   }
-
-   _renderButton = (text, onPress) => (
-    <TouchableOpacity onPress={onPress}>
-      <View style={styles.button}>
-        <Text>{text}</Text>
-      </View>
-    </TouchableOpacity>
-  )
 
   async updateBoardName(){
     var params = {
@@ -264,6 +341,17 @@ class HomeScreen extends Component {
         //this.getUser();
   }
 
+  deleteBoard(){
+    var deleteBoardRequest = {
+      from: 'Home',
+      code: 'deleteBoard',
+      boardId: this.state.showDetailBoard._id,
+    }
+    var requestString = JSON.stringify(deleteBoardRequest)
+    console.log('I delete board!!!')
+    this.ws.send(requestString)
+  }
+/*
   async deleteBoard(){
     var params = {
       boardId: this.state.showDetailBoard._id,
@@ -322,6 +410,63 @@ class HomeScreen extends Component {
     await this.getUser();
     await this.getBoards();
   }
+*/
+  countUnreadNotification(){
+    var count = 0
+    console.log('test notification: '+this.state.notifications)
+    this.state.notifications.map(function(notification){
+      if(!notification.read){
+        count++
+      }
+    })
+    console.log('count: '+count)
+    return count
+  }
+
+  acceptInvite(notification){
+    var acceptInviteRequest = {
+      from: 'Home',
+      code: 'acceptInvite',
+      username: this.state.user.username,
+      boardId: notification.boardId,
+      boardName: notification.boardName,
+    }
+    var requestString = JSON.stringify(acceptInviteRequest)
+    //console.log('props: '+this.props)
+    this.ws.send(requestString)
+  }
+
+  getNotification(){
+    var getNotificationRequest = {
+      from: 'Home',
+      code: 'getNotification',
+      username: this.state.user.username,
+    }
+    var requestString = JSON.stringify(getNotificationRequest)
+    //console.log('props: '+this.props)
+    this.ws.send(requestString)
+  }
+
+  readNotification(notification){
+    var readNotificationRequest = {
+      from: 'Home',
+      code: 'readNotification',
+      id: notification._id,
+      username: this.state.user.username,
+    }
+    var requestString = JSON.stringify(readNotificationRequest)
+    //console.log('props: '+this.props)
+    this.ws.send(requestString)
+  }
+
+
+   _renderButton = (text, onPress) => (
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.button}>
+        <Text>{text}</Text>
+      </View>
+    </TouchableOpacity>
+  )
 
   
    _renderTextInput = (placeholder, onChange, value) => (
@@ -401,7 +546,8 @@ class HomeScreen extends Component {
         <View style = {{flex: 3}}>
           {this._renderButton("Enter", () => {
             this.setState({ visibleBoardDetailModal: false })
-            this.setState({changeBoardName: ''})
+            this.setState({changeBoardName: '', openWebSocket: false})
+            this.ws.close()
             this.props.navigation.navigate('Board',
               {user: this.state.user, 
                 boardName : this.state.showDetailBoard.boardName, 
@@ -442,7 +588,106 @@ class HomeScreen extends Component {
         <View style = {{flex: 1}}/>
       </View>
     </View>
-  );
+  )
+
+  _renderNormalNotification = (notification) => (
+    <TouchableWithoutFeedback
+      onPress={() => this.readNotification(notification)}
+    >  
+      <View style=
+        {{ 
+          flexDirection: 'row',
+          backgroundColor: notification.read == true? 'white' : '#d9d9d9'
+        }} 
+        key = {notification} >
+        <View style={{
+          flex: 1,
+          borderColor: 'gray',
+          borderWidth: 1,
+        }}>
+          <Text 
+            style={{
+              fontSize: 18, 
+              color: 'black', 
+              marginVertical: 5,
+              marginHorizontal: 5,
+            }}>
+              {notification.detail}
+          </Text>
+        </View>
+      </View>
+    </TouchableWithoutFeedback>
+  )
+
+  _renderReplyNotification = (notification) => (
+      <View style={{
+        flexDirection: 'column',
+        backgroundColor: notification.read == true? 'white' : '#d9d9d9',
+        borderColor: 'gray',
+        borderWidth: 1,
+      }} 
+        key = {notification} >
+        <View style={{
+        }}>
+          <Text 
+            style={{
+              fontSize: 18, 
+              color: 'black', 
+              marginVertical: 5,
+              marginHorizontal: 5,
+            }}>
+              {notification.detail}
+          </Text>
+        </View>
+        <View style={{flexDirection: 'row'}}>
+          {
+            notification.read == false
+            && this._renderButton("Accept", () => {
+              this.readNotification(notification)
+              this.acceptInvite(notification)
+            })
+          }
+          {
+            notification.read == false
+            && this._renderButton("Decline", () => this.readNotification(notification))
+          }
+        </View>
+      </View>
+    )
+
+  _renderNotificationModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+          {this.state.notifications.map((notification) => {
+            
+              //Alert.alert(notification.notificationType)
+
+              //notification.notificationType == 'normal' && this._renderNormalNotification(notification)
+              //notification.notificationType == 'reply' &&
+              if(notification.notificationType == 'reply'){
+                return (
+                 this._renderReplyNotification(notification)
+                )
+              }
+              else {
+                return(
+                  this._renderNormalNotification(notification)
+                )
+              }
+              
+            
+              //&& this._renderReplyNotification(notification)
+          })}
+      {this._renderButton("OK", () => {
+        this.setState({ visibleNotificationModal: false })
+      })}
+    </View>
+  )
 
   render() {
     return (
@@ -452,6 +697,9 @@ class HomeScreen extends Component {
         </Modal>
         <Modal isVisible={this.state.visibleBoardDetailModal}>
             {this._renderBoardDetailModal()}
+        </Modal>
+        <Modal isVisible={this.state.visibleNotificationModal}>
+            {this._renderNotificationModal()}
         </Modal>
         <View style={{flex: 1, flexDirection: 'row'}}>
           <View style={{ marginVertical: 20, 
@@ -473,10 +721,36 @@ class HomeScreen extends Component {
             height: 50,
             flex: 1.5
           }}>
-            {this._renderButton("Info", () => {  
-              Alert.alert('My Info!')
-              }
-            )}
+            <TouchableWithoutFeedback
+              onPress={() => this.setState({visibleNotificationModal: true})}
+            >
+              <ImageBackground
+                style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                source={require('../img/message.png')}
+              >
+                {
+                  this.state.numberOfUnreadNotification > 0 && (
+                    <View style = {{
+                      width: this.state.numberOfUnreadNotification > 9? 22 : 16,
+                      height: 16,
+                      borderRadius: 8,
+                      backgroundColor: 'red',
+                      marginLeft: 24,
+                    }}>
+                      <Text style={{
+                        fontSize: 10, 
+                        color: 'white',  
+                        //marginVertical: 20, 
+                        marginHorizontal: 5,
+                      }}>
+                        {this.state.numberOfUnreadNotification}
+                      </Text>
+                    </View>
+                    )
+                }
+                
+              </ImageBackground>
+            </TouchableWithoutFeedback>
           </View>
 
           <View style={{ 

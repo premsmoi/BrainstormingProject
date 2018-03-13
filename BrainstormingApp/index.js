@@ -8,6 +8,7 @@ import GroupScreen from './src/GroupScreen';
 import BoardScreen from './src/BoardScreen';
 import MyComponent from './src/MyComponent';
 import BoardManagerScreen from './src/BoardManagerScreen';
+import DrawBoard from './src/DrawBoard'
 import Test from './src/Test'
 
 const myNavigator = StackNavigator({
@@ -36,7 +37,7 @@ const myNavigator = StackNavigator({
 );
 
 AppRegistry.registerComponent('BrainstormingApp', () => myNavigator);
-//AppRegistry.registerComponent('BrainstormingApp', () => HomeScreen);
+//AppRegistry.registerComponent('BrainstormingApp', () => DrawBoard);
 //AppRegistry.registerComponent('BrainstormingApp', () => Test);
 export default myNavigator;
-//export default Test;
+//export default DrawBoard;

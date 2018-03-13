@@ -8,7 +8,7 @@ module.exports = function(app) {
 	app.post('/create_board', boardList.create_a_board);
 	app.post('/board_update_name', boardList.updateName);
 	app.post('/get_board_list', boardList.get_board_list);
-	app.post('/delete_board', boardList.deleteBoard)
+	//app.post('/delete_board', boardList.deleteBoard)
 	app.post('/board_add_member', boardList.addMember)
 
 }

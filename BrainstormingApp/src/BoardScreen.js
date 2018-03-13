@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   BackHandler,
   Image,
+  ImageBackground,
   CheckBox,
   KeyboardAvoidingView,
 } from 'react-native';
@@ -55,6 +56,9 @@ class BoardScreen extends Component {
       tags: [],
       newNoteTags: [],
       tagSelection: {},
+      userSearchResult: [],
+      selectedUserToInvite: '',
+      usernameSearchQuery: '',
       members: [],
     }
     this.user = this.props.navigation.state.params.user
@@ -193,6 +197,7 @@ class BoardScreen extends Component {
     
 
   toBoardManager(){
+    this.setState({openWebSocket:false})
     this.props.navigation.navigate(
                   'BoardManager', 
                   { user: this.props.navigation.state.params.user, 
@@ -253,6 +258,32 @@ class BoardScreen extends Component {
       var requestString = JSON.stringify(boardGetTimerRequest)
       this.ws.send(requestString)
     }
+  }
+
+  async searchUsername(){
+    var searchUserRequest = {
+        from: 'Board',
+        code: 'searchUser',
+        username: this.state.usernameSearchQuery,
+        boardId: this.props.navigation.state.params.boardId
+      }
+    var requestString = JSON.stringify(searchUserRequest)
+    console.log('Search User Request')
+    this.ws.send(requestString)
+  }
+
+  async inviteUser(){
+    var inviteUserRequest = {
+        from: 'Board',
+        code: 'inviteUser',
+        username: this.state.selectedUserToInvite,
+        boardId: this.props.navigation.state.params.boardId,
+      }
+    var requestString = JSON.stringify(inviteUserRequest)
+    console.log('Invite User Request')
+    this.ws.send(requestString)
+    //this.getMembers()
+    this.setState({selectedUserToInvite: '',})
   }
 
   getBoardStartStatus(){
@@ -613,10 +644,10 @@ class BoardScreen extends Component {
                 <TouchableWithoutFeedback
                 onPress={() => this.openNewNoteModal()}
                 >
-                  <Image 
-                    style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
-                    source={require('../img/write.png')}
-                  />
+                    <Image 
+                      style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                      source={require('../img/write.png')}
+                    />
                 </TouchableWithoutFeedback>
               </View>
               <View style={{ 
