@@ -38,6 +38,7 @@
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
 		C17A7AE75E594268A9066E03 /* libRNSketch.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BDBEBCF1D8EE49158C320540 /* libRNSketch.a */; };
 		CBF34DDB582A45F28969222D /* libRNSketchView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5798B2E5574BFAA6CF8774 /* libRNSketchView.a */; };
+		D5B0EA41AC6C40B3AD30F300 /* libRNViewShot.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E233F3DF537942CCBCFF3FB2 /* libRNViewShot.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -291,6 +292,8 @@
 		BDBEBCF1D8EE49158C320540 /* libRNSketch.a */ = {isa = PBXFileReference; name = "libRNSketch.a"; path = "libRNSketch.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 		73944DDA4BFF40FC93897274 /* RNSketchView.xcodeproj */ = {isa = PBXFileReference; name = "RNSketchView.xcodeproj"; path = "../node_modules/react-native-sketch-draw/ios/RNSketchView.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
 		DA5798B2E5574BFAA6CF8774 /* libRNSketchView.a */ = {isa = PBXFileReference; name = "libRNSketchView.a"; path = "libRNSketchView.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		1862723DDAC748AB883326FA /* RNViewShot.xcodeproj */ = {isa = PBXFileReference; name = "RNViewShot.xcodeproj"; path = "../node_modules/react-native-view-shot/ios/RNViewShot.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		E233F3DF537942CCBCFF3FB2 /* libRNViewShot.a */ = {isa = PBXFileReference; name = "libRNViewShot.a"; path = "libRNViewShot.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -321,6 +324,7 @@
 				139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */,
 				C17A7AE75E594268A9066E03 /* libRNSketch.a in Frameworks */,
 				CBF34DDB582A45F28969222D /* libRNSketchView.a in Frameworks */,
+				D5B0EA41AC6C40B3AD30F300 /* libRNViewShot.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,6 +504,7 @@
 				139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */,
 				EA7CC5B29F5449378A4B3738 /* RNSketch.xcodeproj */,
 				73944DDA4BFF40FC93897274 /* RNSketchView.xcodeproj */,
+				1862723DDAC748AB883326FA /* RNViewShot.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -1072,11 +1077,13 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-sketch\RNSketch",
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 				);
 			};
 			name = Debug;
@@ -1099,11 +1106,13 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-sketch\RNSketch",
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 				);
 			};
 			name = Release;
@@ -1127,6 +1136,7 @@
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-sketch\RNSketch",
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 				);
 			};
 			name = Debug;
@@ -1149,6 +1159,7 @@
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-sketch\RNSketch",
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 				);
 			};
 			name = Release;
@@ -1180,11 +1191,13 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-sketch\RNSketch",
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 				);
 			};
 			name = Debug;
@@ -1216,11 +1229,13 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)\..\node_modules\react-native-sketch\RNSketch",
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 				);
 			};
 			name = Release;
@@ -1247,6 +1262,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 			};
 			name = Debug;
@@ -1271,6 +1287,7 @@
 				TVOS_DEPLOYMENT_TARGET = 10.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);

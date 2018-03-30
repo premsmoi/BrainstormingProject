@@ -40,4 +40,4 @@ AppRegistry.registerComponent('BrainstormingApp', () => myNavigator);
 //AppRegistry.registerComponent('BrainstormingApp', () => DrawBoard);
 //AppRegistry.registerComponent('BrainstormingApp', () => Test);
 export default myNavigator;
-//export default DrawBoard;
+//export default Test;

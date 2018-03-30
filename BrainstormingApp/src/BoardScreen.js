@@ -1,12 +1,14 @@
-import React, { Component } from 'react';
-import { 
-  Alert, 
-  AppRegistry, 
-  Button, 
-  StyleSheet, 
-  View, 
-  TextInput, 
-  Text, 
+import React, {
+  Component
+} from 'react';
+import {
+  Alert,
+  AppRegistry,
+  Button,
+  StyleSheet,
+  View,
+  TextInput,
+  Text,
   TouchableWithoutFeedback,
   ScrollView,
   TouchableOpacity,
@@ -17,20 +19,30 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import styles from "./app.style";
-import {noteColor, borderColor} from './colors'
+import {
+  noteColor,
+  borderColor
+} from './colors'
 import Modal from "react-native-modal";
-import { StackNavigator, NavigationActions } from 'react-navigation';
+import {
+  StackNavigator,
+  NavigationActions
+} from 'react-navigation';
 import Note from './Note';
-import {ip} from './Configuration';
+import {
+  ip,
+  boardWidth,
+  boardHeight
+} from './Configuration';
 
 //import DoubleClick from 'react-native-double-click';
 
 import io from 'socket.io-client';
- 
+
 //const ip = '10.0.2.2:8080'
 //const ip = '192.168.43.143:8080'
 const socket = io(ip);
- //import IO from 'socket.io-client/socket.io';
+//import IO from 'socket.io-client/socket.io';
 
 class BoardScreen extends Component {
 
@@ -38,12 +50,15 @@ class BoardScreen extends Component {
     super(props);
     this.newId = 2;
     this.tempNote = null;
+    this.totalLoad = 6;
     this.state = {
+      board: null,
       openWebSocket: false,
       boardName: '',
       startButtonText: 'Start',
-      startedBoard: 0,
-      timeRemaining: 0,
+      startedBoard: '',
+      timeRemaining: null,
+      currentLoad: 0,
       //noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
       //             {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
       noteList: [],
@@ -51,6 +66,8 @@ class BoardScreen extends Component {
       visibleEditNoteModal: false,
       visibleSelectTagsModal: false,
       visibleShowMembersModal: false,
+      visibleInviteModal: false,
+      visibleGroupNotesModal: false,
       newColor: 'red',
       newNoteText: '',
       tags: [],
@@ -79,59 +96,93 @@ class BoardScreen extends Component {
     //console.log(this.props)
 
     //this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
-    this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
+    this.ws = new WebSocket('ws://' + ip, 'echo-protocol');
 
     this.ws.onmessage = (e) => {
       // a message was received
       //console.log("e.data: "+e.data);
       var obj = JSON.parse(e.data)
       //console.log(obj.body.notes)
-      if(obj.body.code == 'getNotes'){
-        console.log('I got notes')
+
+      if (obj.body.code == 'getBoard') {
+        console.log('I got board')
+        this.setState({currentLoad: ++this.state.currentLoad})
+        this.setState({board: obj.body.board, timeRemaining: obj.body.board.limitedTime})
+      }
+
+      if (obj.body.code == 'getNotesTrigger') {
+        console.log('I got notes trigger')
         this.getNotes();
       }
 
-      if(obj.body.code == 'closeWebSocket'){
+      if (obj.body.code == 'closeWebSocket') {
         console.log('closeWebSocket')
         this.ws.close()
       }
 
-      if(obj.body.code == 'updatedNotes'){
-        console.log('isVisibleOpenNoteModal: '+this.isVisibleOpenNoteModal)
-        if(this.isVisibleOpenNoteModal==false){
-          this.setState({noteList: []})
-          this.setState({noteList: obj.body.notes})
-          console.log('updated notes')
+      if (obj.body.code == 'getNotes') {
+        if (this.isVisibleOpenNoteModal == false) {
+          this.setState({
+            noteList: []
+          })
+          this.setState({
+            noteList: obj.body.notes
+          })
+          console.log('i got notes')
+          this.setState({currentLoad: ++this.state.currentLoad})
         }
       }
 
-      if(obj.body.code == 'getTags'){
-        this.setState({tags: obj.body.tags})
-        console.log('tag: '+this.state.tags)
+      if (obj.body.code == 'getTags') {
+        this.setState({
+          tags: obj.body.tags
+        })
+        console.log('I got tag')
         this.state.tags.map((tag) => {
           let newTagSelection = this.state.tagSelection
           newTagSelection[tag] = false
-          this.setState({ tagSelection: newTagSelection })
+          this.setState({
+            tagSelection: newTagSelection
+          })
         })
+        this.setState({currentLoad: ++this.state.currentLoad})
       }
 
 
-      if(obj.body.code == 'getMembers'){
-        this.setState({members: obj.body.members})
-        console.log('tag: '+this.state.tags)
+      if (obj.body.code == 'getMembers') {
+        this.setState({
+          members: obj.body.members
+        })
+        console.log('I got members')
         this.state.tags.map((tag) => {
           let newTagSelection = this.state.tagSelection
           newTagSelection[tag] = false
-          this.setState({ tagSelection: newTagSelection })
+          this.setState({
+            tagSelection: newTagSelection
+          })
         })
+        this.setState({currentLoad: ++this.state.currentLoad})
       }
 
-      if(obj.body.code == 'getBoardStartStatus'){
-        this.setState({startedBoard: obj.body.status})
+      if (obj.body.code == 'getBoardStartStatus') {
+        console.log('I got board start status')
+        this.setState({
+          startedBoard: obj.body.status
+        })
+        this.setState({currentLoad: ++this.state.currentLoad})
       }
 
-       if(obj.body.code == 'getTimer'){
-        this.setState({timeRemaining: obj.body.timeRemaining})
+      if (obj.body.code == 'getTimer') {
+        console.log('I got timer')
+        this.setState({
+          timeRemaining: obj.body.timeRemaining
+        })
+        this.setState({currentLoad: ++this.state.currentLoad})
+      }
+
+      if(obj.body.code == 'getUserSearchResult'){
+        this.setState({userSearchResult: obj.body.userList})
+        console.log(obj.body.userList)
       }
     };
 
@@ -142,14 +193,19 @@ class BoardScreen extends Component {
 
     this.ws.onclose = (e) => {
       // connection closed
-      this.setState({openWebSocket: false})
+      this.setState({
+        openWebSocket: false
+      })
       console.log(e.code, e.reason);
       console.log('Closed!')
     };
 
     this.ws.onopen = () => {
       // connection opened
-      this.setState({openWebSocket: true})
+      console.log('This is Board Screen!')
+      this.setState({
+        openWebSocket: true
+      })
       this.getNotes();
       //ws.send('Hello Node Server!'); // send a message
       var tagClientRequest = {
@@ -161,7 +217,7 @@ class BoardScreen extends Component {
       var requestString = JSON.stringify(tagClientRequest)
       //console.log('props: '+this.props)
       this.ws.send(requestString)
-      console.log('req: '+requestString)
+      //console.log('req: ' + requestString)
 
       var getTagsRequest = {
         from: 'Board',
@@ -169,14 +225,6 @@ class BoardScreen extends Component {
         boardId: this.props.navigation.state.params.boardId,
       }
       var requestString = JSON.stringify(getTagsRequest)
-      this.ws.send(requestString)
-
-      var getMembersRequest = {
-        from: 'Board',
-        code: 'getMembers',
-        boardId: this.props.navigation.state.params.boardId,
-      }
-      var requestString = JSON.stringify(getMembersRequest)
       this.ws.send(requestString)
 
       var enterBoardRequest = {
@@ -188,28 +236,50 @@ class BoardScreen extends Component {
       var requestString = JSON.stringify(enterBoardRequest)
       this.ws.send(requestString)
 
+      var boardGetTimerRequest = {
+        from: 'Board',
+        code: 'boardGetTimer',
+        username: this.user.username,
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(boardGetTimerRequest)
+      //this.ws.send(requestString)
+
+      var getBoardRequest = {
+        from: 'Board',
+        code: 'getBoard',
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(getBoardRequest)
+      this.ws.send(requestString)
+
       this.getBoardStartStatus()
     };
 
     setInterval(this.countTimer, 1000)
 
   }
-    
 
-  toBoardManager(){
-    this.setState({openWebSocket:false})
+
+  toBoardManager() {
+    this.setState({
+      openWebSocket: false
+    })
     this.props.navigation.navigate(
-                  'BoardManager', 
-                  { user: this.props.navigation.state.params.user, 
-                    boardId: this.props.navigation.state.params.boardId, 
-                    boardName: this.props.navigation.state.params.boardName 
-                  }
-                )
-                this.ws.close()
+      'BoardManager', {
+        user: this.props.navigation.state.params.user,
+        boardId: this.props.navigation.state.params.boardId,
+        boardName: this.props.navigation.state.params.boardName,
+        board: this.state.board,
+      }
+    )
+    this.ws.close()
   }
 
-  openNewNoteModal(){
-    this.setState({visibleNewNoteModal: true})
+  openNewNoteModal() {
+    this.setState({
+      visibleNewNoteModal: true
+    })
   }
 
   openShowMembersModal() {
@@ -218,12 +288,12 @@ class BoardScreen extends Component {
     })
   }
 
-  getTimeRemaining(){
-     console.log('timeRemaining: '+this.state.timeRemaining)
+  getTimeRemaining() {
+    console.log('timeRemaining: ' + this.state.timeRemaining)
   }
 
 
-  getState(){
+  getState() {
     return this.state
   }
 
@@ -237,18 +307,20 @@ class BoardScreen extends Component {
 
   handleBackButtonClick() {
     this.ws.close()
-    this.props.navigation.navigate('Home', { user: this.props.navigation.state.params.user })
+    this.props.navigation.navigate('Home', {
+      user: this.props.navigation.state.params.user
+    })
     return true;
   }
 
-  setVisibleOpenNoteModal(bool){
+  setVisibleOpenNoteModal(bool) {
     this.isVisibleOpenNoteModal = bool;
   }
 
 
-  countTimer(){
+  countTimer() {
     //console.log('startedBoard: '+this.state.startedBoard)
-    if(this.state.startedBoard == 1 && this.state.openWebSocket == true){
+    if (this.state.startedBoard == 1 && this.state.timeRemaining > 0 && this.state.openWebSocket == true) {
       var boardGetTimerRequest = {
         from: 'Board',
         code: 'boardGetTimer',
@@ -260,48 +332,47 @@ class BoardScreen extends Component {
     }
   }
 
-  async searchUsername(){
+  async searchUsername() {
     var searchUserRequest = {
-        from: 'Board',
-        code: 'searchUser',
-        username: this.state.usernameSearchQuery,
-        boardId: this.props.navigation.state.params.boardId
-      }
+      from: 'Board',
+      code: 'searchUser',
+      username: this.state.usernameSearchQuery,
+      boardId: this.props.navigation.state.params.boardId
+    }
     var requestString = JSON.stringify(searchUserRequest)
     console.log('Search User Request')
     this.ws.send(requestString)
   }
 
-  async inviteUser(){
+  async inviteUser() {
     var inviteUserRequest = {
-        from: 'Board',
-        code: 'inviteUser',
-        username: this.state.selectedUserToInvite,
-        boardId: this.props.navigation.state.params.boardId,
-      }
+      from: 'Board',
+      code: 'inviteUser',
+      username: this.state.selectedUserToInvite,
+      boardId: this.props.navigation.state.params.boardId,
+      boardName: this.props.navigation.state.params.boardName,
+    }
     var requestString = JSON.stringify(inviteUserRequest)
     console.log('Invite User Request')
     this.ws.send(requestString)
     //this.getMembers()
-    this.setState({selectedUserToInvite: '',})
+    this.setState({
+      selectedUserToInvite: '',
+    })
   }
 
-  getBoardStartStatus(){
-     var getBoardStartStatusRequest = {
-        from: 'Board',
-        code: 'getBoardStartStatus',
-        username: this.user.username,
-        boardId: this.props.navigation.state.params.boardId,
-      }
-      var requestString = JSON.stringify(getBoardStartStatusRequest)
-      this.ws.send(requestString)
+  getBoardStartStatus() {
+    var getBoardStartStatusRequest = {
+      from: 'Board',
+      code: 'getBoardStartStatus',
+      username: this.user.username,
+      boardId: this.props.navigation.state.params.boardId,
+    }
+    var requestString = JSON.stringify(getBoardStartStatusRequest)
+    this.ws.send(requestString)
   }
 
-  boardGetTimer(){
-
-  }
-
-  getNotes(){
+  getNotes() {
     var getNotesRequest = {
       from: 'Board',
       code: 'getNotes',
@@ -312,7 +383,7 @@ class BoardScreen extends Component {
     this.ws.send(requestString)
   }
 
-  updateNote(updatedObj){
+  updateNote(updatedObj) {
     var newNoteRequest = {
       from: 'Board',
       code: 'updateNote',
@@ -324,7 +395,7 @@ class BoardScreen extends Component {
     this.ws.send(requestString)
   }
 
-  updateNoteList(){
+  updateNoteList() {
     var newNoteRequest = {
       from: 'Board',
       code: 'updateNoteList',
@@ -339,30 +410,38 @@ class BoardScreen extends Component {
   focusNote = (focusId) => {
     //console.log('focusId: '+focusId)
     var tempList = this.state.noteList
-    var deletedNote = this.state.noteList.find(function(note) {return note._id == focusId})
-    var deletedIndex = this.state.noteList.findIndex(function(note) {return note._id == focusId})
+    var deletedNote = this.state.noteList.find(function(note) {
+      return note._id == focusId
+    })
+    var deletedIndex = this.state.noteList.findIndex(function(note) {
+      return note._id == focusId
+    })
     //console.log('deletedIndex: '+deletedIndex)
     tempList.splice(deletedIndex, 1)
     tempList.push(deletedNote)
-    this.setState({noteList: tempList})
+    this.setState({
+      noteList: tempList
+    })
     //this.updateNoteList();
   }
 
   createNewNote = () => {
     this.state.tags.map((tag) => {
-      if(this.state.tagSelection[tag]){
-          let newTags = this.state.newNoteTags
-          newTags.push(tag)
-          this.setState({newNoteTags: newTags})
+      if (this.state.tagSelection[tag]) {
+        let newTags = this.state.newNoteTags
+        newTags.push(tag)
+        this.setState({
+          newNoteTags: newTags
+        })
       }
     })
-    console.log('new tags: '+this.state.newNoteTags)
+    console.log('new tags: ' + this.state.newNoteTags)
     var newNote = {
       boardId: this.props.navigation.state.params.boardId,
-      writer: this.props.navigation.state.params.user.username, 
-      x: 100, 
-      y: 200, 
-      color: this.state.newColor, 
+      writer: this.props.navigation.state.params.user.username,
+      x: 100,
+      y: 200,
+      color: this.state.newColor,
       text: this.state.newNoteText,
       tags: this.state.newNoteTags,
       updated: new Date().getTime(),
@@ -372,7 +451,9 @@ class BoardScreen extends Component {
       var newNoteList = previousState.noteList
       newNoteList.push(newNote)
       //console.log('newNoteList'+newNoteList)
-      return {noteList: newNoteList}
+      return {
+        noteList: newNoteList
+      }
     });
     //console.log(this.state.noteList)
     //console.log(this.state.noteList)
@@ -405,31 +486,117 @@ class BoardScreen extends Component {
     this.getNotes()
   }
 
-  exitBoard(){
-    this.setState({openWebSocket:false})
+  exitBoard() {
+    this.setState({
+      openWebSocket: false
+    })
     var exitBoardRequest = {
       from: 'Board',
       code: 'exitBoard',
       username: this.user.username,
-      boardId: this.props.navigation.state.params.boardId, 
+      boardId: this.props.navigation.state.params.boardId,
     }
     var requestString = JSON.stringify(exitBoardRequest)
     console.log('exitBoard')
     this.ws.send(requestString)
-    this.props.navigation.navigate('Home', { user: this.props.navigation.state.params.user })
+    this.props.navigation.navigate('Home', {
+      user: this.props.navigation.state.params.user
+    })
     //this.ws.close()
   }
 
-  startBoard(){
+  startBoard() {
     var starttBoardRequest = {
       from: 'Board',
       code: 'startBoard',
       username: this.user.username,
       boardId: this.props.navigation.state.params.boardId,
+      setTime: this.state.timeRemaining,
     }
     var requestString = JSON.stringify(starttBoardRequest)
     console.log('Start Board !!!')
     this.ws.send(requestString)
+  }
+
+  reRenderByNotes(newNoteList){
+    this.setState({
+      noteList: newNoteList
+    })
+  }
+
+  groupNotesByTag(){
+    //console.log('tags: '+JSON.stringify(this.state.tags))
+    var newNoteList = this.state.noteList
+    var x = -150;
+    var y = 0;
+    var count = 0
+    var maxY = 150
+    this.state.tags.map((tag) => {
+      x += 175;
+      y  = Math.floor(count/5)*maxY + 50;
+      var includesNote = false;
+      newNoteList.map((note) => {
+        if(note.tags.includes(tag)){
+          //console.log('Hit!')
+          note.x = x;
+          note.y = y;
+          y += 30;
+          x += 10
+          includesNote = true;
+          if(y + 150 > maxY){
+            maxY = y + 150;
+          }
+        }
+      })
+      if(includesNote){
+        count++
+        if(count % 5 == 0){
+          x = -150;
+        }
+      }
+    })
+    this.setState({
+            noteList: []
+          }, () => {
+            this.setState({noteList: newNoteList})
+          })
+
+    
+    //console.log('notes: '+JSON.stringify(this.state.noteList))
+  }
+
+  groupNotesByColor(){
+    //console.log('tags: '+JSON.stringify(this.state.tags))
+    var colors = ['red','pink','blue','green','yellow']
+    var newNoteList = this.state.noteList
+    var x = -150;
+    var y;
+    colors.map((color) => {
+      x += 175;
+      y  = 50;
+      count_note = 0
+      newNoteList.map((note) => {
+        if(note.color == color){
+          //console.log('Hit!')
+          note.x = x;
+          note.y = y;
+          x += 10;
+          y += 30;
+          count_note++
+        }
+      })
+      if(count_note == 0){
+        x -= 175
+      }
+    })
+    this.setState({
+            noteList: []
+          }, () => {
+            this.setState({noteList: newNoteList})
+          })
+
+    
+    //console.log('notes: '+JSON.stringify(this.state.noteList))
   }
 
   _renderColorPicker = (color) => (
@@ -450,6 +617,20 @@ class BoardScreen extends Component {
         <Text>{text}</Text>
       </View>
     </TouchableOpacity>
+  )
+
+  _renderTextInput = (placeholder, onChange, value) => (
+    <View>
+      <TextInput
+          style={{
+            height: 36, 
+          }}
+          placeholderTextColor = 'gray'
+          placeholder = {placeholder}
+          onChangeText={onChange}
+          value = {value}
+      />
+    </View>
   )
 
   _renderNewNoteModal = () => (
@@ -582,11 +763,22 @@ class BoardScreen extends Component {
       //alignItems: "center",
       //borderRadius: 4,
     }}>
-      <Text style={{fontSize: 20, 
-            color: 'grey',  
-            marginVertical: 5, 
-            marginHorizontal: 20 
-          }}>Members</Text>
+      <View style = {{flexDirection:'row'}}>
+        <Text style={{fontSize: 20, 
+              color: 'grey',  
+              marginVertical: 5, 
+              marginHorizontal: 20 
+            }}>Members</Text>
+        <TouchableWithoutFeedback
+          onPress={() => this.setState({visibleInviteModal: true})}
+        >
+          <Text style={{fontSize: 16, 
+              color: '#70cdef',  
+              marginVertical: 10, 
+              marginLeft: 140, 
+            }}>Invite</Text>
+        </TouchableWithoutFeedback>
+      </View>
           {this.state.members.map((user) => {
             return(
                 <View style={{flexDirection: 'row'}} key = {user} >
@@ -621,179 +813,303 @@ class BoardScreen extends Component {
     </View>
   )
 
+  _renderInviteModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+        <View style={{flexDirection: 'row'}}>
+          <View style={{borderWidth: 3, borderColor: 'white'}}>
+            <Text style={{fontSize: 16, textAlign: 'center'}}>Search username : </Text>
+          </View>
+          {this._renderTextInput('Search Input', 
+            (usernameSearchQuery) => { this.setState({usernameSearchQuery})},
+            this.state.usernameSearchQuery
+          )}
+          <View>
+            {this._renderButton("Search", () => {this.searchUsername()})}
+          </View>
+        </View>
+        <View style={{}}>
+            {this.state.userSearchResult.map((user) => {
+              return(
+                  <TouchableWithoutFeedback
+                    onPress = {() => {
+                      user.joined == true? 
+                      this.setState({selectedUserToInvite: ''}) : this.setState({selectedUserToInvite: user.username})
+                    }}
+                    key = {user.username}
+                  >
+                    <View style = {{flexDirection: 'row', backgroundColor: user.username==this.state.selectedUserToInvite && user.joined == false? 
+                      'lightblue':'white'}}>
+                      <Text 
+                        style={{
+                          fontSize: 16, 
+                          color: 'black',  
+                          marginVertical: 4, 
+                          marginHorizontal: 8 
+                        }}
+                      >
+                          {user.username}
+                      </Text>
+                      <Text 
+                        style={{
+                          fontSize: 16, 
+                          color: 'red',  
+                          marginVertical: 4, 
+                          marginHorizontal: 8 
+                        }}
+                      >
+                          {(user.joined == true? ' has joined' : '')}
+                      </Text> 
+                    </View>
+                  </TouchableWithoutFeedback>
+              )
+            })}
+        </View>
+        <View style={{flexDirection: 'row'}}>
+          <View>
+            {this._renderButton("Invite", () => {
+              this.setState({visibleInviteModal: false,
+                usernameSearchQuery: '', 
+                userSearchResult: [],
+                })
+              if(this.state.selectedUserToInvite != ''){
+                this.inviteUser()
+              }
+            
+            })
+            }
+          </View>
+          <View>
+            {this._renderButton("Close", () => {
+              this.setState({visibleInviteModal: false, 
+                usernameSearchQuery: '', 
+                userSearchResult: [],
+                selectedUserToInvite: '',
+              })
+            })}
+          </View>
+        </View>
+      </View>
+    )
+
+  _renderGroupNotesModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      //justifyContent: "center",
+      //alignItems: "center",
+      //borderRadius: 4,
+    }}>
+      {this._renderButton("Group by tag", () => {
+        this.groupNotesByTag()
+        this.setState({ visibleGroupNotesModal: false })
+      })}
+      {this._renderButton("Group by color", () => {
+        this.groupNotesByColor()
+        this.setState({ visibleGroupNotesModal: false })
+      })}
+      {this._renderButton("Cancel", () => {
+        this.setState({ visibleGroupNotesModal: false })
+      })}
+    </View>
+  )
+
   render() {
     console.log('render')
-    return (
-      
-        <View style={{flex: 1}}>
-          <Modal isVisible={this.state.visibleNewNoteModal}>
-            {this._renderNewNoteModal()}
-          </Modal>
-          <Modal isVisible={this.state.visibleSelectTagsModal}>
-            {this._renderSelectTagsModal()}
-          </Modal>
-          <Modal isVisible={this.state.visibleShowMembersModal}>
-            {this._renderShowMembersModal()}
-          </Modal>
-          <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
-              <View style={{ 
-                marginVertical: 10, 
-                marginHorizontal: 20,
-                flex: 1 
-              }}>
-                <TouchableWithoutFeedback
-                onPress={() => this.openNewNoteModal()}
-                >
+    if(this.state.currentLoad >= this.totalLoad || (this.state.currentLoad >= this.totalLoad - 1 && this.state.startedBoard == 0)){
+      return (
+        
+          <View style={{flex: 1}}>
+            <Modal isVisible={this.state.visibleNewNoteModal}>
+              {this._renderNewNoteModal()}
+            </Modal>
+            <Modal isVisible={this.state.visibleSelectTagsModal}>
+              {this._renderSelectTagsModal()}
+            </Modal>
+            <Modal isVisible={this.state.visibleShowMembersModal}>
+              {this._renderShowMembersModal()}
+            </Modal>
+            <Modal isVisible={this.state.visibleInviteModal}>
+              {this._renderInviteModal()}
+            </Modal>
+            <Modal isVisible={this.state.visibleGroupNotesModal}>
+              {this._renderGroupNotesModal()}
+            </Modal>
+            <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
+                <View style={{ 
+                  marginVertical: 10, 
+                  marginHorizontal: 20,
+                  flex: 1 
+                }}>
+                  <TouchableWithoutFeedback
+                  onPress={() => this.openNewNoteModal()}
+                  >
+                      <Image 
+                        style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                        source={require('../img/write.png')}
+                      />
+                  </TouchableWithoutFeedback>
+                </View>
+                <View style={{ 
+                  marginVertical: 10, 
+                  marginHorizontal: 20,
+                  flex: 1 
+                }}>
+                  <TouchableWithoutFeedback
+                    onPress={() => {this.setState({visibleShowMembersModal: true})}}
+                  >
                     <Image 
                       style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
-                      source={require('../img/write.png')}
+                      source={require('../img/members.png')}
                     />
-                </TouchableWithoutFeedback>
-              </View>
-              <View style={{ 
-                marginVertical: 10, 
-                marginHorizontal: 20,
-                flex: 1 
-              }}>
-                <TouchableWithoutFeedback
-                  onPress={() => {this.setState({visibleShowMembersModal: true})}}
-                >
-                  <Image 
-                    style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
-                    source={require('../img/members.png')}
-                  />
-                </TouchableWithoutFeedback>
-              </View>
-              <View style={{
-                flex: 1,
-                marginVertical: 10, 
-                marginHorizontal: 20,
-              }}>
-                <TouchableWithoutFeedback
-                  onPress={() => this.toBoardManager()}
-                >
-                  <Image 
-                    style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
-                    source={require('../img/setting.png')}
-                  />
-                </TouchableWithoutFeedback>
-              </View>
-              <View style={{ 
-                marginVertical: 10, 
-                marginHorizontal: 20,
-                //flex: 1 
-              }}>
-                <TouchableWithoutFeedback
-                  onPress={() => this.exitBoard()}
-                >
-                  <View>
-                    <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10, alignItems: 'center'}}>
-                      Exit
-                    </Text>
-                  </View>
-                </TouchableWithoutFeedback>
-              </View> 
-              
-          </View>
-          <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
-            <View style={{ 
-                marginVertical: 10, 
-                marginHorizontal: 20,
-                //flex: 1 
-              }}>
-                <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10}}>
-                  {this.state.timeRemaining}
-                </Text>
-            </View>
-            <View style={{ 
-              marginVertical: 10, 
-              marginHorizontal: 20,
-              flex: 2
-            }}>
-            </View>
-            <View style={{ 
-                marginVertical: 10, 
-                marginHorizontal: 20,
-                flex: 1 
-              }}>
-                {
-                      !this.state.startedBoard && this._renderButton(this.state.startButtonText, () => {
-                      this.startBoard()
-                      this.getBoardStartStatus()
-                      this.boardGetTimer()
-                      })
-                }
-              </View>  
-          </View>
-          
-          
-          <View style={{flex: 9}}>
-            <ScrollView 
-              showsVerticalScrollIndicator = {true} 
-              keyboardShouldPersistTaps = {'always'}
-              style={{
-
-              }}>
-              <View style=
-              {{
-                width: 5,
-                height: 1000,
-              }}>
-
-              </View>
-              <ScrollView 
-                horizontal = {true}
-                showsHorizontalScrollIndicator = {true}
-                keyboardShouldPersistTaps = {'always'} 
-                style = {{
-                  backgroundColor: 'white',
-                  top: 0, 
-                  bottom: 0,
-                  position: 'absolute',
-                }}>
-                <View style={{flexDirection: 'column'}}>
-                  <View style={{
-                    //top: 0, 
-                    //bottom: 0,
-                    width: 1000,
-                    height: 5,
-                    //position: 'absolute',
-                  }}>
-                  </View>
-                  <Text style={{fontSize:16}}></Text>
-                
-                  {this.state.noteList.map((note) => {
-                    //console.log(JSON.stringify(note))
-                    return(
-                      //<DoubleClick onClick={this.handleClick}>
-                        <Note 
-                          deleteNote = {this.deleteNote} 
-                          focusNote = {this.focusNote}
-                          updateNotePosition = {this.updateNotePosition}
-                          updateNoteText = {this.updateNoteText}
-                          updateNoteList = {this.updateNoteList}
-                          updateNoteColor = {this.updateNoteColor}
-                          updateNote = {this.updateNote}
-                          getState = {this.getState}
-                          setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
-                          key = {note._id}
-                          id = {note._id}
-                          x = {note.x} 
-                          y = {note.y} 
-                          color = {note.color} 
-                          text = {note.text}
-                          tags = {note.tags}/>
-                      //</DoubleClick>
-                    )
-                  })}
+                  </TouchableWithoutFeedback>
                 </View>
+                <View style={{
+                  flex: 1,
+                  marginVertical: 10, 
+                  marginHorizontal: 20,
+                }}>
+                  <TouchableWithoutFeedback
+                    onPress={() => this.toBoardManager()}
+                  >
+                    <Image 
+                      style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                      source={require('../img/setting.png')}
+                    />
+                  </TouchableWithoutFeedback>
+                </View>
+                <View style={{ 
+                  marginVertical: 10, 
+                  marginHorizontal: 20,
+                  //flex: 1 
+                }}>
+                  <TouchableWithoutFeedback
+                    onPress={() => this.exitBoard()}
+                  >
+                    <View>
+                      <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10, alignItems: 'center'}}>
+                        Exit
+                      </Text>
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View> 
+                
+            </View>
+            <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
+              <View style={{ 
+                  marginVertical: 10, 
+                  marginHorizontal: 20,
+                  flex: 2
+                }}>
+                  <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10}}>
+                    {this.state.board.mode != 'timing'?  '' : (this.state.timeRemaining == 0? 'Time\'s up' : this.state.timeRemaining)}
+                  </Text>
+              </View>
+               <View style={{ 
+                  marginVertical: 10, 
+                  marginHorizontal: 20,
+                  flex: 1 
+                }}>
+                  {
+                        this._renderButton('Group', () => {
+                        this.setState({visibleGroupNotesModal: true})
+                        })
+                  }
+                </View>  
+              <View style={{ 
+                  marginVertical: 10, 
+                  marginHorizontal: 20,
+                  flex: 1 
+                }}>
+                  {
+                        !this.state.startedBoard && this.state.board.mode == 'timing' && this._renderButton(this.state.startButtonText, () => {
+                        this.startBoard()
+                        this.getBoardStartStatus()
+                        //this.boardGetTimer()
+                        })
+                  }
+                </View>  
+            </View>
+            
+            
+            <View style={{flex: 9}}>
+              <ScrollView 
+                showsVerticalScrollIndicator = {true} 
+                keyboardShouldPersistTaps = {'always'}
+                style={{
+
+                }}>
+                <View style=
+                {{
+                  flex: 1,
+                  width: 5,
+                  height: boardHeight,
+                }}>
+
+                </View>
+                <ScrollView 
+                  horizontal = {true}
+                  showsHorizontalScrollIndicator = {true}
+                  keyboardShouldPersistTaps = {'always'} 
+                  style = {{
+                    backgroundColor: 'white',
+                    top: 0, 
+                    bottom: 0,
+                    position: 'absolute',
+                  }}>
+                  <View style={{flexDirection: 'column'}}>
+                    <View style={{
+                      //top: 0, 
+                      //bottom: 0,
+                      width: boardWidth,
+                      height: 5,
+                      //position: 'absolute',
+                    }}>
+                    </View>
+                    <Text style={{fontSize:16}}></Text>
+                  
+                    {this.state.noteList.map((note) => {
+                      //console.log('single note: '+JSON.stringify(note))
+                      return(
+                        //<DoubleClick onClick={this.handleClick}>
+                          <Note 
+                            deleteNote = {this.deleteNote} 
+                            focusNote = {this.focusNote}
+                            updateNotePosition = {this.updateNotePosition}
+                            updateNoteText = {this.updateNoteText}
+                            updateNoteList = {this.updateNoteList}
+                            updateNoteColor = {this.updateNoteColor}
+                            updateNote = {this.updateNote}
+                            getState = {this.getState}
+                            setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
+                            key = {note._id}
+                            id = {note._id}
+                            x = {note.x} 
+                            y = {note.y} 
+                            color = {note.color} 
+                            text = {note.text}
+                            tags = {note.tags}/>
+                        //</DoubleClick>
+                      )
+                    })}
+                  </View>
+                </ScrollView>
               </ScrollView>
-            </ScrollView>
+            </View>
           </View>
-          
-        </View>
-      
-    );
+        
+      );
+    }
+    else {
+      return(
+        <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}/>
+      )
+    }
   }
 }
 

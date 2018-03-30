@@ -1,24 +1,31 @@
-import React, { Component } from 'react';
-import { 
-  Alert, 
-  AppRegistry, 
-  Button, 
-  StyleSheet, 
-  View, 
-  TextInput, 
-  Text, 
-  TouchableWithoutFeedback, 
+import React, {
+  Component
+} from 'react';
+import {
+  Alert,
+  AppRegistry,
+  Button,
+  StyleSheet,
+  View,
+  TextInput,
+  Text,
+  TouchableWithoutFeedback,
   TouchableOpacity,
   BackHandler,
   KeyboardAvoidingView,
   Image,
   ImageBackground,
 } from 'react-native';
-import { StackNavigator, NavigationActions } from 'react-navigation';
+import {
+  StackNavigator,
+  NavigationActions
+} from 'react-navigation';
 import GroupScreen from './GroupScreen';
 import styles from "./app.style";
 import Modal from "react-native-modal";
-import {ip} from './Configuration';
+import {
+  ip
+} from './Configuration';
 
 
 //const ip = '10.0.2.2:8080'
@@ -26,7 +33,9 @@ import {ip} from './Configuration';
 
 class HomeScreen extends Component {
 
-  static navigationOptions = ({ navigation }) => ({
+  static navigationOptions = ({
+    navigation
+  }) => ({
     title: navigation.state.params.user.name,
   });
 
@@ -35,7 +44,7 @@ class HomeScreen extends Component {
     navBarTranslucent: true,
     navBarBackgroundColor: 'blue',
   };
-   
+
   constructor(props) {
     super(props);
     this.state = {
@@ -49,7 +58,10 @@ class HomeScreen extends Component {
       createSuccess: false,
       newBoardId: null,
       changeBoardName: '',
-      showDetailBoard: {boardName: '', members: []},
+      showDetailBoard: {
+        boardName: '',
+        members: []
+      },
       usernameSearchResult: [],
       selectedUserToInvite: '',
       usernameSearchQuery: '',
@@ -59,42 +71,53 @@ class HomeScreen extends Component {
     }
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
 
-    this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
+    this.ws = new WebSocket('ws://' + ip, 'echo-protocol');
 
     this.ws.onmessage = (e) => {
       // a message was received
       //console.log("e.data: "+e.data);
       var obj = JSON.parse(e.data)
       //console.log(obj.body.notes)
-      if(obj.body.code == 'getBoardList'){
+      if (obj.body.code == 'getBoardList') {
         console.log('I got board list')
-        this.setState({myBoards: obj.body.boards})
+        this.setState({
+          myBoards: obj.body.boards
+        })
       }
 
-      if(obj.body.code == 'getUser'){
+      if (obj.body.code == 'getUser') {
         console.log('I got user')
-        this.setState({user: obj.body.user})
+        this.setState({
+          user: obj.body.user
+        })
       }
 
-      if(obj.body.code == 'getBoardListTrigger'){
+      if (obj.body.code == 'getBoardListTrigger') {
         console.log('I got board trigger')
         this.getBoards();
       }
 
-      if(obj.body.code == 'getUserTrigger'){
+      if (obj.body.code == 'getUserTrigger') {
         console.log('I got user trigger')
         this.getUser();
       }
 
-      if(obj.body.code == 'getNotification'){
+      if (obj.body.code == 'getNotification') {
         console.log('I got notification')
-        console.log('notification: '+JSON.stringify(obj.body.notifications))
+        console.log('notification: ' + JSON.stringify(obj.body.notifications))
         this.setState({
           notifications: obj.body.notifications,
         })
-        this.setState({numberOfUnreadNotification: this.countUnreadNotification()})
+        this.setState({
+          numberOfUnreadNotification: this.countUnreadNotification()
+        })
       }
-      
+
+      if (obj.body.code == 'getNotificationTrigger') {
+        console.log('I got notification trigger')
+        this.getNotification()
+      }
+
     };
 
     this.ws.onerror = (e) => {
@@ -104,14 +127,18 @@ class HomeScreen extends Component {
 
     this.ws.onclose = (e) => {
       // connection closed
-      this.setState({openWebSocket: false})
-      console.log(e.code, e.reason);
-      console.log('Closed!')
+      this.setState({
+        openWebSocket: false
+      })
+      //console.log(e.code, e.reason);
+      //console.log('Closed!')
     };
 
     this.ws.onopen = () => {
       // connection opened
-      this.setState({openWebSocket: true})
+      this.setState({
+        openWebSocket: true
+      })
       var tagClientRequest = {
         from: 'Home',
         code: 'tagUser',
@@ -123,7 +150,7 @@ class HomeScreen extends Component {
       this.getNotification()
       this.getBoards();
     };
-    console.log('I am '+this.state.user)
+    console.log('I am ' + this.state.user)
 
   }
 
@@ -140,36 +167,38 @@ class HomeScreen extends Component {
     return true;
   }
 
-  async getUser(){
+  async getUser() {
     console.log('exec getUser')
     var params = {
       username: this.state.user.username
     }
 
-    try{
-      let response = await 
-          //fetch('http://10.0.2.2:8080/get_user', {
-          fetch('http://'+ip+'/get_user', {
-          method: "POST",
-          body: JSON.stringify(params),
-          headers: {
-            "Content-Type": "application/json"
-          },
-          credentials: "same-origin"
-        })
+    try {
+      let response = await
+      //fetch('http://10.0.2.2:8080/get_user', {
+      fetch('http://' + ip + '/get_user', {
+        method: "POST",
+        body: JSON.stringify(params),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "same-origin"
+      })
       var user = JSON.parse(response._bodyText)
-          //console.log(user)
+      //console.log(user)
       //this.setState({myBoards: user.boards})
-      this.setState({user: user})
+      this.setState({
+        user: user
+      })
 
     } catch (error) {
-        throw error;
-      }
+      throw error;
+    }
   }
 
-  getBoards(){
+  getBoards() {
     var board_id_list = []
-    this.state.user.boards.map(function(board){
+    this.state.user.boards.map(function(board) {
       board_id_list.push(board.boardId)
     })
     var getBoardsRequest = {
@@ -181,39 +210,39 @@ class HomeScreen extends Component {
     //console.log('props: '+this.props)
     this.ws.send(requestString)
   }
-/*
-  async getBoards(){
-    var idList = []
-    for (let board of this.state.user.boards){
-      idList.push(board.boardId)
-    }
-    var params = {
-      idList: idList
-    }
-    console.log('id_list: '+JSON.stringify(this.state.user.boards))
-
-    try{
-      let response = await 
-          //fetch('http://10.0.2.2:8080/get_board_list', {
-          fetch('http://'+ip+'/get_board_list', {
-          method: "POST",
-          body: JSON.stringify(params),
-          headers: {
-            "Content-Type": "application/json"
-          },
-          credentials: "same-origin"
-        })
-
-      var body = JSON.parse(response._bodyText)
-      var boardList = body['boardList']
-      //console.log(response._bodyText)
-      this.setState({myBoards: boardList})
-    } catch (error) {
-        console.log(error)
+  /*
+    async getBoards(){
+      var idList = []
+      for (let board of this.state.user.boards){
+        idList.push(board.boardId)
       }
-  }
-*/
-  async createNewBoard(){
+      var params = {
+        idList: idList
+      }
+      console.log('id_list: '+JSON.stringify(this.state.user.boards))
+
+      try{
+        let response = await 
+            //fetch('http://10.0.2.2:8080/get_board_list', {
+            fetch('http://'+ip+'/get_board_list', {
+            method: "POST",
+            body: JSON.stringify(params),
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "same-origin"
+          })
+
+        var body = JSON.parse(response._bodyText)
+        var boardList = body['boardList']
+        //console.log(response._bodyText)
+        this.setState({myBoards: boardList})
+      } catch (error) {
+          console.log(error)
+        }
+    }
+  */
+  async createNewBoard() {
     console.log('createNewBoard')
 
     var params = {
@@ -221,10 +250,67 @@ class HomeScreen extends Component {
       boardName: this.state.newBoardName,
     }
 
-    try{
-      let response = await 
-        //fetch('http://10.0.2.2:8080/create_board', {
-          fetch('http://'+ip+'/create_board', {
+    try {
+      let response = await
+      //fetch('http://10.0.2.2:8080/create_board', {
+      fetch('http://' + ip + '/create_board', {
+        method: "POST",
+        body: JSON.stringify(params),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "same-origin"
+      })
+
+      var body = JSON.parse(response._bodyText);
+      //console.log('body: '+body)
+      //console.log(body['status'])
+      if (body['status'] == 0) {
+        var errMsg = ''
+        for (i = 0; i < body['errors'].length; i++) {
+          errMsg = errMsg + body['errors'][i] + '\n';
+        }
+        Alert.alert(
+          'Alert',
+          errMsg, [{
+            text: 'OK',
+          }, ], {
+            cancelable: false
+          }
+        )
+      } else {
+        Alert.alert(
+          'Alert',
+          'Create Board complete', [{
+            text: 'OK',
+          }, ], {
+            cancelable: false
+          }
+        );
+        this.setState({
+          createSuccess: true,
+          newBoardId: body['newBoardId']
+        })
+
+        //console.log('newBoardId: '+body['newBoardId'])
+      }
+    } catch (error) {
+      throw error;
+    }
+
+
+    console.log('createSuccess: ' + this.state.createSuccess)
+    console.log('newBoardId: ' + this.state.newBoardId)
+    if (this.state.createSuccess) {
+      console.log('Here')
+      params = {
+        username: this.state.user.username,
+        newBoardId: this.state.newBoardId,
+      }
+      try {
+        let response = await
+        //fetch('http://10.0.2.2:8080/user_add_board', {
+        fetch('http://' + ip + '/user_add_board', {
           method: "POST",
           body: JSON.stringify(params),
           headers: {
@@ -232,116 +318,65 @@ class HomeScreen extends Component {
           },
           credentials: "same-origin"
         })
-
-        var body = JSON.parse(response._bodyText);
-          //console.log('body: '+body)
-          //console.log(body['status'])
-          if(body['status']==0){
-            var errMsg = ''
-            for(i=0;i<body['errors'].length;i++){
-              errMsg = errMsg + body['errors'][i] + '\n';
-            }
-            Alert.alert(
-              'Alert',
-              errMsg,
-              [
-                {text: 'OK',},
-              ],
-              { cancelable: false }
-            )
-          }
-          else{
-            Alert.alert(
-              'Alert',
-              'Create Board complete',
-              [
-                {text: 'OK',},
-              ],
-              { cancelable: false }
-            );
-            this.setState({createSuccess: true, newBoardId:  body['newBoardId']})
-            
-            //console.log('newBoardId: '+body['newBoardId'])
-          }
-    } catch (error) {
-        throw error;
-      }
-    
-        
-    console.log('createSuccess: '+this.state.createSuccess)
-    console.log('newBoardId: '+this.state.newBoardId)
-    if(this.state.createSuccess){
-      console.log('Here')
-      params = {
-        username: this.state.user.username,
-        newBoardId: this.state.newBoardId,
-      }
-      try{
-        let response = await 
-              //fetch('http://10.0.2.2:8080/user_add_board', {
-              fetch('http://'+ip+'/user_add_board', {
-                method: "POST",
-                body: JSON.stringify(params),
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                credentials: "same-origin"
-              })
-        console.log('response: '+response)
+        console.log('response: ' + response)
       } catch (error) {
-          console.log(error)
-        }
+        console.log(error)
+      }
       console.log('Above')
-      this.setState({newBoardName: ''})
-      this.setState({visibleNewBoardModal: false})
+      this.setState({
+        newBoardName: ''
+      })
+      this.setState({
+        visibleNewBoardModal: false
+      })
       //await this.getUser()
       await this.getUser();
       await this.getBoards();
       console.log('Below')
-    }   
+    }
   }
 
   logout() {
-    console.log(this.state.user.username+' -> Logout');
+    console.log(this.state.user.username + ' -> Logout');
     //fetch('http://10.0.2.2:8080/logout')
-    fetch('http://'+ip+'/logout')
-    .then((response) => {
-      this.props.navigation.navigate('Login')
-      //console.log(response);
-      return response.json()
-    })
-    .catch((error) => {
-      throw error;
-    });
+    fetch('http://' + ip + '/logout')
+      .then((response) => {
+        this.props.navigation.navigate('Login')
+        //console.log(response);
+        return response.json()
+      })
+      .catch((error) => {
+        throw error;
+      });
     this.ws.close()
   }
 
-  async updateBoardName(){
+  async updateBoardName() {
     var params = {
       boardId: this.state.showDetailBoard._id,
       boardName: this.state.changeBoardName,
     }
 
-    try{
-        response = await 
-              //fetch('http://10.0.2.2:8080/board_update_name', {
-              fetch('http://'+ip+'/board_update_name', {
-                method: "POST",
-                body: JSON.stringify(params),
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                credentials: "same-origin"
-              })
-        console.log('update board name')
-      } catch (error) {
-          console.log(error)
-        }
-        await this.getBoards();
-        //this.getUser();
+    try {
+      response = await
+      //fetch('http://10.0.2.2:8080/board_update_name', {
+      fetch('http://' + ip + '/board_update_name', {
+        method: "POST",
+        body: JSON.stringify(params),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "same-origin"
+      })
+      console.log('update board name')
+    } catch (error) {
+      console.log(error)
+    }
+    await this.getBoards();
+    //this.getUser();
   }
 
-  deleteBoard(){
+  deleteBoard() {
     var deleteBoardRequest = {
       from: 'Home',
       code: 'deleteBoard',
@@ -351,79 +386,79 @@ class HomeScreen extends Component {
     console.log('I delete board!!!')
     this.ws.send(requestString)
   }
-/*
-  async deleteBoard(){
-    var params = {
-      boardId: this.state.showDetailBoard._id,
+  /*
+    async deleteBoard(){
+      var params = {
+        boardId: this.state.showDetailBoard._id,
+      }
+
+      try{
+          response = await 
+                //fetch('http://10.0.2.2:8080/delete_board', {
+                fetch('http://'+ip+'/delete_board', {
+                  method: "POST",
+                  body: JSON.stringify(params),
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  credentials: "same-origin"
+                })
+          console.log('pass delete board')
+          //console.log('response: '+response)
+        } catch (error) {
+            console.log(error)
+          }
+
+      try{
+          response = await 
+                //fetch('http://10.0.2.2:8080/user_delete_board', {
+                fetch('http://'+ip+'/user_delete_board', {
+                  method: "POST",
+                  body: JSON.stringify(params),
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  credentials: "same-origin"
+                })
+            console.log('pass user delete board')
+          //console.log('response: '+response)
+        } catch (error) {
+            console.log(error)
+          }
+
+      try{
+          response = await 
+                //fetch('http://10.0.2.2:8080/delete_notes', {
+                fetch('http://'+ip+'/delete_notes', {
+                  method: "POST",
+                  body: JSON.stringify(params),
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  credentials: "same-origin"
+                })
+          console.log('pass delete notes')
+          //console.log('response: '+response)
+        } catch (error) {
+            console.log(error)
+          }
+      await this.getUser();
+      await this.getBoards();
     }
-
-    try{
-        response = await 
-              //fetch('http://10.0.2.2:8080/delete_board', {
-              fetch('http://'+ip+'/delete_board', {
-                method: "POST",
-                body: JSON.stringify(params),
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                credentials: "same-origin"
-              })
-        console.log('pass delete board')
-        //console.log('response: '+response)
-      } catch (error) {
-          console.log(error)
-        }
-
-    try{
-        response = await 
-              //fetch('http://10.0.2.2:8080/user_delete_board', {
-              fetch('http://'+ip+'/user_delete_board', {
-                method: "POST",
-                body: JSON.stringify(params),
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                credentials: "same-origin"
-              })
-          console.log('pass user delete board')
-        //console.log('response: '+response)
-      } catch (error) {
-          console.log(error)
-        }
-
-    try{
-        response = await 
-              //fetch('http://10.0.2.2:8080/delete_notes', {
-              fetch('http://'+ip+'/delete_notes', {
-                method: "POST",
-                body: JSON.stringify(params),
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                credentials: "same-origin"
-              })
-        console.log('pass delete notes')
-        //console.log('response: '+response)
-      } catch (error) {
-          console.log(error)
-        }
-    await this.getUser();
-    await this.getBoards();
-  }
-*/
-  countUnreadNotification(){
+  */
+  countUnreadNotification() {
     var count = 0
-    console.log('test notification: '+this.state.notifications)
-    this.state.notifications.map(function(notification){
-      if(!notification.read){
+    console.log('test notification: ' + this.state.notifications)
+    this.state.notifications.map(function(notification) {
+      if (!notification.read) {
         count++
       }
     })
-    console.log('count: '+count)
+    console.log('count: ' + count)
     return count
   }
 
-  acceptInvite(notification){
+  acceptInvite(notification) {
     var acceptInviteRequest = {
       from: 'Home',
       code: 'acceptInvite',
@@ -436,7 +471,7 @@ class HomeScreen extends Component {
     this.ws.send(requestString)
   }
 
-  getNotification(){
+  getNotification() {
     var getNotificationRequest = {
       from: 'Home',
       code: 'getNotification',
@@ -447,7 +482,7 @@ class HomeScreen extends Component {
     this.ws.send(requestString)
   }
 
-  readNotification(notification){
+  readNotification(notification) {
     var readNotificationRequest = {
       from: 'Home',
       code: 'readNotification',

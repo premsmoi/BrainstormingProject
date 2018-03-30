@@ -12,6 +12,7 @@ import {
   BackHandler,
   Image,
   KeyboardAvoidingView,
+  Picker,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
@@ -36,11 +37,10 @@ class BoardManagerScreen extends Component {
       visibleNewTagModal: false,
       visibleInviteModal: false,
       tagList: [],
-      userSearchResult: [],
-      selectedUserToInvite: '',
-      usernameSearchQuery: '',
       members: [],
+      mode: this.props.navigation.state.params.board.mode,
       openWebSocket: false,
+      setTime: this.props.navigation.state.params.board.limitedTime,
     }
 
     this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
@@ -52,11 +52,6 @@ class BoardManagerScreen extends Component {
       if(obj.body.code == 'getTags'){
         this.setState({tagList: obj.body.tags})
         console.log('tagList: '+obj.body.tags)
-      }
-
-      if(obj.body.code == 'getUserSearchResult'){
-        this.setState({userSearchResult: obj.body.userList})
-        console.log(obj.body.userList)
       }
 
       if(obj.body.code == 'getMembers'){
@@ -152,32 +147,6 @@ class BoardManagerScreen extends Component {
     //Alert.alert('delete '+tag)
   }
 
-  async searchUsername(){
-    var searchUserRequest = {
-        from: 'BoardManager',
-        code: 'searchUser',
-        username: this.state.usernameSearchQuery,
-        boardId: this.props.navigation.state.params.boardId
-      }
-    var requestString = JSON.stringify(searchUserRequest)
-    console.log('Search User Request')
-    this.ws.send(requestString)
-  }
-
-  async inviteUser(){
-    var inviteUserRequest = {
-        from: 'BoardManager',
-        code: 'inviteUser',
-        username: this.state.selectedUserToInvite,
-        boardId: this.props.navigation.state.params.boardId,
-        boardName: this.props.navigation.state.params.boardName,
-      }
-    var requestString = JSON.stringify(inviteUserRequest)
-    console.log('Invite User Request')
-    this.ws.send(requestString)
-    //this.getMembers()
-    this.setState({selectedUserToInvite: '',})
-  }
 
   async getMembers(){
      var getMembersRequest = {
@@ -206,6 +175,7 @@ class BoardManagerScreen extends Component {
       <TextInput
           style={{
             height: 36, 
+            width: 100,
           }}
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
@@ -226,7 +196,7 @@ class BoardManagerScreen extends Component {
     }}>
       {this._renderTextInput('Tag Name', (newTag) => this.setState({newTag}))}
    
-      <View style={{flexDirection: 'row'}}>
+      <View style = { { flexDirection: 'row' } }>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
           {this._renderButton("Create", () => {
@@ -249,98 +219,11 @@ class BoardManagerScreen extends Component {
     </View>
   )
 
-  _renderInviteModal = () => (
-    <View style={{
-      backgroundColor: 'white',
-      padding: 22,
-      //justifyContent: "center",
-      //alignItems: "center",
-      //borderRadius: 4,
-    }}>
-        <View style={{flexDirection: 'row'}}>
-          <View style={{borderWidth: 3, borderColor: 'white'}}>
-            <Text style={{fontSize: 16, textAlign: 'center'}}>Search username : </Text>
-          </View>
-          {this._renderTextInput('Search Input', 
-            (usernameSearchQuery) => { this.setState({usernameSearchQuery})},
-            this.state.usernameSearchQuery
-          )}
-          <View>
-            {this._renderButton("Search", () => {this.searchUsername()})}
-          </View>
-        </View>
-        <View style={{}}>
-            {this.state.userSearchResult.map((user) => {
-              return(
-                  <TouchableWithoutFeedback
-                    onPress = {() => {
-                      user.joined == true? 
-                      this.setState({selectedUserToInvite: ''}) : this.setState({selectedUserToInvite: user.username})
-                    }}
-                    key = {user.username}
-                  >
-                    <View style = {{flexDirection: 'row', backgroundColor: user.username==this.state.selectedUserToInvite && user.joined == false? 
-                      'lightblue':'white'}}>
-                      <Text 
-                        style={{
-                          fontSize: 16, 
-                          color: 'black',  
-                          marginVertical: 4, 
-                          marginHorizontal: 8 
-                        }}
-                      >
-                          {user.username}
-                      </Text>
-                      <Text 
-                        style={{
-                          fontSize: 16, 
-                          color: 'red',  
-                          marginVertical: 4, 
-                          marginHorizontal: 8 
-                        }}
-                      >
-                          {(user.joined == true? ' has joined' : '')}
-                      </Text> 
-                    </View>
-                  </TouchableWithoutFeedback>
-              )
-            })}
-        </View>
-        <View style={{flexDirection: 'row'}}>
-          <View>
-            {this._renderButton("Invite", () => {
-              this.setState({visibleInviteModal: false,
-                usernameSearchQuery: '', 
-                userSearchResult: [],
-                })
-              if(this.state.selectedUserToInvite != ''){
-                this.inviteUser()
-              }
-            
-            })
-            }
-          </View>
-          <View>
-            {this._renderButton("Close", () => {
-              this.setState({visibleInviteModal: false, 
-                usernameSearchQuery: '', 
-                userSearchResult: [],
-                selectedUserToInvite: '',
-              })
-            })}
-          </View>
-        </View>
-      </View>
-    )
-
   render() {
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
+      <View style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}>
         <Modal isVisible={this.state.visibleNewTagModal}>
           {this._renderNewTagModal()}
-        </Modal>
-        <Modal isVisible={this.state.visibleInviteModal}>
-          {this._renderInviteModal()}
         </Modal>
         <View style={{flex: 1, flexDirection: 'row'}}>
         	<View style={{ marginVertical: 20, 
@@ -360,9 +243,6 @@ class BoardManagerScreen extends Component {
             height: 50,
             flex: 2
           }}>
-             {this._renderButton("Invite", () => {
-              this.setState({visibleInviteModal: true})
-              })}
           </View>
 
           <View style={{ 
@@ -382,17 +262,31 @@ class BoardManagerScreen extends Component {
             height: 50,
             flex: 1.5
           }}>
-            {this._renderButton("Back", () => {
-              this.props.navigation.navigate(
-                  'Board', 
-                  { user: this.props.navigation.state.params.user, 
-                    boardId: this.props.navigation.state.params.boardId, 
-                    boardName: this.props.navigation.state.params.boardName 
+            {
+              this._renderButton("Back", () => {
+                this.props.navigation.navigate(
+                  'Board', {
+                    user: this.props.navigation.state.params.user,
+                    boardId: this.props.navigation.state.params.boardId,
+                    boardName: this.props.navigation.state.params.boardName
                   }
-              )
-              this.setState({openWebSocket: false})
-              this.ws.close()
-            })}
+                )
+                var updateBoardRequest = {
+                  from: 'BoardManager',
+                  code: 'updateBoard',
+                  boardId: this.props.navigation.state.params.boardId,
+                  setTime: this.state.setTime,
+                  mode: this.state.mode,
+                }
+                var requestString = JSON.stringify(updateBoardRequest)
+                console.log('Set Board Time Request')
+                this.ws.send(requestString)
+                this.setState({
+                  openWebSocket: false
+                })
+                this.ws.close()
+              })
+            }
           </View>
         </View>
         <View style = {{flex: 3 }}>
@@ -400,29 +294,51 @@ class BoardManagerScreen extends Component {
             color: 'grey',  
             marginVertical: 5, 
             marginHorizontal: 20 
-          }}>Members</Text>
-          {this.state.members.map((user) => {
-            return(
-                <View style={{flexDirection: 'row'}} key = {user} >
-                  <TouchableWithoutFeedback 
-                    onPress={() => {
-                      Alert.alert(user.username)
-                     }
-                    }
-                  >
-                    <Text 
-                      style={{
-                        fontSize: 18, 
-                        color: 'black',  
-                        marginVertical: 5,
-                        marginLeft: 30,
-                      }}>
-                        {user.username}
-                    </Text>
-                  </TouchableWithoutFeedback>
-              </View>
-            )
-          })}
+          }}>Mode</Text>
+          <View style = {{flexDirection: 'row', marginLeft: 20}}>
+            <View style = {{flex: 1 }}>
+              <Picker selectedValue = {this.state.mode} onValueChange = {(mode) => {this.setState({mode: mode})}}>
+                <Picker.Item label = "None" value = "none" />
+                <Picker.Item label = "Timing" value = "timing" />
+                <Picker.Item label = "Goal" value = "goal" />
+              </Picker>
+            </View>
+            <View style = {{flex: 3}}/>
+          </View>
+          <View style = {{marginLeft: 20}}>
+            {
+              this.state.mode == 'timing' && (
+                <View>
+                  <View style = {{flexDirection: 'row', marginLeft: 20}}>
+                    <View style = {{flexDirection: 'row', flex: 1}}>
+                      <View style={{borderWidth: 3, borderColor: 'white'}}>
+                        <Text style = {{fontSize: 16, textAlign: 'center'}}>Time: </Text>
+                      </View>
+                      {
+                        <TextInput
+                          style={{
+                            height: 36, 
+                            width: 50,
+                          }}
+                          placeholderTextColor = 'gray'
+                          placeholder = 'Input'
+                          onChangeText= {(setTime) => this.setState({setTime})}
+                          value = {String(this.state.setTime)}
+                        />
+                      }
+                    </View>
+                    <View style = {{flex: 1}}>
+                      
+                    </View>
+                    <View style = {{flex: 1}}/>
+                  </View>
+                  <View style = {{flexDirection: 'row', marginLeft: 20}}>
+                    <Text>{this.state.setTime}</Text>
+                  </View>
+                </View>
+                )
+            }
+          </View>
         </View>
         <View style = {{flex: 5 }}>
           <Text style={{fontSize: 20, 

@@ -27,7 +27,7 @@ var boardSchema = new Schema({
     }],
     tags: [String],
     mode: String,
-    LimitedTime: Number,
+    limitedTime: Number,
 });
 //userSchema.plugin(uniqueValidator);
 

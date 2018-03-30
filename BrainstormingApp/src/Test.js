@@ -1,169 +1,76 @@
-import React, { Component } from 'react';
-import { 
-  Alert, 
-  AppRegistry, 
-  Button, 
-  StyleSheet, 
-  View, 
-  TextInput, 
+import ViewShot from "react-native-view-shot";
+import React, {
+  Component
+} from 'react';
+
+import {
+  Alert,
+  AppRegistry,
+  Button,
+  StyleSheet,
+  View,
+  TextInput,
   Text,
-  TouchableOpacity, 
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+  BackHandler,
+  KeyboardAvoidingView,
+  Image,
+  ImageBackground,
+  ScrollView,
 } from 'react-native';
-import { StackNavigator, NavigationActions } from 'react-navigation';
-import HomeScreen from './HomeScreen';
-import RestAPI from './RestAPI';
+
 import Modal from "react-native-modal";
-import styles from "./app.style";
 
-//window.navigator.userAgent = 'react-native';
-import io from 'socket.io-client';
-
-
-
+// capture ScrollView content
 class Test extends Component {
-   static navigationOptions = {
-    //title: 'Login',
-   }
   constructor(props) {
     super(props);
-    this.state = { 
-      msg: '',
-      socket: {},
-    };
-
-    
-    //Alert.alert('Test')
-    this.socket = io('http://10.0.2.2:3000',
-      {
-        jsonp: false,
-        reconnection: false,
-        //autoConnect: false,
-      }
-      );
-
-    this.socket.on('connect', () => {
-      Alert.alert('Connect')
-    })
-
-    this.socket.on('disconnect', () => {
-
-      Alert.alert('Disconnect')
-    })
-
-
+    this.uri = '..'
+    this.state = {
+      visibleModal: false,
+    }
   }
 
-  
-  connect(){
-    //this.socket.open();
-    
+  onCapture = uri => {
+    console.log(uri);
+    this.uri = uri
   }
 
-  disconnect(){
-    this.socket.disconnect();
-  }
-
-  sendMsg(){
-    this.socket.emit('hello', this.state.msg, (data) => {
-      Alert.alert(data); // data will be 'woot'
-    });
-  }
-
-
-
- 
-
-  _renderButton = (text, onPress) => (
+   _renderButton = (text, onPress) => (
     <TouchableOpacity onPress={onPress}>
-      <View style={styles.button}>
+      <View style=
+      {{
+        backgroundColor: "lightblue",
+        padding: 6,
+        margin: 8,
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 4,
+        borderColor: "rgba(0, 0, 0, 0.1)"
+      }}>
         <Text>{text}</Text>
       </View>
     </TouchableOpacity>
-  );
+  )
 
-  _renderTextInput = (placeholder, onChange) => (
+  _renderModal = () => (
     <View>
-      <TextInput
-          style={{
-            height: 40, 
-            //borderColor: 'gray', 
-            //borderWidth: 1
-          }}
-          placeholderTextColor = 'gray'
-          placeholder = {placeholder}
-          onChangeText={onChange}
-      />
+      <Image source={{uri: "file:///data/user/0/com.brainstormingapp/cache/ReactNative-snapshot-image2085461881.png"}} />
     </View>
-  );
-
-
+  )
 
   render() {
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
-        <View style={{flex: 2}}/>
-        <View style={{flex: 1, flexDirection: 'row'}}>
-          <View style={{flex: 1}}/>
-          <View style={{flex: 2}}>
-            <View>
-              <TextInput
-                  style={{
-                    height: 40, 
-                  }}
-                  placeholderTextColor = 'gray'
-                  placeholder = 'Message'
-                  onChangeText=  {(msg) => this.setState({msg})}
-                   ref={element => {
-                    this.loginUsernameInput = element
-                  }}
-              />
-            </View>
-          </View>
-          <View style={{flex: 1}}/>
-        </View>
-        <View style={{flex: 1, flexDirection: 'row'}}>
-          <View style={{flex: 1}}/>
-          <View style={{flex: 2}}>
-            <View>
-            </View>
-          </View>
-          <View style={{flex: 1}}/>
-        </View>
-        <View style={{flex:1, flexDirection: 'row'}}>
-          <View style={{flex: 1}}/>
-          <View style={{flex: 2}}>
-            {this._renderButton('Connect', () => {
-              this.connect()
-              //this.setState({ loginUsername: '', loginPassword: ''})
-            })}
-          </View>
-          <View style={{flex: 1}}/>
-        </View>
-        <View style={{flex:1, flexDirection: 'row'}}>
-          <View style={{flex: 1}}/>
-            <View style={{flex: 2}}>
-              {this._renderButton('Disconnect', () => this.disconnect())}
-            </View>
-          <View style={{flex: 1}}/>
-        </View>
-        <View style={{flex:1, flexDirection: 'row'}}>
-          <View style={{flex: 1}}/>
-            <View style={{flex: 2}}>
-              {this._renderButton('Send', () => this.sendMsg())}
-            </View>
-          <View style={{flex: 1}}/>
-        </View>
-        <View style={{flex:2}}/>
-      </View>
+      <ScrollView>
+        <Image source={{uri: "ReactNative-snapshot-image2085461881.png"}} />
+        <ViewShot onCapture={this.onCapture} captureMode="mount">
+          <Text>...The Scroll View Content Goes Here...</Text>
+          {this._renderButton('Capture', () => this.setState({visibleModal: true}))}
+        </ViewShot>
+      </ScrollView>
     );
   }
 }
 
-//onPress={() => this.testLogin()}
-//onPress={() => this.login(this.state.loginUsername, this.state.loginPassword)}
-
-
 export default Test;
-// skip this line if using Create React Native App
-//AppRegistry.registerComponent('BrainstormingApp', () => LoginScreen);
-

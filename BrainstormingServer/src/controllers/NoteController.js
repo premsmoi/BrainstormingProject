@@ -11,7 +11,7 @@ exports.create_a_note = function(note, callback) {
 };
 
 module.exports.getNotes = function(id_arr, callback){
-  console.log('notes in getNotes: '+id_arr)
+  //console.log('notes in getNotes: '+id_arr)
   Note.find({
     '_id': { $in: id_arr}},
     {},

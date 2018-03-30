@@ -30,7 +30,8 @@ exports.create_a_board = function(req, res) {
     arr.push(creator)
     var newBoard = new Board({
       boardName: boardName,
-      members: arr
+      members: arr,
+      limitedTime: 300,
     });
     Board.createBoard(newBoard, function(err, board){
       if(err){
@@ -178,6 +179,13 @@ module.exports.deleteTag = function(obj, callback){
               }, callback)
 }
 
+module.exports.updateBoard = function(obj, callback){
+  Board.update({ _id: obj.boardId}, 
+              {
+                $set: obj.updatedObj
+              }, callback)
+}
+
 module.exports.list_all_boards = function(req, res) {
   Board.find({}, function(err, board) {
     if (err)
@@ -185,3 +193,5 @@ module.exports.list_all_boards = function(req, res) {
     res.json(board);
   });
 };
+
+
