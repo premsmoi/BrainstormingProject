@@ -17,6 +17,7 @@ import {
   ImageBackground,
   CheckBox,
   KeyboardAvoidingView,
+  Dimensions,
 } from 'react-native';
 import styles from "./app.style";
 import {
@@ -29,6 +30,7 @@ import {
   NavigationActions
 } from 'react-navigation';
 import Note from './Note';
+import SmallNote from './SmallNote';
 import {
   ip,
   boardWidth,
@@ -76,7 +78,10 @@ class BoardScreen extends Component {
       userSearchResult: [],
       selectedUserToInvite: '',
       usernameSearchQuery: '',
+      noteSearchQuery: '',
       members: [],
+      scrollX: 0,
+      scrollY: 0,
     }
     this.user = this.props.navigation.state.params.user
     this.isVisibleOpenNoteModal = false;
@@ -599,6 +604,24 @@ class BoardScreen extends Component {
     //console.log('notes: '+JSON.stringify(this.state.noteList))
   }
 
+  searchNote(){
+    Alert.alert('search')
+    this.forceUpdate()
+  }
+
+  onCapture = uri => {
+    console.log('uri: '+uri);
+    this.uri = uri;
+  }
+
+  handleScrollX(event) {
+   console.log('X: '+event.nativeEvent.contentOffset.x);
+  }
+
+  handleScrollY(event) {
+   console.log('Y: '+event.nativeEvent.contentOffset.y);
+  }
+
   _renderColorPicker = (color) => (
     <TouchableOpacity onPress={() => this.setState({newColor: color})}>
       <View style={{
@@ -919,8 +942,10 @@ class BoardScreen extends Component {
     </View>
   )
 
+
   render() {
     console.log('render')
+    console.log('noteSearchQuery: '+this.state.noteSearchQuery)
     if(this.state.currentLoad >= this.totalLoad || (this.state.currentLoad >= this.totalLoad - 1 && this.state.startedBoard == 0)){
       return (
         
@@ -940,7 +965,7 @@ class BoardScreen extends Component {
             <Modal isVisible={this.state.visibleGroupNotesModal}>
               {this._renderGroupNotesModal()}
             </Modal>
-            <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
+            <View style={{flex: 1.2, flexDirection: 'row', backgroundColor: 'white',}}>
                 <View style={{ 
                   marginVertical: 10, 
                   marginHorizontal: 20,
@@ -950,7 +975,7 @@ class BoardScreen extends Component {
                   onPress={() => this.openNewNoteModal()}
                   >
                       <Image 
-                        style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                        style={{width: 24, height: 24, marginTop: 8, marginHorizontal: 10}}
                         source={require('../img/write.png')}
                       />
                   </TouchableWithoutFeedback>
@@ -964,7 +989,7 @@ class BoardScreen extends Component {
                     onPress={() => {this.setState({visibleShowMembersModal: true})}}
                   >
                     <Image 
-                      style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                      style={{width: 24, height: 24, marginTop: 8, marginHorizontal: 10}}
                       source={require('../img/members.png')}
                     />
                   </TouchableWithoutFeedback>
@@ -978,7 +1003,7 @@ class BoardScreen extends Component {
                     onPress={() => this.toBoardManager()}
                   >
                     <Image 
-                      style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                      style={{width: 24, height: 24, marginTop: 8, marginHorizontal: 10}}
                       source={require('../img/setting.png')}
                     />
                   </TouchableWithoutFeedback>
@@ -992,7 +1017,7 @@ class BoardScreen extends Component {
                     onPress={() => this.exitBoard()}
                   >
                     <View>
-                      <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10, alignItems: 'center'}}>
+                      <Text style = {{fontSize: 20, color: 'black', marginTop: 8, marginHorizontal: 10, alignItems: 'center'}}>
                         Exit
                       </Text>
                     </View>
@@ -1000,7 +1025,7 @@ class BoardScreen extends Component {
                 </View> 
                 
             </View>
-            <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}>
+            <View style={{flex: 1.2, flexDirection: 'row', backgroundColor: 'white',}}>
               <View style={{ 
                   marginVertical: 10, 
                   marginHorizontal: 20,
@@ -1036,70 +1061,132 @@ class BoardScreen extends Component {
                 </View>  
             </View>
             
-            
-            <View style={{flex: 9}}>
+            <View style={{flex: 13}}>
               <ScrollView 
+                onScroll = {this.handleScrollY}
                 showsVerticalScrollIndicator = {true} 
                 keyboardShouldPersistTaps = {'always'}
                 style={{
 
                 }}>
-                <View style=
-                {{
-                  flex: 1,
-                  width: 5,
-                  height: boardHeight,
-                }}>
-
-                </View>
-                <ScrollView 
-                  horizontal = {true}
-                  showsHorizontalScrollIndicator = {true}
-                  keyboardShouldPersistTaps = {'always'} 
-                  style = {{
-                    backgroundColor: 'white',
-                    top: 0, 
-                    bottom: 0,
-                    position: 'absolute',
+                  <View style=
+                  {{
+                    flex: 1,
+                    width: 5,
+                    height: boardHeight,
                   }}>
-                  <View style={{flexDirection: 'column'}}>
-                    <View style={{
-                      //top: 0, 
-                      //bottom: 0,
-                      width: boardWidth,
-                      height: 5,
-                      //position: 'absolute',
-                    }}>
-                    </View>
-                    <Text style={{fontSize:16}}></Text>
-                  
-                    {this.state.noteList.map((note) => {
-                      //console.log('single note: '+JSON.stringify(note))
-                      return(
-                        //<DoubleClick onClick={this.handleClick}>
-                          <Note 
-                            deleteNote = {this.deleteNote} 
-                            focusNote = {this.focusNote}
-                            updateNotePosition = {this.updateNotePosition}
-                            updateNoteText = {this.updateNoteText}
-                            updateNoteList = {this.updateNoteList}
-                            updateNoteColor = {this.updateNoteColor}
-                            updateNote = {this.updateNote}
-                            getState = {this.getState}
-                            setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
-                            key = {note._id}
-                            id = {note._id}
-                            x = {note.x} 
-                            y = {note.y} 
-                            color = {note.color} 
-                            text = {note.text}
-                            tags = {note.tags}/>
-                        //</DoubleClick>
-                      )
-                    })}
+
                   </View>
-                </ScrollView>
+                  <ScrollView 
+                    onScroll = {this.handleScrollX}
+                    horizontal = {true}
+                    showsHorizontalScrollIndicator = {true}
+                    keyboardShouldPersistTaps = {'always'} 
+                    style = {{
+                      backgroundColor: 'white',
+                      top: 0, 
+                      bottom: 0,
+                      position: 'absolute',
+                    }}>
+                    <View style={{flexDirection: 'column'}}>
+                      <View style={{
+                        //top: 0, 
+                        //bottom: 0,
+                        width: boardWidth,
+                        height: 5,
+                        //position: 'absolute',
+                      }}>
+                      </View>
+                      <Text style={{fontSize:16}}></Text>
+                    
+                      {this.state.noteList.map((note) => {
+                        //console.log('single note: '+JSON.stringify(note))
+                        if((note.text).includes(this.state.noteSearchQuery)){
+                          return(
+                          //<DoubleClick onClick={this.handleClick}>
+                            <Note 
+                              deleteNote = {this.deleteNote} 
+                              focusNote = {this.focusNote}
+                              updateNotePosition = {this.updateNotePosition}
+                              updateNoteText = {this.updateNoteText}
+                              updateNoteList = {this.updateNoteList}
+                              updateNoteColor = {this.updateNoteColor}
+                              updateNote = {this.updateNote}
+                              getState = {this.getState}
+                              setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
+                              key = {note._id}
+                              id = {note._id}
+                              x = {note.x} 
+                              y = {note.y} 
+                              color = {note.color}
+                              //color = {(note.text).includes(this.state.noteSearchQuery)? 'red' : 'black'} 
+                              text = {note.text}
+                              tags = {note.tags}/>
+                          //</DoubleClick>
+                          )
+                        }
+                      })}
+                    </View>
+                  </ScrollView>
               </ScrollView>
+            </View>
+            <View style={{flex: 2, flexDirection: 'row', backgroundColor: 'white',}}>
+               <View style = {{flex: 1}}> 
+                {this._renderTextInput('Search Note', 
+                  (noteSearchQuery) => { this.setState({noteSearchQuery})},
+                  this.state.noteSearchQuery
+                )}
+                </View>
+                <View style = {{flex: 1}}>
+                  <TouchableWithoutFeedback
+                    onPress={() => this.searchNote()}
+                  >
+                   <Image 
+                        style={{width: 16, height: 16, marginTop: 8, marginHorizontal: 10}}
+                        source={require('../img/search.png')}
+                    />
+                  </TouchableWithoutFeedback>
+                </View>
+                <View style = {{flex: 0.7}}>
+                   <View style = {{ 
+                      top: 0, 
+                      bottom: 0,
+                      position: 'absolute',
+                      width: 400,
+                      height: 150,
+                      borderColor: 'gray',
+                      borderWidth: 0.5,
+                    }}>
+
+                      {this.state.noteList.map((note) => {
+                          //console.log('single note: '+JSON.stringify(note))
+                          if((note.text).includes(this.state.noteSearchQuery)){
+                            return(
+                            //<DoubleClick onClick={this.handleClick}>
+                              <SmallNote
+                                deleteNote = {this.deleteNote} 
+                                focusNote = {this.focusNote}
+                                updateNotePosition = {this.updateNotePosition}
+                                updateNoteText = {this.updateNoteText}
+                                updateNoteList = {this.updateNoteList}
+                                updateNoteColor = {this.updateNoteColor}
+                                updateNote = {this.updateNote}
+                                getState = {this.getState}
+                                setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
+                                key = {note._id}
+                                id = {note._id}
+                                x = {note.x/10} 
+                                y = {note.y/10} 
+                                color = {note.color}
+                                //color = {(note.text).includes(this.state.noteSearchQuery)? 'red' : 'black'} 
+                                text = {note.text}
+                                tags = {note.tags}/>
+                            //</DoubleClick>
+                            )
+                          }
+                        })}
+      </View>
+                </View>
             </View>
           </View>
         

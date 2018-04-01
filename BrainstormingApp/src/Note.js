@@ -36,6 +36,7 @@ export default class Note extends Component {
       text: this.props.text,
       nextText: this.props.text,
       COLOR: this.props.color,
+      //transparent: this.props.transparent,
       isVisibleOpenNoteModal: false,
       visibleSelectTagsModal: false,
       canMount: true,
