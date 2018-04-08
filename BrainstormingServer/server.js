@@ -20,7 +20,7 @@ boardList = require('./src/controllers/BoardController'),
   util = require('util'),
   async = require('async'),
   includes = require('array-includes'),
-  sleep = require('sleep'),
+  //sleep = require('sleep'),
   dateFormat = require('dateformat');
 
 
@@ -330,7 +330,7 @@ wsServer.on('connection', function connection(connection, request) {
                 });
                 wsServer.clients.forEach(function each(client) {
                   if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
-                    sleep.msleep(100)
+                    //sleep.msleep(100)
                     client.send(json)
                   }
                 });
@@ -398,7 +398,7 @@ wsServer.on('connection', function connection(connection, request) {
                 notes: notes
               }
             });
-            sleep.msleep(100)
+            //sleep.msleep(100)
             connection.send(json);
           })
         })
@@ -587,7 +587,28 @@ wsServer.on('connection', function connection(connection, request) {
           })
 
         })
-      } else if (obj.code == 'searchUser') {
+      } else if (obj.code == 'boardGetVote') {
+        console.log(obj)
+        userList.getUserByUsername(obj.username, function(err, user) {
+          if (err)
+            console.log(err)
+          user.boards.forEach(function(board) {
+            if (board.boardId == obj.boardId) {
+              var json = JSON.stringify({
+                body: {
+                  code: 'getVote',
+                  numberOfVote: board.numberOfVote,
+                }
+              })
+              connection.send(json)
+              //console.log(json)
+            }
+          })
+
+        })
+      }
+
+      else if (obj.code == 'searchUser') {
         console.log(obj)
         userList.searchUsers(obj.username, function(err, users) {
           if (err)
@@ -724,6 +745,7 @@ wsServer.on('connection', function connection(connection, request) {
           updatedObj: {
             limitedTime: obj.setTime,
             mode: obj.mode,
+            numberOfVote: obj.numberOfVote,
           }
         }, function(err, numAffected) {
           if (err)

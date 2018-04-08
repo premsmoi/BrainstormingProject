@@ -11,8 +11,10 @@ import {
   BackHandler,
   KeyboardAvoidingView,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import HomeScreen from './HomeScreen';
 import RestAPI from './RestAPI';
 import Modal from "react-native-modal";
@@ -44,6 +46,8 @@ class LoginScreen extends Component {
     BackHandler.addEventListener('hardwareBackPress', () => {
        BackHandler.exitApp()
     });
+
+    console.log(Dimensions.get('window'))
    
   }
 
@@ -235,12 +239,12 @@ class LoginScreen extends Component {
 
   render() {
     return (
-      <ScrollView contentContainerStyle = {{paddingVertical: 200}} keyboardShouldPersistTaps = {'always'}>
+      <KeyboardAwareScrollView  keyboardShouldPersistTaps = {'always'} >
       <View style={{flex: 1, flexDirection: 'column'}}>
         <Modal isVisible={this.state.visibleRegModal}>
             {this._renderRegModal()}
         </Modal>
-        <View style={{flex: 2}}/>
+        <View style={{height: 200}}/>
         <View style={{flex: 1, flexDirection: 'row', paddingVertical: 5}}>
           <View style={{flex: 1}}/>
           <View style={{flex: 2}}>
@@ -299,7 +303,7 @@ class LoginScreen extends Component {
         </View>
         <View style={{flex:2}}/>
       </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     );
   }
 }

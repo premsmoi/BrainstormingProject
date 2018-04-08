@@ -116,6 +116,7 @@ exports.addBoard = function(obj, callback) {
     started: 0,
     timeRemaining: 30,
     finished: false,
+    numberOfVote: 1,
   }
 
   User.update({

@@ -42,9 +42,12 @@ export default class Note extends Component {
       canMount: true,
       newColor: this.props.color,
       tags: this.props.tags,
-      newNoteTags: [],
+      newNoteTags: this.props.tags,
       tagSelection: {},
+      newTagSelection: {},
     }
+    console.log('tags: '+this.state.tags)
+    console.log('newNoteTags: '+this.state.newNoteTags)
     this._rectangleStyles = {
       style: {
         left: this.x,
@@ -53,14 +56,21 @@ export default class Note extends Component {
       }
     };
     this.boardState.tags.map((tag) => {
-          let newTagSelection = this.state.tagSelection
-          newTagSelection[tag] = false
-          this.setState({ tagSelection: newTagSelection })
+          let tempTagSelection = this.state.newTagSelection
+          tempTagSelection[tag] = false
+          //console.log('now tag: '+tag)
+          //console.log('tempTagSelection: '+JSON.stringify(tempTagSelection)
+          this.setState({ tagSelection: tempTagSelection }, () => {
+            //this.setState({ newTagSelection: tempTagSelection })
+          })
         })
+    console.log('start newTagSelection: '+JSON.stringify(this.state.newTagSelection))
+    console.log('start tagSelection: '+JSON.stringify(this.state.tagSelection))
+    console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
     this.state.tags.map((tag) => {
-          let newTagSelection = this.state.tagSelection
-          newTagSelection[tag] = true
-          this.setState({ tagSelection: newTagSelection })
+          let tempTagSelection = this.state.newTagSelection
+          tempTagSelection[tag] = true
+          //this.setState({ tagSelection: tempTagSelection , newTagSelection: tempTagSelection})
         })
   }
 
@@ -127,7 +137,7 @@ export default class Note extends Component {
             marginVertical: 5, 
             marginLeft: 20 
           }}>Tags:</Text>
-          {this.state.tags.map((tag) => {
+          {this.state.newNoteTags.map((tag) => {
             return(
               <Text 
                 style={{
@@ -154,6 +164,12 @@ export default class Note extends Component {
             this.setState({ isVisibleOpenNoteModal: false, text: this.state.nextText, COLOR: this.state.newColor})
            
             console.log('color: '+this.state.newColor)
+            this.setState({
+              color: this.state.newColor,
+              text: this.state.nextText,
+              tags: this.state.newNoteTags,
+              tagSelection: this.state.newTagSelection,
+            })
              var updatedObj = {
               id: this.id,
               color: this.state.newColor,
@@ -164,14 +180,26 @@ export default class Note extends Component {
             console.log('tags me : '+this.state.newNoteTags)
             this.props.updateNote(updatedObj)
             this.props.setVisibleOpenNoteModal(false)
-            this.setState({newNoteTags: []})
+            //this.setState({newNoteTags: []})
           })}
         </View>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 4}}>
           {this._renderButton("Cancel", () => {
-            this.setState({ isVisibleOpenNoteModal: false, nextText: this.state.text, newColor: this.state.COLOR})
-           this.props.setVisibleOpenNoteModal(false)
+            console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
+              console.log('tagSelection: '+JSON.stringify(this.state.tagSelection))  
+            this.setState({
+              isVisibleOpenNoteModal: false,
+              nextText: this.state.text,
+              newColor: this.state.COLOR,
+              newNoteTags: this.state.tags,
+              newTagSelection: this.state.tagSelection,
+            }, () => {
+              console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
+              console.log('tagSelection: '+JSON.stringify(this.state.tagSelection))  
+            })
+            
+            this.props.setVisibleOpenNoteModal(false)
           })}
         </View>  
         <View style = {{flex: 1}}/>
@@ -200,12 +228,12 @@ export default class Note extends Component {
         return(
           <View style={{ flexDirection: 'row' }}>
             <CheckBox
-              value={this.state.tagSelection[tag]}
+              value={this.state.newTagSelection[tag]}
               onValueChange={() => {
-                let newTagSelection = this.state.tagSelection
-                newTagSelection[tag] = !newTagSelection[tag]
-                this.setState({ tagSelection: newTagSelection })
-                console.log(this.state.tagSelection)
+                let tempTagSelection = this.state.newTagSelection
+                tempTagSelection[tag] = !tempTagSelection[tag]
+                this.setState({ newTagSelection: tempTagSelection })
+                console.log(this.state.newTagSelection)
               }
               }
             />
@@ -215,15 +243,20 @@ export default class Note extends Component {
       })}
       {this._renderButton("OK", () => {
         this.setState({ visibleSelectTagsModal: false })
+        let newTags = [];
+        this.setState({newNoteTags: []})
         this.boardState.tags.map((tag) => {
-          if(this.state.tagSelection[tag]){
-              let newTags = this.state.newNoteTags
+          if(this.state.newTagSelection[tag]){
               newTags.push(tag)
-              this.setState({newNoteTags: newTags})
+              console.log('newTags: '+newTags)
+              this.setState({newNoteTags: []}, () => {
+                this.setState({newNoteTags: newTags}, () => {
+                   console.log('newNoteTags: '+this.state.newNoteTags)
+                })
+              })
           }
-          this.setState({tags: this.state.newNoteTags})
-          console.log('newNoteTags: '+this.state.newNoteTags)
         })
+        
       })}
     </View>
   )
@@ -235,15 +268,16 @@ export default class Note extends Component {
       onPanResponderGrant: (e, gesture) => {
         this._highlight();
         var delta = new Date().getTime() - this.state.lastPress;
-
-        if(delta < 200) {
+        console.log(delta)
+        if(delta < 500) {
           // double tap happend
           //console.log(borderColor[this.state.COLOR])
           this.setState({ isVisibleOpenNoteModal: true })
           this.props.setVisibleOpenNoteModal(true)
+          console.log('Double')
         
         }
-        console.log('Look ! isVisibleOpenNoteModal: '+this.props.isVisibleOpenNoteModal)
+        //console.log('Look ! isVisibleOpenNoteModal: '+this.props.isVisibleOpenNoteModal)
 
         this.setState({
         lastPress: new Date().getTime()

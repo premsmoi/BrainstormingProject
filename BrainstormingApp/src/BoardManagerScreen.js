@@ -41,6 +41,7 @@ class BoardManagerScreen extends Component {
       mode: this.props.navigation.state.params.board.mode,
       openWebSocket: false,
       setTime: this.props.navigation.state.params.board.limitedTime,
+      numberOfVote: 1,
     }
 
     this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
@@ -277,6 +278,7 @@ class BoardManagerScreen extends Component {
                   boardId: this.props.navigation.state.params.boardId,
                   setTime: this.state.setTime,
                   mode: this.state.mode,
+                  numberOfVote: this.state.numberOfVote,
                 }
                 var requestString = JSON.stringify(updateBoardRequest)
                 console.log('Set Board Time Request')
@@ -289,7 +291,7 @@ class BoardManagerScreen extends Component {
             }
           </View>
         </View>
-        <View style = {{flex: 3 }}>
+        <View style = {{flex: 2 }}>
           <Text style={{fontSize: 20, 
             color: 'grey',  
             marginVertical: 5, 
@@ -332,14 +334,44 @@ class BoardManagerScreen extends Component {
                     </View>
                     <View style = {{flex: 1}}/>
                   </View>
-                  <View style = {{flexDirection: 'row', marginLeft: 20}}>
-                    <Text>{this.state.setTime}</Text>
-                  </View>
                 </View>
                 )
             }
           </View>
         </View>
+        <View style = {{flex: 1 }}>
+         <Text style={{fontSize: 20, 
+            color: 'grey',  
+            marginVertical: 5, 
+            marginHorizontal: 20 
+          }}>Vote</Text>
+          <View style = {{marginLeft: 20}}>
+           
+                  <View style = {{flexDirection: 'row', marginLeft: 20}}>
+                    <View style = {{flexDirection: 'row', flex: 1}}>
+                      <View style={{borderWidth: 3, borderColor: 'white'}}>
+                        <Text style = {{fontSize: 16, textAlign: 'center'}}>Number of vote: </Text>
+                      </View>
+                      {
+                        <TextInput
+                          style={{
+                            height: 36, 
+                            width: 50,
+                          }}
+                          placeholderTextColor = 'gray'
+                          placeholder = 'Input'
+                          onChangeText= {(numberOfVote) => this.setState({numberOfVote})}
+                          value = {String(this.state.numberOfVote)}
+                        />
+                      }
+                    </View>
+                    <View style = {{flex: 1}}>
+                      
+                    </View>
+                    <View style = {{flex: 1}}/>
+                  </View>
+                </View>
+          </View>
         <View style = {{flex: 5 }}>
           <Text style={{fontSize: 20, 
             color: 'grey',  

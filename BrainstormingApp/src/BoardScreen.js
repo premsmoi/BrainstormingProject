@@ -60,6 +60,7 @@ class BoardScreen extends Component {
       startButtonText: 'Start',
       startedBoard: '',
       timeRemaining: null,
+      numberOfVote: null,
       currentLoad: 0,
       //noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
       //             {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
@@ -189,6 +190,11 @@ class BoardScreen extends Component {
         this.setState({userSearchResult: obj.body.userList})
         console.log(obj.body.userList)
       }
+
+      if(obj.body.code == 'getVote'){
+        this.setState({numberOfVote: obj.body.numberOfVote})
+        console.log('I got vote')
+      }
     };
 
     this.ws.onerror = (e) => {
@@ -211,7 +217,9 @@ class BoardScreen extends Component {
       this.setState({
         openWebSocket: true
       })
+      console.log('1')
       this.getNotes();
+      console.log('2')
       //ws.send('Hello Node Server!'); // send a message
       var tagClientRequest = {
         from: 'Board',
@@ -258,7 +266,17 @@ class BoardScreen extends Component {
       var requestString = JSON.stringify(getBoardRequest)
       this.ws.send(requestString)
 
+      var getVoteRequest = {
+        from: 'Board',
+        code: 'getVote',
+        username: this.user.username,
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(getVoteRequest)
+      this.ws.send(requestString)
+
       this.getBoardStartStatus()
+      console.log('3')
     };
 
     setInterval(this.countTimer, 1000)
@@ -334,6 +352,7 @@ class BoardScreen extends Component {
       }
       var requestString = JSON.stringify(boardGetTimerRequest)
       this.ws.send(requestString)
+      console.log('count timer')
     }
   }
 
@@ -545,6 +564,13 @@ class BoardScreen extends Component {
           //console.log('Hit!')
           note.x = x;
           note.y = y;
+          var updatedObj = {
+              id: note._id,
+              x: note.x,
+              y: note.y,
+              updated: new Date().getTime(),
+            }
+          this.updateNote(updatedObj)
           y += 30;
           x += 10
           includesNote = true;
@@ -563,7 +589,9 @@ class BoardScreen extends Component {
     this.setState({
             noteList: []
           }, () => {
-            this.setState({noteList: newNoteList})
+            this.setState({noteList: newNoteList}, () => {
+              this.updateNoteList()
+            })
           })
 
     
@@ -585,6 +613,13 @@ class BoardScreen extends Component {
           //console.log('Hit!')
           note.x = x;
           note.y = y;
+          var updatedObj = {
+              id: note._id,
+              x: note.x,
+              y: note.y,
+              updated: new Date().getTime(),
+            }
+          this.updateNote(updatedObj)
           x += 10;
           y += 30;
           count_note++
@@ -597,7 +632,44 @@ class BoardScreen extends Component {
     this.setState({
             noteList: []
           }, () => {
-            this.setState({noteList: newNoteList})
+            this.setState({noteList: newNoteList}, () => {
+              this.updateNoteList()
+            })
+          })
+
+    
+    //console.log('notes: '+JSON.stringify(this.state.noteList))
+  }
+
+  spreadNotes(){
+    //console.log('tags: '+JSON.stringify(this.state.tags))
+    var newNoteList = this.state.noteList
+    var x = -150;
+    var y = 25;
+    count_note = 0;
+    newNoteList.map((note) => {
+      x += 190;
+      note.x = x;
+      note.y = y;
+      var updatedObj = {
+              id: note._id,
+              x: note.x,
+              y: note.y,
+              updated: new Date().getTime(),
+            }
+      this.updateNote(updatedObj)
+      count_note++;
+      if(count_note%5 == 0){
+        x = -150;
+        y += 175;
+      }
+    })
+    this.setState({
+            noteList: []
+          }, () => {
+            this.setState({noteList: newNoteList}, () => {
+              this.updateNoteList()
+            })
           })
 
     
@@ -936,6 +1008,10 @@ class BoardScreen extends Component {
         this.groupNotesByColor()
         this.setState({ visibleGroupNotesModal: false })
       })}
+      {this._renderButton("Spread notes", () => {
+        this.spreadNotes()
+        this.setState({ visibleGroupNotesModal: false })
+      })}
       {this._renderButton("Cancel", () => {
         this.setState({ visibleGroupNotesModal: false })
       })}
@@ -945,7 +1021,7 @@ class BoardScreen extends Component {
 
   render() {
     console.log('render')
-    console.log('noteSearchQuery: '+this.state.noteSearchQuery)
+    //console.log('noteSearchQuery: '+this.state.noteSearchQuery)
     if(this.state.currentLoad >= this.totalLoad || (this.state.currentLoad >= this.totalLoad - 1 && this.state.startedBoard == 0)){
       return (
         
@@ -967,7 +1043,7 @@ class BoardScreen extends Component {
             </Modal>
             <View style={{flex: 1.2, flexDirection: 'row', backgroundColor: 'white',}}>
                 <View style={{ 
-                  marginVertical: 10, 
+                  marginVertical: 5, 
                   marginHorizontal: 20,
                   flex: 1 
                 }}>
@@ -981,7 +1057,7 @@ class BoardScreen extends Component {
                   </TouchableWithoutFeedback>
                 </View>
                 <View style={{ 
-                  marginVertical: 10, 
+                  marginVertical: 5, 
                   marginHorizontal: 20,
                   flex: 1 
                 }}>
@@ -996,7 +1072,7 @@ class BoardScreen extends Component {
                 </View>
                 <View style={{
                   flex: 1,
-                  marginVertical: 10, 
+                  marginVertical: 5, 
                   marginHorizontal: 20,
                 }}>
                   <TouchableWithoutFeedback
@@ -1009,7 +1085,7 @@ class BoardScreen extends Component {
                   </TouchableWithoutFeedback>
                 </View>
                 <View style={{ 
-                  marginVertical: 10, 
+                  marginVertical: 5, 
                   marginHorizontal: 20,
                   //flex: 1 
                 }}>
@@ -1131,11 +1207,15 @@ class BoardScreen extends Component {
               </ScrollView>
             </View>
             <View style={{flex: 2, flexDirection: 'row', backgroundColor: 'white',}}>
-               <View style = {{flex: 1}}> 
-                {this._renderTextInput('Search Note', 
-                  (noteSearchQuery) => { this.setState({noteSearchQuery})},
-                  this.state.noteSearchQuery
-                )}
+              <View style = {{flex: 2, flexDirection: 'row'}}>
+                <View style = {{flex: 1}}> 
+                  {this._renderTextInput('Search Note', 
+                    (noteSearchQuery) => { this.setState({noteSearchQuery})},
+                    this.state.noteSearchQuery
+                  )}
+                  <View>
+                    <Text>{this.state.numberOfVote}</Text>
+                  </View>
                 </View>
                 <View style = {{flex: 1}}>
                   <TouchableWithoutFeedback
@@ -1147,7 +1227,8 @@ class BoardScreen extends Component {
                     />
                   </TouchableWithoutFeedback>
                 </View>
-                <View style = {{flex: 0.7}}>
+              </View>
+              <View style = {{flex: 0.7}}>
                    <View style = {{ 
                       top: 0, 
                       bottom: 0,
@@ -1185,7 +1266,7 @@ class BoardScreen extends Component {
                             )
                           }
                         })}
-      </View>
+                  </View>
                 </View>
             </View>
           </View>

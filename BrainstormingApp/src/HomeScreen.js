@@ -15,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Image,
   ImageBackground,
+  ScrollView,
 } from 'react-native';
 import {
   StackNavigator,
@@ -726,115 +727,120 @@ class HomeScreen extends Component {
 
   render() {
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
-        <Modal isVisible={this.state.visibleNewBoardModal}>
-            {this._renderNewBoardModal()}
-        </Modal>
-        <Modal isVisible={this.state.visibleBoardDetailModal}>
-            {this._renderBoardDetailModal()}
-        </Modal>
-        <Modal isVisible={this.state.visibleNotificationModal}>
-            {this._renderNotificationModal()}
-        </Modal>
-        <View style={{flex: 1, flexDirection: 'row'}}>
-          <View style={{ marginVertical: 20, 
-            marginHorizontal: 20,
-            //width: 125, 
-            height: 50,
-            flex: 2.5
-          }}>
-            {this._renderButton("Create Board", () => this.setState({visibleNewBoardModal:true}))}
-          </View>
+      <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {false}>
+        <View style={{flex: 1, flexDirection: 'column'}}>
+          <Modal isVisible={this.state.visibleNewBoardModal}>
+              {this._renderNewBoardModal()}
+          </Modal>
+          <Modal isVisible={this.state.visibleBoardDetailModal}>
+              {this._renderBoardDetailModal()}
+          </Modal>
+          <Modal isVisible={this.state.visibleNotificationModal}>
+              {this._renderNotificationModal()}
+          </Modal>
+          <View style={{flex: 1, flexDirection: 'row'}}>
+            <View style={{ marginVertical: 20, 
+              marginHorizontal: 20,
+              //width: 125, 
+              height: 50,
+              flex: 2.5
+            }}>
+              {this._renderButton("Create Board", () => this.setState({visibleNewBoardModal:true}))}
+            </View>
 
-          <View style={{ flex: 1 }}>
-          </View>
+            <View style={{ flex: 1 }}>
+            </View>
 
-          <View style={{ 
-            marginVertical: 20, 
-            marginHorizontal: 10, 
-            //width: 40, 
-            height: 50,
-            flex: 1.5
-          }}>
-            <TouchableWithoutFeedback
-              onPress={() => this.setState({visibleNotificationModal: true})}
-            >
-              <ImageBackground
-                style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
-                source={require('../img/message.png')}
+            <View style={{ 
+              marginVertical: 20, 
+              marginHorizontal: 10, 
+              //width: 40, 
+              height: 50,
+              flex: 1.5
+            }}>
+              <TouchableWithoutFeedback
+                onPress={() => this.setState({visibleNotificationModal: true})}
               >
-                {
-                  this.state.numberOfUnreadNotification > 0 && (
-                    <View style = {{
-                      width: this.state.numberOfUnreadNotification > 9? 22 : 16,
-                      height: 16,
-                      borderRadius: 8,
-                      backgroundColor: 'red',
-                      marginLeft: 24,
-                    }}>
-                      <Text style={{
-                        fontSize: 10, 
-                        color: 'white',  
-                        //marginVertical: 20, 
-                        marginHorizontal: 5,
+                <ImageBackground
+                  style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                  source={require('../img/message.png')}
+                >
+                  {
+                    this.state.numberOfUnreadNotification > 0 && (
+                      <View style = {{
+                        width: this.state.numberOfUnreadNotification > 9? 22 : 16,
+                        height: 16,
+                        borderRadius: 8,
+                        backgroundColor: 'red',
+                        marginLeft: 24,
                       }}>
-                        {this.state.numberOfUnreadNotification}
-                      </Text>
-                    </View>
-                    )
-                }
-                
-              </ImageBackground>
-            </TouchableWithoutFeedback>
+                        <Text style={{
+                          fontSize: 10, 
+                          color: 'white',  
+                          //marginVertical: 20, 
+                          marginHorizontal: 5,
+                        }}>
+                          {this.state.numberOfUnreadNotification}
+                        </Text>
+                      </View>
+                      )
+                  }
+                  
+                </ImageBackground>
+              </TouchableWithoutFeedback>
+            </View>
+
+            <View style={{ 
+              marginVertical: 20, 
+              marginLeft: 10,
+              marginRight: 20, 
+              //width: 60, 
+              height: 50,
+              flex: 1.5
+            }}>
+              {this._renderButton("Logout", () => this.logout())}
+            </View>
+          </View>
+          <View style = {{flex: 1 }}>
+            <Text style={{fontSize: 30, 
+              color: 'grey',  
+              marginVertical: 20, 
+              marginHorizontal: 20 
+            }}>My Boards</Text>
           </View>
 
-          <View style={{ 
-            marginVertical: 20, 
-            marginLeft: 10,
-            marginRight: 20, 
-            //width: 60, 
-            height: 50,
-            flex: 1.5
-          }}>
-            {this._renderButton("Logout", () => this.logout())}
+          <View style = {{flex: 5 }}>
+            <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {true}>
+              {this.state.myBoards.map((board) => {
+                return(
+                  <TouchableWithoutFeedback 
+                    onPress={() => {
+                      this.setState({showDetailBoard: board})
+                      this.setState({changeBoardName: board.boardName})
+                      this.setState({visibleBoardDetailModal: true})
+                      //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board.boardId})
+                      }
+                    }
+                    key = {board._id}  
+                  >
+                    <View>
+                      <Text 
+                        style={{
+                          fontSize: 20, 
+                          color: 'black',  
+                          marginVertical: 10, 
+                          marginHorizontal: 30 
+                        }}>
+                          {board.boardName}
+                      </Text> 
+                    </View>
+                  </TouchableWithoutFeedback>
+                )
+              })}
+            </ScrollView>
           </View>
         </View>
-        <View style = {{flex: 1 }}>
-          <Text style={{fontSize: 30, 
-            color: 'grey',  
-            marginVertical: 20, 
-            marginHorizontal: 20 
-          }}>My Boards</Text>
-        </View>
-        <View style = {{flex: 5 }}>
-          {this.state.myBoards.map((board) => {
-            return(
-              <TouchableWithoutFeedback 
-                onPress={() => {
-                  this.setState({showDetailBoard: board})
-                  this.setState({changeBoardName: board.boardName})
-                  this.setState({visibleBoardDetailModal: true})
-                  //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board.boardId})
-                  }
-                }
-                key = {board._id}  
-              >
-                <View>
-                  <Text 
-                    style={{
-                      fontSize: 20, 
-                      color: 'black',  
-                      marginVertical: 10, 
-                      marginHorizontal: 30 
-                    }}>
-                      {board.boardName}
-                  </Text> 
-                </View>
-              </TouchableWithoutFeedback>
-            )
-          })}
-        </View>
-      </View>
+      </ScrollView>
     );
   }
 }
