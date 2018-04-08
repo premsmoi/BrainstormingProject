@@ -46,8 +46,8 @@ export default class Note extends Component {
       tagSelection: {},
       newTagSelection: {},
     }
-    console.log('tags: '+this.state.tags)
-    console.log('newNoteTags: '+this.state.newNoteTags)
+    //console.log('tags: '+this.state.tags)
+    //console.log('newNoteTags: '+this.state.newNoteTags)
     this._rectangleStyles = {
       style: {
         left: this.x,
@@ -64,9 +64,9 @@ export default class Note extends Component {
             //this.setState({ newTagSelection: tempTagSelection })
           })
         })
-    console.log('start newTagSelection: '+JSON.stringify(this.state.newTagSelection))
-    console.log('start tagSelection: '+JSON.stringify(this.state.tagSelection))
-    console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
+    //console.log('start newTagSelection: '+JSON.stringify(this.state.newTagSelection))
+    //console.log('start tagSelection: '+JSON.stringify(this.state.tagSelection))
+    //console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
     this.state.tags.map((tag) => {
           let tempTagSelection = this.state.newTagSelection
           tempTagSelection[tag] = true
@@ -211,7 +211,21 @@ export default class Note extends Component {
           })}
         </View>  
         <View style = {{flex: 1}}/>
-      </View>  
+      </View>
+      <View style = {{flexDirection: 'row'}}>
+        <View style = {{flex: 1}}/>
+        <View style = {{flex: 4}}>  
+          {this._renderButton(this.props.getVoteStatus(this.id)? 'Unvote' : 'Vote', () => {
+            if(this.props.getVoteStatus(this.id)){
+              this.props.unvoteNote(this.id)
+            }
+            else{
+              this.props.voteNote(this.id)
+            }
+          })}
+        </View>
+        <View style = {{flex: 11}}/>
+      </View>
     </View>
   );
 
@@ -267,7 +281,7 @@ export default class Note extends Component {
       onMoveShouldSetPanResponder: (e, gesture) => true,
       onPanResponderGrant: (e, gesture) => {
         this._highlight();
-        var delta = new Date().getTime() - this.state.lastPress;
+        var delta = new Date().getTime() - this.props.getLastPress().time;
         console.log(delta)
         if(delta < 500) {
           // double tap happend
@@ -279,11 +293,12 @@ export default class Note extends Component {
         }
         //console.log('Look ! isVisibleOpenNoteModal: '+this.props.isVisibleOpenNoteModal)
 
-        this.setState({
+        /*this.setState({
         lastPress: new Date().getTime()
-        })
+        })*/
+        this.props.setLastPress({ time: new Date().getTime(), noteId: this.id })
         this.props.focusNote(this.id)
-        console.log(this.id)
+        //console.log(this.id)
       },
       onPanResponderMove: (e, gesture) => {
         this._rectangleStyles.style.left = this.x + gesture.dx;
@@ -302,8 +317,10 @@ export default class Note extends Component {
               y: this.y,
               updated: new Date().getTime(),
             }
-        this.props.updateNote(updatedObj)
-        this.props.updateNoteList();
+        setTimeout(() => {
+          this.props.updateNote(updatedObj)
+          this.props.updateNoteList();
+        }, 200)
         
       },
       onPanResponderTerminate: (e, gesture) => {
@@ -350,7 +367,27 @@ export default class Note extends Component {
           }}
           {...this._panResponder.panHandlers}
         >
-          <Text style={styles.text}>{this.state.text}</Text>
+          <View style = {{flex: 1, flexDirection: 'row'}}>
+            <View style = {{flex: 7}}/>
+            <View style = {{flex: 1}}>
+            {
+              this.props.getVoteStatus(this.id) && 
+                <Image 
+                  style={{width: 16, height: 16, marginTop: 5, /*marginHorizontal: 10*/}}
+                  source={require('../img/star.png')}
+                />
+            
+            }
+            </View>
+          </View>
+          <View style = {{flex: 7}}>
+            <Text style={{
+              fontSize: 14,
+              //marginVertical: 10,
+              marginHorizontal: 10,
+              color: 'black',
+            }}>{this.state.text}</Text>
+          </View>
         </View>
         
       </View>

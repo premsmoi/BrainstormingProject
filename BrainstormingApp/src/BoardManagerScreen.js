@@ -41,7 +41,7 @@ class BoardManagerScreen extends Component {
       mode: this.props.navigation.state.params.board.mode,
       openWebSocket: false,
       setTime: this.props.navigation.state.params.board.limitedTime,
-      numberOfVote: 1,
+      numberOfVote: this.props.navigation.state.params.board.numberOfVote,
     }
 
     this.ws = new WebSocket('ws://'+ip, 'echo-protocol');

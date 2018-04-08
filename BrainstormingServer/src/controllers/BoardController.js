@@ -32,6 +32,8 @@ exports.create_a_board = function(req, res) {
       boardName: boardName,
       members: arr,
       limitedTime: 300,
+      numberOfVote: 1,
+      mode: 'none',
     });
     Board.createBoard(newBoard, function(err, board){
       if(err){

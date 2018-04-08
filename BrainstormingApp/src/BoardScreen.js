@@ -53,6 +53,10 @@ class BoardScreen extends Component {
     this.newId = 2;
     this.tempNote = null;
     this.totalLoad = 6;
+    this.lastPressObj = {
+      time: new Date().getTime(),
+      noteId: null,
+    }
     this.state = {
       board: null,
       openWebSocket: false,
@@ -65,6 +69,7 @@ class BoardScreen extends Component {
       //noteList : [ {id: 1, x: 0, y: 0, color: 'blue', text: 'My name is Smoi'},
       //             {id: 2, x: 100, y: 100, color: 'pink', text: 'Passakorn'} ],
       noteList: [],
+      votedNoteList: [],
       visibleNewNoteModal: false,
       visibleEditNoteModal: false,
       visibleSelectTagsModal: false,
@@ -73,6 +78,8 @@ class BoardScreen extends Component {
       visibleGroupNotesModal: false,
       newColor: 'red',
       newNoteText: '',
+      newNoteTags: [],
+      newTagSelection: {},
       tags: [],
       newNoteTags: [],
       tagSelection: {},
@@ -99,8 +106,24 @@ class BoardScreen extends Component {
     this.getTimeRemaining = this.getTimeRemaining.bind(this);
     this.toBoardManager = this.toBoardManager.bind(this);
     this.openNewNoteModal = this.openNewNoteModal.bind(this);
+    this.getVoteStatus = this.getVoteStatus.bind(this);
+    this.voteNote = this.voteNote.bind(this);
+    this.unvoteNote = this.unvoteNote.bind(this);
+    this.getLastPress = this.getLastPress.bind(this);
+    this.setLastPress = this.setLastPress.bind(this);
     //console.log(this.props)
-
+    this.state.tags.map((tag) => {
+          let tempTagSelection = this.state.newTagSelection
+          tempTagSelection[tag] = false
+          //console.log('now tag: '+tag)
+          //console.log('tempTagSelection: '+JSON.stringify(tempTagSelection)
+          this.setState({ tagSelection: tempTagSelection }, () => {
+          this.setState({ newTagSelection: tempTagSelection })
+          })
+        })
+    //console.log('start newTagSelection: '+JSON.stringify(this.state.newTagSelection))
+    //console.log('start tagSelection: '+JSON.stringify(this.state.tagSelection))
+    //console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
     //this.ws = new WebSocket('ws://10.0.2.2:8080', 'echo-protocol');
     this.ws = new WebSocket('ws://' + ip, 'echo-protocol');
 
@@ -191,9 +214,9 @@ class BoardScreen extends Component {
         console.log(obj.body.userList)
       }
 
-      if(obj.body.code == 'getVote'){
-        this.setState({numberOfVote: obj.body.numberOfVote})
-        console.log('I got vote')
+      if(obj.body.code == 'getVotedNotes'){
+        this.setState({votedNoteList: obj.body.votedNotes})
+        console.log('I got voted notes : '+obj.body.votedNotes)
       }
     };
 
@@ -275,6 +298,15 @@ class BoardScreen extends Component {
       var requestString = JSON.stringify(getVoteRequest)
       this.ws.send(requestString)
 
+      var getUserVotedNotesRequest = {
+        from: 'Board',
+        code: 'getUserVotedNotes',
+        username: this.user.username,
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(getUserVotedNotesRequest)
+      this.ws.send(requestString)
+
       this.getBoardStartStatus()
       console.log('3')
     };
@@ -283,6 +315,13 @@ class BoardScreen extends Component {
 
   }
 
+  getLastPress(){
+    return this.lastPressObj;
+  }
+
+  setLastPress(obj){
+   this.lastPressObj = obj
+  }
 
   toBoardManager() {
     this.setState({
@@ -571,7 +610,7 @@ class BoardScreen extends Component {
               updated: new Date().getTime(),
             }
           this.updateNote(updatedObj)
-          y += 30;
+          y += 40;
           x += 10
           includesNote = true;
           if(y + 150 > maxY){
@@ -621,7 +660,7 @@ class BoardScreen extends Component {
             }
           this.updateNote(updatedObj)
           x += 10;
-          y += 30;
+          y += 40;
           count_note++
         }
       })
@@ -674,6 +713,38 @@ class BoardScreen extends Component {
 
     
     //console.log('notes: '+JSON.stringify(this.state.noteList))
+  }
+
+  getVoteStatus(noteId){
+    if(this.state.votedNoteList.includes(noteId)){
+      return true;
+    }
+    else
+      return false;
+  }
+
+  voteNote(noteId){
+    var voteNoteRequest = {
+      from: 'Board',
+      code: 'voteNote',
+      username: this.user.username,
+      boardId: this.props.navigation.state.params.boardId,
+      votedNoteId: noteId,
+    }
+    var requestString = JSON.stringify(voteNoteRequest)
+    this.ws.send(requestString)
+  }
+
+  unvoteNote(noteId){
+    var unvoteNoteRequest = {
+      from: 'Board',
+      code: 'unvoteNote',
+      username: this.user.username,
+      boardId: this.props.navigation.state.params.boardId,
+      unvotedNoteId: noteId,
+    }
+    var requestString = JSON.stringify(unvoteNoteRequest)
+    this.ws.send(requestString)
   }
 
   searchNote(){
@@ -773,7 +844,7 @@ class BoardScreen extends Component {
           }}>Tags:</Text>
           {
             this.state.tags.map((tag) => {
-            if(this.state.tagSelection[tag]){
+            if(this.state.newTagSelection[tag]){
               return(
                 <Text 
                   key = {tag}
@@ -801,7 +872,7 @@ class BoardScreen extends Component {
         <View style = {{flex: 3}}>
           {this._renderButton("OK", () => {
             this.setState({ visibleNewNoteModal: false })
-            this.setState({tagSelection: {}, newNoteTags: [], newNoteText:''})
+            this.setState({newTagSelection: {}, newNoteTags: [], newNoteText:''})
             this.createNewNote()
             })
           }
@@ -810,7 +881,7 @@ class BoardScreen extends Component {
         <View style = {{flex: 3}}>
           {this._renderButton("Cancel", () => {
             this.setState({ visibleNewNoteModal: false })
-            this.setState({tagSelection: {}, newNoteTags: [], newNoteText:''})
+            this.setState({newTagSelection: {}, newNoteTags: [], newNoteText:''})
           })}
         </View>
         <View style = {{flex: 1}}/>
@@ -831,12 +902,12 @@ class BoardScreen extends Component {
         return(
           <View style={{ flexDirection: 'row' }}>
             <CheckBox
-              value={this.state.tagSelection[tag]}
+              value={this.state.newTagSelection[tag]}
               onValueChange={() => {
-                let newTagSelection = this.state.tagSelection
-                newTagSelection[tag] = !newTagSelection[tag]
-                this.setState({ tagSelection: newTagSelection })
-                console.log(this.state.tagSelection)
+                let tempTagSelection = this.state.newTagSelection
+                tempTagSelection[tag] = !tempTagSelection[tag]
+                this.setState({ newTagSelection: tempTagSelection })
+                console.log(this.state.newTagSelection)
               }
               }
             />
@@ -846,6 +917,20 @@ class BoardScreen extends Component {
       })}
       {this._renderButton("OK", () => {
         this.setState({ visibleSelectTagsModal: false })
+        let newTags = [];
+        this.setState({newNoteTags: []})
+        this.state.tags.map((tag) => {
+          if(this.state.newTagSelection[tag]){
+              newTags.push(tag)
+              console.log('newTags: '+newTags)
+              this.setState({newNoteTags: []}, () => {
+                this.setState({newNoteTags: newTags}, () => {
+                   console.log('newNoteTags: '+this.state.newNoteTags)
+                })
+              })
+          }
+        })
+        
       })}
     </View>
   )
@@ -1107,7 +1192,7 @@ class BoardScreen extends Component {
                   marginHorizontal: 20,
                   flex: 2
                 }}>
-                  <Text style = {{fontSize: 25, color: 'black', marginTop: 8, marginHorizontal: 10}}>
+                  <Text style = {{fontSize: 20, color: 'black', marginTop: 8, marginHorizontal: 10}}>
                     {this.state.board.mode != 'timing'?  '' : (this.state.timeRemaining == 0? 'Time\'s up' : this.state.timeRemaining)}
                   </Text>
               </View>
@@ -1190,6 +1275,11 @@ class BoardScreen extends Component {
                               updateNote = {this.updateNote}
                               getState = {this.getState}
                               setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
+                              getVoteStatus = {this.getVoteStatus}
+                              voteNote = {this.voteNote}
+                              unvoteNote = {this.unvoteNote}
+                              getLastPress = {this.getLastPress}
+                              setLastPress = {this.setLastPress}
                               key = {note._id}
                               id = {note._id}
                               x = {note.x} 
@@ -1213,8 +1303,8 @@ class BoardScreen extends Component {
                     (noteSearchQuery) => { this.setState({noteSearchQuery})},
                     this.state.noteSearchQuery
                   )}
-                  <View>
-                    <Text>{this.state.numberOfVote}</Text>
+                  <View style = {{marginLeft: 5}}>
+                    <Text style = {{fontSize: 16, color: 'black',}}>Votes: {this.state.board.numberOfVote - this.state.votedNoteList.length}</Text>
                   </View>
                 </View>
                 <View style = {{flex: 1}}>

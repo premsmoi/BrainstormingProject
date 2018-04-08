@@ -116,7 +116,7 @@ exports.addBoard = function(obj, callback) {
     started: 0,
     timeRemaining: 30,
     finished: false,
-    numberOfVote: 1,
+    votedNotes: [],
   }
 
   User.update({
@@ -138,6 +138,7 @@ exports.add_board = function(req, res) {
     started: 0,
     timeRemaining: 30,
     finished: false,
+    votedNotes: [],
   }
 
   User.update({
@@ -228,6 +229,28 @@ exports.startBoard = function(obj, callback) {
     $set: {
       'boards.$.started': 1,
       'boards.$.timeRemaining': obj.setTime,
+    }
+  }, callback)
+}
+
+exports.voteNote = function(obj, callback) {
+  User.update({
+    username: obj.username,
+    'boards.boardId': obj.boardId
+  }, {
+    $push: {
+      'boards.$.votedNotes': obj.votedNoteId,
+    }
+  }, callback)
+}
+
+exports.unvoteNote = function(obj, callback) {
+  User.update({
+    username: obj.username,
+    'boards.boardId': obj.boardId
+  }, {
+    $pull: {
+      'boards.$.votedNotes': obj.unvotedNoteId,
     }
   }, callback)
 }
