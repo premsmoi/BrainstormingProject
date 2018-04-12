@@ -23,7 +23,8 @@ var notificationSchema = new Schema({
         required: true,
         default: false,
     },
-    date: String,
+    dateString: String,
+    date: Date,
 });
 
 // Compile model from schema

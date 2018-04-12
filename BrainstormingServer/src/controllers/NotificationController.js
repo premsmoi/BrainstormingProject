@@ -18,6 +18,7 @@ module.exports.getNotification = function(obj, callback){
   Notification.find({
     'user': obj.username},
     {},
+    {sort: {date: -1}}, 
     callback)
   //console.log('find board: '+board)
   //return returnedBoard;

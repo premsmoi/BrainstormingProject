@@ -57,6 +57,20 @@ module.exports.updateNote = function(updatedObj, callback){
   )
 }
 
+module.exports.updateVoteScore = function(updatedObj, callback){
+  Note.update(
+    {
+    _id: updatedObj.noteId
+    }, 
+    { 
+      $inc: { voteScore: updatedObj.score} 
+    },
+    callback
+  )
+}
+
+
+
 exports.list_all_notes = function(req, res) {
   Note.find({}, null, {sort: {updated: 1}}, function(err, note) {
     if (err)

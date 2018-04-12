@@ -32,6 +32,10 @@ var noteSchema = new Schema({
     tags: [{ 
         type: String, 
     }],
+    voteScore: {
+        type: Number,
+        default: 0,
+    },
     updated: { 
         type: Date, 
         default: Date.now 
