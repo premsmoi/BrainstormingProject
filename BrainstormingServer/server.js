@@ -318,56 +318,52 @@ wsServer.on('connection', function connection(connection, request) {
             boardList.getBoardById(note.boardId, function(err, board) {
               if (err)
                 console.log(err)
-              noteList.getNotes(board.notes, function(err, notes) {
+              var json = JSON.stringify({
+                body: {
+                  code: 'getNotesTrigger'
+                }
+              })
+              wsServer.clients.forEach(function each(client) {
+                if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+                  //sleep.msleep(100)
+                  client.send(json)
+                }
+              });
+              var now = new Date()
+              var newNoti = {
+                notificationType: 'normal',
+                boardId: board._id,
+                boardName: board.boardName,
+                user: obj.note.writer,
+                detail: 'There is a new note in board: ' + board.boardName,
+                dateString: dateFormat(now, 'd mmmm yyyy HH:MM'),
+                date: new Date().getTime()
+              }
+              var to_users = []
+              board.members.map(function(member) {
+                if (member != note.writer) {
+                  to_users.push(member)
+                }
+              })
+              notificationList.createNotification({
+                newNoti: newNoti,
+                users: to_users
+              }, function(err, noti) {
                 if (err)
                   console.log(err)
-                console.log('notes: ' + notes)
                 var json = JSON.stringify({
                   body: {
-                    code: 'updatedNotes',
-                    notes: notes
+                    code: 'getNotificationTrigger',
+                    //notification: noti
                   }
                 });
                 wsServer.clients.forEach(function each(client) {
-                  if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
-                    //sleep.msleep(100)
+                  if (includes(board.members, client['username']) && client['from'] == 'Home' && client['username'] != note.writer) {
                     client.send(json)
                   }
                 });
-                var now = new Date()
-                var newNoti = {
-                  notificationType: 'normal',
-                  boardId: board._id,
-                  boardName: board.boardName,
-                  user: obj.note.writer,
-                  detail: 'There is a new note in board: ' + board.boardName,
-                  date: dateFormat(now, 'd mmmm yyyy HH:MM')
-                }
-                var to_users = []
-                board.members.map(function(member) {
-                  if (member != note.writer) {
-                    to_users.push(member)
-                  }
-                })
-                notificationList.createNotification({
-                  newNoti: newNoti,
-                  users: to_users
-                }, function(err, noti) {
-                  if (err)
-                    console.log(err)
-                  var json = JSON.stringify({
-                    body: {
-                      code: 'getNotificationTrigger',
-                      //notification: noti
-                    }
-                  });
-                  wsServer.clients.forEach(function each(client) {
-                    if (includes(board.members, client['username']) && client['from'] == 'Home' && client['username'] != note.writer) {
-                      client.send(json)
-                    }
-                  });
-                })
               })
+
             })
           })
         });
@@ -453,11 +449,7 @@ wsServer.on('connection', function connection(connection, request) {
               code: 'getNotesTrigger'
             }
           })
-          /*wsServer.clients.forEach(function each(client) {
-            if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
-              client.send(json)
-            }
-          });*/
+
         })
       } else if (obj.code == 'enterBoard') {
         console.log(obj)
@@ -596,23 +588,35 @@ wsServer.on('connection', function connection(connection, request) {
         }, function(err, numAffected) {
           if (err)
             console.log(err)
-          userList.getUserByUsername(obj.username, function(err, user) {
+          noteList.updateVoteScore({
+            noteId: obj.votedNoteId,
+            score: 1,
+          }, function(err, numAffected) {
             if (err)
               console.log(err)
-            user.boards.forEach(function(board) {
-              if (board.boardId == obj.boardId) {
-                var json = JSON.stringify({
-                  body: {
-                    code: 'getVotedNotes',
-                    votedNotes: board.votedNotes,
-                  }
-                })
-                connection.send(json)
-                console.log(json)
-              }
+            userList.getUserByUsername(obj.username, function(err, user) {
+              if (err)
+                console.log(err)
+              user.boards.forEach(function(board) {
+                if (board.boardId == obj.boardId) {
+                  var json = JSON.stringify({
+                    body: {
+                      code: 'getVotedNotes',
+                      votedNotes: board.votedNotes,
+                    }
+                  })
+                  connection.send(json)
+                  console.log(json)
+                }
+              })
+              var json = JSON.stringify({
+                body: {
+                  code: 'getNotesTrigger'
+                }
+              })
+              connection.send(json)
             })
           })
-
         });
       } else if (obj.code == 'unvoteNote') {
         console.log(obj)
@@ -623,20 +627,31 @@ wsServer.on('connection', function connection(connection, request) {
         }, function(err, numAffected) {
           if (err)
             console.log(err)
-          userList.getUserByUsername(obj.username, function(err, user) {
-            if (err)
-              console.log(err)
-            user.boards.forEach(function(board) {
-              if (board.boardId == obj.boardId) {
-                var json = JSON.stringify({
-                  body: {
-                    code: 'getVotedNotes',
-                    votedNotes: board.votedNotes,
-                  }
-                })
-                connection.send(json)
-                console.log(json)
-              }
+          noteList.updateVoteScore({
+            noteId: obj.unvotedNoteId,
+            score: -1,
+          }, function(err, numAffected) {
+            userList.getUserByUsername(obj.username, function(err, user) {
+              if (err)
+                console.log(err)
+              user.boards.forEach(function(board) {
+                if (board.boardId == obj.boardId) {
+                  var json = JSON.stringify({
+                    body: {
+                      code: 'getVotedNotes',
+                      votedNotes: board.votedNotes,
+                    }
+                  })
+                  connection.send(json)
+                  console.log(json)
+                }
+              })
+              var json = JSON.stringify({
+                body: {
+                  code: 'getNotesTrigger'
+                }
+              })
+              connection.send(json)
             })
           })
         });
@@ -711,7 +726,8 @@ wsServer.on('connection', function connection(connection, request) {
           boardName: obj.boardName,
           user: obj.username,
           detail: 'You are invited to board: ' + obj.boardName,
-          date: dateFormat(now, 'd mmmm yyyy HH:MM')
+          dateString: dateFormat(now, 'd mmmm yyyy HH:MM'),
+          date: new Date().getTime()
         }
         notificationList.createNotification({
           newNoti: newNoti,
@@ -789,21 +805,31 @@ wsServer.on('connection', function connection(connection, request) {
             });
           })
         });
-      } else if (obj.code == 'updateBoard') {
-        console.log(obj)
-        boardList.updateBoard({
-          boardId: obj.boardId,
-          updatedObj: {
-            limitedTime: obj.setTime,
-            mode: obj.mode,
-            numberOfVote: obj.numberOfVote,
-          }
-        }, function(err, numAffected) {
-          if (err)
-            console.log(err)
-        });
       }
-
+    }
+    if (obj.code == 'updateBoard') {
+      console.log(obj)
+      boardList.updateBoard({
+        boardId: obj.boardId,
+        updatedObj: obj.updatedObj,
+      }, function(err, numAffected) {
+        if (err)
+          console.log(err)
+        boardList.getBoardById(obj.boardId, function(err, board){
+          if(err)
+            console.log(err)
+          var json = JSON.stringify({
+            body: {
+              code: 'getBoard',
+              board: board,
+            }
+          })
+          if(obj.from == 'Board'){
+            connection.send(json)  
+          }
+          
+        })
+      });
     }
 
     if (obj.code == 'boardGetTags') {

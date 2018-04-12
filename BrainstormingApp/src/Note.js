@@ -36,6 +36,7 @@ export default class Note extends Component {
       text: this.props.text,
       nextText: this.props.text,
       COLOR: this.props.color,
+      voteScore: this.props.voteScore,
       //transparent: this.props.transparent,
       isVisibleOpenNoteModal: false,
       visibleSelectTagsModal: false,
@@ -319,7 +320,7 @@ export default class Note extends Component {
             }
         setTimeout(() => {
           this.props.updateNote(updatedObj)
-          this.props.updateNoteList();
+          //this.props.updateNoteList();
         }, 200)
         
       },
@@ -387,6 +388,14 @@ export default class Note extends Component {
               marginHorizontal: 10,
               color: 'black',
             }}>{this.state.text}</Text>
+          </View>
+          <View style = {{flex: 1, padding: 10}}>
+            <Text style={{
+              fontSize: 14,
+              //marginBottom: 10,
+              //marginHorizontal: 10,
+              color: 'black',
+            }}>{'Votes: '+this.state.voteScore}</Text>
           </View>
         </View>
         

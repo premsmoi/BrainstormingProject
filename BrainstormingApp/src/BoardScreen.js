@@ -18,6 +18,7 @@ import {
   CheckBox,
   KeyboardAvoidingView,
   Dimensions,
+  TouchableHighlight,
 } from 'react-native';
 import styles from "./app.style";
 import {
@@ -36,6 +37,7 @@ import {
   boardWidth,
   boardHeight
 } from './Configuration';
+import {renderButton, renderIconButton} from './RenderUtilities'
 
 //import DoubleClick from 'react-native-double-click';
 
@@ -78,6 +80,7 @@ class BoardScreen extends Component {
       visibleShowMembersModal: false,
       visibleInviteModal: false,
       visibleGroupNotesModal: false,
+      visibleMemberDetail: false,
       newColor: 'red',
       newNoteText: '',
       newNoteTags: [],
@@ -92,6 +95,7 @@ class BoardScreen extends Component {
       members: [],
       scrollX: 0,
       scrollY: 0,
+      currentDetailMember: '',
     }
     this.user = this.props.navigation.state.params.user
     this.isVisibleOpenNoteModal = false;
@@ -397,6 +401,17 @@ class BoardScreen extends Component {
     }
   }
 
+  updateBoard(updatedObj){
+    var updateBoardRequest = {
+        from: 'Board',
+        code: 'updateBoard',
+        boardId: this.props.navigation.state.params.boardId,
+        updatedObj: updatedObj,
+      }
+      var requestString = JSON.stringify(updateBoardRequest)
+      this.ws.send(requestString)
+  }
+
   async searchUsername() {
     var searchUserRequest = {
       from: 'Board',
@@ -453,7 +468,6 @@ class BoardScreen extends Component {
       from: 'Board',
       code: 'updateNote',
       updatedObj: updatedObj,
-      updated: new Date().getTime(),
     }
     var requestString = JSON.stringify(newNoteRequest)
     //console.log('props: '+this.props)
@@ -461,6 +475,10 @@ class BoardScreen extends Component {
   }
 
   updateNoteList() {
+    var noteIdList = [];
+    this.state.noteList.forEach(function(note){
+
+    })
     var newNoteRequest = {
       from: 'Board',
       code: 'updateNoteList',
@@ -534,11 +552,6 @@ class BoardScreen extends Component {
   }
 
   deleteNote = (deletedId) => {
-    //var tempList = this.state.noteList
-    //var deletedIndex = this.state.noteList.findIndex(function(_id) {return _id == deletedId})
-    //tempList.splice(deletedIndex, 1)
-    //this.setState({noteList: tempList})
-
     var deleteNoteRequest = {
       from: 'Board',
       code: 'deleteNote',
@@ -754,27 +767,6 @@ class BoardScreen extends Component {
     this.forceUpdate()
   }
 
-  handleScrollX(event) {
-    console.log('X: '+event.nativeEvent.contentOffset.x);
-
-    console.log('currentBoardSize: '+this.currentBoardWidth+' '+this.currentBoardHeight)
-    if(this.currentBoardWidth == 0 && this.currentBoardHeight == 0){
-      console.log(JSON.stringify(event.nativeEvent.layoutMeasurement))
-      this.currentBoardHeight = event.nativeEvent.layoutMeasurement.height;
-      this.currentBoardWidth = event.nativeEvent.layoutMeasurement.width;  
-    }
-  }
-
-  handleScrollY(event) {
-   console.log('Y: '+event.nativeEvent.contentOffset.y);
-
-    console.log('currentBoardSize: '+this.currentBoardWidth+' '+this.currentBoardHeight)
-    if(this.currentBoardWidth == 0 && this.currentBoardHeight == 0){
-      console.log(JSON.stringify(event.nativeEvent.layoutMeasurement))
-      this.currentBoardHeight = event.nativeEvent.layoutMeasurement.height;
-      this.currentBoardWidth = event.nativeEvent.layoutMeasurement.width;  
-    }
-  }
 
   _renderColorPicker = (color) => (
     <TouchableOpacity onPress={() => this.setState({newColor: color})}>
@@ -784,14 +776,6 @@ class BoardScreen extends Component {
         borderWidth: 0.5,
         width: 50,
         height: 50,}}>
-      </View>
-    </TouchableOpacity>
-  )
-
-  _renderButton = (text, onPress) => (
-    <TouchableOpacity onPress={onPress}>
-      <View style={styles.button}>
-        <Text>{text}</Text>
       </View>
     </TouchableOpacity>
   )
@@ -881,7 +865,7 @@ class BoardScreen extends Component {
       <View style={{flexDirection: 'row'}}>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("OK", () => {
+          {renderButton("OK", () => {
             this.setState({ visibleNewNoteModal: false })
             this.setState({newTagSelection: {}, newNoteTags: [], newNoteText:''})
             this.createNewNote()
@@ -890,7 +874,7 @@ class BoardScreen extends Component {
         </View>
         <View style = {{flex: 2}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Cancel", () => {
+          {renderButton("Cancel", () => {
             this.setState({ visibleNewNoteModal: false })
             this.setState({newTagSelection: {}, newNoteTags: [], newNoteText:''})
           })}
@@ -926,7 +910,7 @@ class BoardScreen extends Component {
           </View>
         )
       })}
-      {this._renderButton("OK", () => {
+      {renderButton("OK", () => {
         this.setState({ visibleSelectTagsModal: false })
         let newTags = [];
         this.setState({newNoteTags: []})
@@ -954,58 +938,93 @@ class BoardScreen extends Component {
       //alignItems: "center",
       //borderRadius: 4,
     }}>
-      <View style = {{flexDirection:'row'}}>
-        <Text style={{fontSize: 20, 
-              color: 'grey',  
-              marginVertical: 5, 
-              marginHorizontal: 20 
-            }}>Members</Text>
-        <TouchableWithoutFeedback
-          onPress={() => this.setState({visibleInviteModal: true})}
-        >
-          <View>   
-            <Text style={{
-              fontSize: 16, 
-              color: '#70cdef',  
+      <View style = {{
+        flexDirection:'row',
+        justifyContent: 'space-between'
+      }}>
+        <View style = {{
+
+        }}>
+          <Text style={{
+            fontSize: 20, 
+            color: 'grey',  
+            marginVertical: 5, 
+            //marginHorizontal: 20 
+          }}>
+            {'Members('+this.state.members.length+')'}
+          </Text>
+        </View>
+        <View style = {{
+         
+        }}>
+          <TouchableWithoutFeedback
+            onPress={() => this.setState({visibleInviteModal: true})}
+          >
+            <View style = {{
               marginVertical: 10, 
-              marginLeft: 140, 
-            }}>
-              Invite
-            </Text>
-           </View> 
-        </TouchableWithoutFeedback>
+              marginHorizontal: 10,
+            }}>    
+              <Text style={{
+                fontSize: 16, 
+                color: '#70cdef', 
+              }}>
+                Invite
+              </Text>
+             </View> 
+          </TouchableWithoutFeedback>
+        </View>
       </View>
+      <View style = {{
+        marginLeft: 10,
+      }}>
           {this.state.members.map((user) => {
             return(
-                <View style={{flexDirection: 'row'}} key = {user} >
-                  <View style={{flex: 1}}>
+              <TouchableHighlight
+                onPress = { () => this.setState({visibleMemberDetail: true, currentDetailMember: user.username})}
+                underlayColor = {'#f2f2f2'}
+              >
+                <View 
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    marginVertical: 5,
+                  }} 
+                  key = {user} 
+                >
+                  <View style={{}}>
                     <Text 
                       style={{
                         fontSize: 18, 
                         color: 'black', 
-                        marginVertical: 5,
-                        marginLeft: 30,
                       }}>
-                        {user.username}
+                        {user.username + (user.username == this.state.board.facilitator? ' (facilitator)':'')}
                     </Text>
                   </View>
-                  <View style={{flex: 1}}>
+                  <View style={{
+                    marginHorizontal: 10,
+                  }}>
                     <Text 
                       style={{
                         fontSize: 18, 
                         color: user.currentBoard == this.props.navigation.state.params.boardId? 'green' : 'red',  
-                        marginVertical: 5,
-                        marginLeft: 30,
                       }}>
                         {user.currentBoard == this.props.navigation.state.params.boardId? 'online' : 'offline'}
                     </Text>
                   </View>
-              </View>
+                </View>
+              </TouchableHighlight>  
             )
           })}
-      {this._renderButton("OK", () => {
-        this.setState({ visibleShowMembersModal: false })
-      })}
+      </View>
+      <View style = {{
+        padding: 10,
+        justifyContent: "center",
+        alignItems: "center",
+      }}>
+        {renderButton("OK", () => {
+          this.setState({ visibleShowMembersModal: false })
+        })}
+      </View>
     </View>
   )
 
@@ -1026,7 +1045,7 @@ class BoardScreen extends Component {
             this.state.usernameSearchQuery
           )}
           <View>
-            {this._renderButton("Search", () => {this.searchUsername()})}
+            {renderButton("Search", () => {this.searchUsername()})}
           </View>
         </View>
         <View style={{}}>
@@ -1068,7 +1087,7 @@ class BoardScreen extends Component {
         </View>
         <View style={{flexDirection: 'row'}}>
           <View>
-            {this._renderButton("Invite", () => {
+            {renderButton("Invite", () => {
               this.setState({visibleInviteModal: false,
                 usernameSearchQuery: '', 
                 userSearchResult: [],
@@ -1081,7 +1100,7 @@ class BoardScreen extends Component {
             }
           </View>
           <View>
-            {this._renderButton("Close", () => {
+            {renderButton("Close", () => {
               this.setState({visibleInviteModal: false, 
                 usernameSearchQuery: '', 
                 userSearchResult: [],
@@ -1097,31 +1116,80 @@ class BoardScreen extends Component {
     <View style={{
       backgroundColor: 'white',
       padding: 22,
-      //justifyContent: "center",
-      //alignItems: "center",
+      justifyContent: "center",
+      alignItems: "center",
       //borderRadius: 4,
     }}>
-      {this._renderButton("Group by tag", () => {
-        this.groupNotesByTag()
-        this.setState({ visibleGroupNotesModal: false })
-      })}
-      {this._renderButton("Group by color", () => {
-        this.groupNotesByColor()
-        this.setState({ visibleGroupNotesModal: false })
-      })}
-      {this._renderButton("Spread notes", () => {
-        this.spreadNotes()
-        this.setState({ visibleGroupNotesModal: false })
-      })}
-      {this._renderButton("Cancel", () => {
-        this.setState({ visibleGroupNotesModal: false })
-      })}
+      <View style = {{
+        marginVertical: 10,
+        marginHorizontal: 20,
+      }}>
+        {renderButton("Group by tag", () => {
+          this.groupNotesByTag()
+          this.setState({ visibleGroupNotesModal: false })
+        })}
+      </View>
+      <View style = {{
+        marginVertical: 10,
+        marginHorizontal: 20,
+      }}>
+        {renderButton("Group by color", () => {
+          this.groupNotesByColor()
+          this.setState({ visibleGroupNotesModal: false })
+        })}
+      </View>
+      <View style = {{
+        marginVertical: 10,
+        marginHorizontal: 20,
+      }}>
+        {renderButton("Spread notes", () => {
+          this.spreadNotes()
+          this.setState({ visibleGroupNotesModal: false })
+        })}
+      </View>
+      <View style = {{
+        marginVertical: 10,
+        marginHorizontal: 20,
+      }}>
+        {renderButton("Cancel", () => {
+          this.setState({ visibleGroupNotesModal: false })
+        })}
+      </View>
+    </View>
+  )
+
+  _renderMemberDetailModal = () => (
+    <View style={{
+      backgroundColor: 'white',
+      padding: 22,
+      justifyContent: "center",
+      alignItems: "center",
+      //borderRadius: 4,
+    }}>
+      <View style = {{
+        marginVertical: 5,
+      }}>
+        {
+          renderButton('Set Facilitator', () => {
+            this.updateBoard({ facilitator: this.state.currentDetailMember })
+            this.setState({visibleMemberDetail: false})
+          })
+        }
+      </View>
+      <View style = {{
+        marginVertical: 5,
+      }}>
+        {
+          renderButton('Close', () => this.setState({visibleMemberDetail: false}))  
+        } 
+        </View>
     </View>
   )
 
 
   render() {
     console.log('render')
+   //console.log(new Date().getTime())
     //console.log('noteSearchQuery: '+this.state.noteSearchQuery)
     if(this.state.currentLoad >= this.totalLoad || (this.state.currentLoad >= this.totalLoad - 1 && this.state.startedBoard == 0)){
       return (
@@ -1141,6 +1209,9 @@ class BoardScreen extends Component {
             <Modal isVisible={this.state.visibleGroupNotesModal}>
               {this._renderGroupNotesModal()}
             </Modal>
+            <Modal isVisible={this.state.visibleMemberDetail}>
+              {this._renderMemberDetailModal()}
+            </Modal>
             <View style = {{
               //flex: 3
             }}>
@@ -1158,15 +1229,9 @@ class BoardScreen extends Component {
                     flex: 1,
                     justifyContent: 'center',
                     alignItems: 'center'
-                  }}>
-                    <TouchableWithoutFeedback
-                    onPress={() => this.openNewNoteModal()}
-                    >
-                        <Image 
-                          style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
-                          source={require('../img/write.png')}
-                        />
-                    </TouchableWithoutFeedback>
+                  }}>{
+                    renderIconButton(require('../img/write.png'), () => this.openNewNoteModal())
+                  }
                   </View>
                   <View style={{ 
                     marginVertical: 5, 
@@ -1175,14 +1240,9 @@ class BoardScreen extends Component {
                     justifyContent: 'center',
                     alignItems: 'center'
                   }}>
-                    <TouchableWithoutFeedback
-                      onPress={() => {this.setState({visibleShowMembersModal: true})}}
-                    >
-                      <Image 
-                        style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
-                        source={require('../img/members.png')}
-                      />
-                    </TouchableWithoutFeedback>
+                    {
+                      renderIconButton(require('../img/members.png'), () => this.setState({visibleShowMembersModal: true}))
+                    }
                   </View>
                   <View style={{
                     flex: 1,
@@ -1191,14 +1251,9 @@ class BoardScreen extends Component {
                     justifyContent: 'center',
                     alignItems: 'center'
                   }}>
-                    <TouchableWithoutFeedback
-                      onPress={() => this.toBoardManager()}
-                    >
-                      <Image 
-                        style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
-                        source={require('../img/setting.png')}
-                      />
-                    </TouchableWithoutFeedback>
+                    {
+                      renderIconButton(require('../img/setting.png'), () => this.toBoardManager())
+                    }
                   </View>
                   <View style={{ 
                     marginVertical: 5, 
@@ -1244,18 +1299,9 @@ class BoardScreen extends Component {
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}>
-                    <TouchableWithoutFeedback
-                      onPress={() => this.setState({visibleGroupNotesModal: true})}
-                    >
-                      <View style = {{
-                        backgroundColor: 'lightblue',
-                        borderRadius: 10,
-                      }}>
-                        <Text style = {{fontSize: 14, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
-                          Function
-                        </Text>
-                      </View>
-                    </TouchableWithoutFeedback>
+                    {
+                      renderButton('Function', () => this.setState({visibleGroupNotesModal: true}))  
+                    }
                   </View>  
                 <View style={{ 
                     justifyContent: 'center',
@@ -1370,7 +1416,7 @@ class BoardScreen extends Component {
                               x = {note.x} 
                               y = {note.y} 
                               color = {note.color}
-                              //color = {(note.text).includes(this.state.noteSearchQuery)? 'red' : 'black'} 
+                              voteScore = {note.voteScore}
                               text = {note.text}
                               tags = {note.tags}/>
                           //</DoubleClick>

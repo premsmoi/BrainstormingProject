@@ -18,6 +18,10 @@ var boardSchema = new Schema({
     	type: String,
     },
     members: [String],
+    facilitator: {
+        type: String,
+        required: true,
+    },
     pendingMembers: [String],
     notes: [{ 
         type: Schema.Types.ObjectId, 

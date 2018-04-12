@@ -18,6 +18,7 @@ import {
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
 import styles from "./app.style";
+import {renderButton, renderIconButton} from './RenderUtilities'
 import Modal from "react-native-modal";
 import {ip} from './Configuration';
 
@@ -53,14 +54,8 @@ class BoardManagerScreen extends Component {
     
       if(obj.body.code == 'getTags'){
         this.setState({tagList: obj.body.tags})
-        console.log('tagList: '+obj.body.tags)
+        console.log('I got tags')
       }
-
-      if(obj.body.code == 'getMembers'){
-        console.log('members: '+obj.body.members)
-        this.setState({members: obj.body.members})
-      }
-      
     };
 
     this.ws.onerror = (e) => {
@@ -161,17 +156,6 @@ class BoardManagerScreen extends Component {
       this.ws.send(requestString)
   }
 
-
-  
-
-   _renderButton = (text, onPress) => (
-    <TouchableOpacity onPress={onPress}>
-      <View style={styles.button}>
-        <Text>{text}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
    _renderTextInput = (placeholder, onChange, value) => (
     <View>
       <TextInput
@@ -192,8 +176,8 @@ class BoardManagerScreen extends Component {
     <View style={{
       backgroundColor: 'white',
       padding: 22,
-      //justifyContent: "center",
-      //alignItems: "center",
+      justifyContent: "center",
+      alignItems: "center",
       //borderRadius: 4,
     }}>
       {this._renderTextInput('Tag Name', (newTag) => this.setState({newTag}))}
@@ -201,7 +185,7 @@ class BoardManagerScreen extends Component {
       <View style = { { flexDirection: 'row' } }>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Create", () => {
+          {renderButton("Create", () => {
             this.setState({ visibleNewTagModal: false })
             this.createNewTag()
             })
@@ -209,7 +193,7 @@ class BoardManagerScreen extends Component {
         </View>
         <View style = {{flex: 2}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Cancel", () => {
+          {renderButton("Cancel", () => {
             this.setState({ visibleNewTagModal: false })
             this.setState({newTag: ''})
             }
@@ -240,18 +224,9 @@ class BoardManagerScreen extends Component {
               marginVertical: 5, 
               marginHorizontal: 20,
             }}>
-              <TouchableWithoutFeedback
-                onPress={() => this.setState({visibleNewTagModal: true})}
-              >
-                <View style = {{
-                  backgroundColor: 'lightblue',
-                  borderRadius: 10,
-                }}>
-                  <Text style = {{fontSize: 14, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
-                    Add tag
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
+              {
+                renderButton('Add Tag', () => this.setState({visibleNewTagModal: true}))
+              }
         		</View>
 
             <View style={{
@@ -264,8 +239,8 @@ class BoardManagerScreen extends Component {
               marginVertical: 10, 
               marginHorizontal: 20,
             }}>
-               <TouchableWithoutFeedback
-                onPress={() => {
+              {
+                renderButton('Back', () => {
                   this.props.navigation.navigate(
                     'Board', {
                       user: this.props.navigation.state.params.user,
@@ -277,9 +252,11 @@ class BoardManagerScreen extends Component {
                     from: 'BoardManager',
                     code: 'updateBoard',
                     boardId: this.props.navigation.state.params.boardId,
-                    setTime: this.state.setTime,
-                    mode: this.state.mode,
-                    numberOfVote: this.state.numberOfVote,
+                    updatedObj: {
+                      limitedTime: this.state.setTime,
+                      mode: this.state.mode,
+                      numberOfVote: this.state.numberOfVote,
+                    }
                   }
                   var requestString = JSON.stringify(updateBoardRequest)
                   console.log('Set Board Time Request')
@@ -288,17 +265,8 @@ class BoardManagerScreen extends Component {
                     openWebSocket: false
                   })
                   this.ws.close()
-                }}
-              >
-                <View style = {{
-                  backgroundColor: 'lightblue',
-                  borderRadius: 10,
-                }}>
-                  <Text style = {{fontSize: 14, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
-                    Back
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
+                })
+              }
             </View>
           </View>
           <View style = {{flex: 2 }}>

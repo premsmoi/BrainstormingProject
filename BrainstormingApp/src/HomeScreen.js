@@ -11,6 +11,7 @@ import {
   Text,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  TouchableHighlight,
   BackHandler,
   KeyboardAvoidingView,
   Image,
@@ -23,6 +24,7 @@ import {
 } from 'react-navigation';
 import GroupScreen from './GroupScreen';
 import styles from "./app.style";
+import {renderButton, renderIconButton} from './RenderUtilities';
 import Modal from "react-native-modal";
 import {
   ip
@@ -211,38 +213,7 @@ class HomeScreen extends Component {
     //console.log('props: '+this.props)
     this.ws.send(requestString)
   }
-  /*
-    async getBoards(){
-      var idList = []
-      for (let board of this.state.user.boards){
-        idList.push(board.boardId)
-      }
-      var params = {
-        idList: idList
-      }
-      console.log('id_list: '+JSON.stringify(this.state.user.boards))
 
-      try{
-        let response = await 
-            //fetch('http://10.0.2.2:8080/get_board_list', {
-            fetch('http://'+ip+'/get_board_list', {
-            method: "POST",
-            body: JSON.stringify(params),
-            headers: {
-              "Content-Type": "application/json"
-            },
-            credentials: "same-origin"
-          })
-
-        var body = JSON.parse(response._bodyText)
-        var boardList = body['boardList']
-        //console.log(response._bodyText)
-        this.setState({myBoards: boardList})
-      } catch (error) {
-          console.log(error)
-        }
-    }
-  */
   async createNewBoard() {
     console.log('createNewBoard')
 
@@ -387,66 +358,7 @@ class HomeScreen extends Component {
     console.log('I delete board!!!')
     this.ws.send(requestString)
   }
-  /*
-    async deleteBoard(){
-      var params = {
-        boardId: this.state.showDetailBoard._id,
-      }
-
-      try{
-          response = await 
-                //fetch('http://10.0.2.2:8080/delete_board', {
-                fetch('http://'+ip+'/delete_board', {
-                  method: "POST",
-                  body: JSON.stringify(params),
-                  headers: {
-                    "Content-Type": "application/json"
-                  },
-                  credentials: "same-origin"
-                })
-          console.log('pass delete board')
-          //console.log('response: '+response)
-        } catch (error) {
-            console.log(error)
-          }
-
-      try{
-          response = await 
-                //fetch('http://10.0.2.2:8080/user_delete_board', {
-                fetch('http://'+ip+'/user_delete_board', {
-                  method: "POST",
-                  body: JSON.stringify(params),
-                  headers: {
-                    "Content-Type": "application/json"
-                  },
-                  credentials: "same-origin"
-                })
-            console.log('pass user delete board')
-          //console.log('response: '+response)
-        } catch (error) {
-            console.log(error)
-          }
-
-      try{
-          response = await 
-                //fetch('http://10.0.2.2:8080/delete_notes', {
-                fetch('http://'+ip+'/delete_notes', {
-                  method: "POST",
-                  body: JSON.stringify(params),
-                  headers: {
-                    "Content-Type": "application/json"
-                  },
-                  credentials: "same-origin"
-                })
-          console.log('pass delete notes')
-          //console.log('response: '+response)
-        } catch (error) {
-            console.log(error)
-          }
-      await this.getUser();
-      await this.getBoards();
-    }
-  */
+ 
   countUnreadNotification() {
     var count = 0
     console.log('test notification: ' + this.state.notifications)
@@ -494,16 +406,6 @@ class HomeScreen extends Component {
     //console.log('props: '+this.props)
     this.ws.send(requestString)
   }
-
-
-   _renderButton = (text, onPress) => (
-    <TouchableOpacity onPress={onPress}>
-      <View style={styles.button}>
-        <Text>{text}</Text>
-      </View>
-    </TouchableOpacity>
-  )
-
   
    _renderTextInput = (placeholder, onChange, value) => (
     <View>
@@ -533,14 +435,14 @@ class HomeScreen extends Component {
       <View style={{flexDirection: 'row'}}>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Create", () => {
+          {renderButton("Create", () => {
             this.createNewBoard()
             })
           }
         </View>
         <View style = {{flex: 2}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Cancel", () => {
+          {renderButton("Cancel", () => {
             this.setState({ visibleNewBoardModal: false })
             this.setState({newBoardName: ''})
             }
@@ -580,7 +482,7 @@ class HomeScreen extends Component {
       <View style={{flexDirection: 'row'}}>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Enter", () => {
+          {renderButton("Enter", () => {
             this.setState({ visibleBoardDetailModal: false })
             this.setState({changeBoardName: '', openWebSocket: false})
             this.ws.close()
@@ -595,7 +497,7 @@ class HomeScreen extends Component {
         </View>
         <View style = {{flex: 2}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Delete", () => {
+          {renderButton("Delete", () => {
             this.setState({ visibleBoardDetailModal: false })
             this.deleteBoard();
             //this.setState({changeBoardName: ''})
@@ -607,7 +509,7 @@ class HomeScreen extends Component {
       <View style={{flexDirection: 'row'}}>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("OK", () => {
+          {renderButton("OK", () => {
             this.setState({ visibleBoardDetailModal: false })
             this.updateBoardName()
             })
@@ -615,7 +517,7 @@ class HomeScreen extends Component {
         </View>
         <View style = {{flex: 2}}/>
         <View style = {{flex: 3}}>
-          {this._renderButton("Cancel", () => {
+          {renderButton("Cancel", () => {
             this.setState({ visibleBoardDetailModal: false })
             this.setState({changeBoardName: ''})
             }
@@ -678,14 +580,14 @@ class HomeScreen extends Component {
         <View style={{flexDirection: 'row'}}>
           {
             notification.read == false
-            && this._renderButton("Accept", () => {
+            && renderButton("Accept", () => {
               this.readNotification(notification)
               this.acceptInvite(notification)
             })
           }
           {
             notification.read == false
-            && this._renderButton("Decline", () => this.readNotification(notification))
+            && renderButton("Decline", () => this.readNotification(notification))
           }
         </View>
       </View>
@@ -699,6 +601,8 @@ class HomeScreen extends Component {
       //alignItems: "center",
       //borderRadius: 4,
     }}>
+      <View style = {{height: 300}}>
+        <ScrollView>
           {this.state.notifications.map((notification) => {
             
               //Alert.alert(notification.notificationType)
@@ -719,9 +623,19 @@ class HomeScreen extends Component {
             
               //&& this._renderReplyNotification(notification)
           })}
-      {this._renderButton("OK", () => {
-        this.setState({ visibleNotificationModal: false })
-      })}
+        </ScrollView>
+      </View>
+      <View style={{
+        backgroundColor: 'white',
+        padding: 5,
+        justifyContent: "center",
+        alignItems: "center",
+        //borderRadius: 4,
+      }}>  
+        {renderButton("OK", () => {
+          this.setState({ visibleNotificationModal: false })
+        })}
+      </View>
     </View>
   )
 
@@ -750,23 +664,9 @@ class HomeScreen extends Component {
               justifyContent: 'center',
               alignItems: 'flex-start',
             }}>
-              <TouchableWithoutFeedback
-                onPress = {() => this.setState({visibleNewBoardModal: true})}
-              >
-                <View  style={{ 
-                  backgroundColor: 'lightblue',
-                  borderRadius: 10,
-                }}>
-                  <Text style = {{
-                    fontSize: 14,
-                    color: 'black',
-                    marginVertical: 5, 
-                    marginHorizontal: 10, 
-                  }}>
-                    New Board
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
+              {
+                renderButton('New Board', () => this.setState({visibleNewBoardModal: true}))
+              }
             </View>
 
             <View style={{ flex: 2 }}>
@@ -818,23 +718,9 @@ class HomeScreen extends Component {
               justifyContent: 'center',
               alignItems: 'flex-end',
             }}>
-              <TouchableWithoutFeedback
-                onPress = {() => this.logout()}
-              >
-                <View style = {{
-                  backgroundColor: 'lightblue',
-                  borderRadius: 10,
-                }}>
-                  <Text style = {{
-                    fontSize: 14,
-                    color: 'black',
-                    marginVertical: 5, 
-                    marginHorizontal: 10,
-                  }}>
-                    Logout
-                  </Text>
-                </View>
-              </TouchableWithoutFeedback>
+              {
+                renderButton('Logout', () => this.logout())
+              }
             </View>
           </View>
           <View style = {{
@@ -858,7 +744,7 @@ class HomeScreen extends Component {
             
               {this.state.myBoards.map((board) => {
                 return(
-                  <TouchableWithoutFeedback 
+                  <TouchableHighlight 
                     onPress={() => {
                       this.setState({showDetailBoard: board})
                       this.setState({changeBoardName: board.boardName})
@@ -866,9 +752,13 @@ class HomeScreen extends Component {
                       //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board.boardId})
                       }
                     }
-                    key = {board._id}  
+                    key = {board._id}
+                    underlayColor = {'#f2f2f2'}  
                   >
-                    <View>
+                    <View style = {{
+                      borderColor: 'black',
+                      borderWidth: 0.5, 
+                    }}>
                       <Text 
                         style={{
                           fontSize: 20, 
@@ -879,7 +769,7 @@ class HomeScreen extends Component {
                           {board.boardName}
                       </Text> 
                     </View>
-                  </TouchableWithoutFeedback>
+                  </TouchableHighlight>
                 )
               })}
             
