@@ -57,6 +57,8 @@ class BoardScreen extends Component {
       time: new Date().getTime(),
       noteId: null,
     }
+    this.currentBoardWidth = 0;
+    this.currentBoardHeight = 0;
     this.state = {
       board: null,
       openWebSocket: false,
@@ -752,17 +754,26 @@ class BoardScreen extends Component {
     this.forceUpdate()
   }
 
-  onCapture = uri => {
-    console.log('uri: '+uri);
-    this.uri = uri;
-  }
-
   handleScrollX(event) {
-   console.log('X: '+event.nativeEvent.contentOffset.x);
+    console.log('X: '+event.nativeEvent.contentOffset.x);
+
+    console.log('currentBoardSize: '+this.currentBoardWidth+' '+this.currentBoardHeight)
+    if(this.currentBoardWidth == 0 && this.currentBoardHeight == 0){
+      console.log(JSON.stringify(event.nativeEvent.layoutMeasurement))
+      this.currentBoardHeight = event.nativeEvent.layoutMeasurement.height;
+      this.currentBoardWidth = event.nativeEvent.layoutMeasurement.width;  
+    }
   }
 
   handleScrollY(event) {
    console.log('Y: '+event.nativeEvent.contentOffset.y);
+
+    console.log('currentBoardSize: '+this.currentBoardWidth+' '+this.currentBoardHeight)
+    if(this.currentBoardWidth == 0 && this.currentBoardHeight == 0){
+      console.log(JSON.stringify(event.nativeEvent.layoutMeasurement))
+      this.currentBoardHeight = event.nativeEvent.layoutMeasurement.height;
+      this.currentBoardWidth = event.nativeEvent.layoutMeasurement.width;  
+    }
   }
 
   _renderColorPicker = (color) => (
@@ -952,11 +963,16 @@ class BoardScreen extends Component {
         <TouchableWithoutFeedback
           onPress={() => this.setState({visibleInviteModal: true})}
         >
-          <Text style={{fontSize: 16, 
+          <View>   
+            <Text style={{
+              fontSize: 16, 
               color: '#70cdef',  
               marginVertical: 10, 
               marginLeft: 140, 
-            }}>Invite</Text>
+            }}>
+              Invite
+            </Text>
+           </View> 
         </TouchableWithoutFeedback>
       </View>
           {this.state.members.map((user) => {
@@ -1109,8 +1125,7 @@ class BoardScreen extends Component {
     //console.log('noteSearchQuery: '+this.state.noteSearchQuery)
     if(this.state.currentLoad >= this.totalLoad || (this.state.currentLoad >= this.totalLoad - 1 && this.state.startedBoard == 0)){
       return (
-        
-          <View style={{flex: 1}}>
+          <View style={{flex: 1, backgroundColor: 'white'}}>
             <Modal isVisible={this.state.visibleNewNoteModal}>
               {this._renderNewNoteModal()}
             </Modal>
@@ -1126,105 +1141,166 @@ class BoardScreen extends Component {
             <Modal isVisible={this.state.visibleGroupNotesModal}>
               {this._renderGroupNotesModal()}
             </Modal>
-            <View style={{flex: 1.2, flexDirection: 'row', backgroundColor: 'white',}}>
-                <View style={{ 
-                  marginVertical: 5, 
-                  marginHorizontal: 20,
-                  flex: 1 
-                }}>
-                  <TouchableWithoutFeedback
-                  onPress={() => this.openNewNoteModal()}
-                  >
+            <View style = {{
+              //flex: 3
+            }}>
+            <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {true}>
+              <View style={{
+                //flex: 1, 
+                flexDirection: 'row', 
+                backgroundColor: 'white',
+                borderColor: 'black',
+                borderWidth: 0.5,
+              }}>
+                  <View style={{ 
+                    marginVertical: 5, 
+                    marginHorizontal: 20,
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <TouchableWithoutFeedback
+                    onPress={() => this.openNewNoteModal()}
+                    >
+                        <Image 
+                          style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
+                          source={require('../img/write.png')}
+                        />
+                    </TouchableWithoutFeedback>
+                  </View>
+                  <View style={{ 
+                    marginVertical: 5, 
+                    marginHorizontal: 20,
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <TouchableWithoutFeedback
+                      onPress={() => {this.setState({visibleShowMembersModal: true})}}
+                    >
                       <Image 
-                        style={{width: 24, height: 24, marginTop: 8, marginHorizontal: 10}}
-                        source={require('../img/write.png')}
+                        style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
+                        source={require('../img/members.png')}
                       />
-                  </TouchableWithoutFeedback>
-                </View>
-                <View style={{ 
-                  marginVertical: 5, 
-                  marginHorizontal: 20,
-                  flex: 1 
-                }}>
-                  <TouchableWithoutFeedback
-                    onPress={() => {this.setState({visibleShowMembersModal: true})}}
-                  >
-                    <Image 
-                      style={{width: 24, height: 24, marginTop: 8, marginHorizontal: 10}}
-                      source={require('../img/members.png')}
-                    />
-                  </TouchableWithoutFeedback>
-                </View>
-                <View style={{
-                  flex: 1,
-                  marginVertical: 5, 
-                  marginHorizontal: 20,
-                }}>
-                  <TouchableWithoutFeedback
-                    onPress={() => this.toBoardManager()}
-                  >
-                    <Image 
-                      style={{width: 24, height: 24, marginTop: 8, marginHorizontal: 10}}
-                      source={require('../img/setting.png')}
-                    />
-                  </TouchableWithoutFeedback>
-                </View>
-                <View style={{ 
-                  marginVertical: 5, 
-                  marginHorizontal: 20,
-                  //flex: 1 
-                }}>
-                  <TouchableWithoutFeedback
-                    onPress={() => this.exitBoard()}
-                  >
-                    <View>
-                      <Text style = {{fontSize: 20, color: 'black', marginTop: 8, marginHorizontal: 10, alignItems: 'center'}}>
-                        Exit
-                      </Text>
-                    </View>
-                  </TouchableWithoutFeedback>
-                </View> 
-                
-            </View>
-            <View style={{flex: 1.2, flexDirection: 'row', backgroundColor: 'white',}}>
-              <View style={{ 
-                  marginVertical: 10, 
-                  marginHorizontal: 20,
-                  flex: 2
-                }}>
-                  <Text style = {{fontSize: 20, color: 'black', marginTop: 8, marginHorizontal: 10}}>
-                    {this.state.board.mode != 'timing'?  '' : (this.state.timeRemaining == 0? 'Time\'s up' : this.state.timeRemaining)}
-                  </Text>
+                    </TouchableWithoutFeedback>
+                  </View>
+                  <View style={{
+                    flex: 1,
+                    marginVertical: 5, 
+                    marginHorizontal: 20,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                    <TouchableWithoutFeedback
+                      onPress={() => this.toBoardManager()}
+                    >
+                      <Image 
+                        style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
+                        source={require('../img/setting.png')}
+                      />
+                    </TouchableWithoutFeedback>
+                  </View>
+                  <View style={{ 
+                    marginVertical: 5, 
+                    marginHorizontal: 20,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                    //flex: 1 
+                  }}>
+                    <TouchableWithoutFeedback
+                      onPress={() => this.exitBoard()}
+                    >
+                      <View>
+                        <Text style = {{fontSize: 20, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                          Exit
+                        </Text>
+                      </View>
+                    </TouchableWithoutFeedback>
+                  </View> 
+                  
               </View>
-               <View style={{ 
-                  marginVertical: 10, 
-                  marginHorizontal: 20,
-                  flex: 1 
-                }}>
-                  {
-                        this._renderButton('Group', () => {
-                        this.setState({visibleGroupNotesModal: true})
-                        })
-                  }
-                </View>  
-              <View style={{ 
-                  marginVertical: 10, 
-                  marginHorizontal: 20,
-                  flex: 1 
-                }}>
-                  {
-                        !this.state.startedBoard && this.state.board.mode == 'timing' && this._renderButton(this.state.startButtonText, () => {
-                        this.startBoard()
-                        this.getBoardStartStatus()
-                        //this.boardGetTimer()
-                        })
-                  }
-                </View>  
-            </View>
             
-            <View style={{flex: 13}}>
+              <View style={{
+                //flex: 1, 
+                flexDirection: 'row', 
+                backgroundColor: 'white',
+                borderColor: 'black',
+                borderWidth: 0.5,
+              }}>
+                <View style={{ 
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flex: 1
+                  }}>
+                    <Text style = {{fontSize: 20, color: 'black'}}>
+                      {this.state.board.mode != 'timing'?  '' : (this.state.timeRemaining == 0? 'Time\'s up' : this.state.timeRemaining)}
+                    </Text>
+                </View>
+                <View style = {{flex: 1}}/>
+                 <View style={{ 
+                    //marginVertical: 10, 
+                    //marginHorizontal: 20,
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                    <TouchableWithoutFeedback
+                      onPress={() => this.setState({visibleGroupNotesModal: true})}
+                    >
+                      <View style = {{
+                        backgroundColor: 'lightblue',
+                        borderRadius: 10,
+                      }}>
+                        <Text style = {{fontSize: 14, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                          Function
+                        </Text>
+                      </View>
+                    </TouchableWithoutFeedback>
+                  </View>  
+                <View style={{ 
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    flex: 1 
+                  }}>
+                    {
+                          !this.state.startedBoard && this.state.board.mode == 'timing' 
+                          &&  <TouchableWithoutFeedback
+                                onPress={() => {
+                                  this.startBoard()
+                                  this.getBoardStartStatus()
+                                }}
+                              >
+                                <View style ={{
+                                  backgroundColor: 'lightblue',
+                                  borderRadius: 10,
+                                }}>
+                                  <Text style = {{fontSize: 14, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                                    {this.state.startButtonText}
+                                  </Text>
+                                </View>
+                              </TouchableWithoutFeedback>
+                    }
+                </View>  
+              </View>
+            </ScrollView>
+            </View>
+            <View style={{
+              //height: 500,
+              flex: 1,
+              //borderColor: 'black',
+              //borderWidth: 0.5,
+            }}>
               <ScrollView 
-                onScroll = {this.handleScrollY}
+                onScroll = {event => {
+                  /*console.log('Y: '+event.nativeEvent.contentOffset.y);
+   
+                  console.log('currentBoardSize: '+this.currentBoardWidth+' '+this.currentBoardHeight)
+                  if(this.currentBoardWidth == 0 && this.currentBoardHeight == 0){
+                    console.log(JSON.stringify(event.nativeEvent.layoutMeasurement))
+                    this.currentBoardHeight = event.nativeEvent.layoutMeasurement.height;
+                    this.currentBoardWidth = event.nativeEvent.layoutMeasurement.width;  
+                  }*/
+                }}
                 showsVerticalScrollIndicator = {true} 
                 keyboardShouldPersistTaps = {'always'}
                 style={{
@@ -1239,7 +1315,16 @@ class BoardScreen extends Component {
 
                   </View>
                   <ScrollView 
-                    onScroll = {this.handleScrollX}
+                    onScroll =  { event => {
+                      /*console.log('X: '+event.nativeEvent.contentOffset.x);
+       
+                      console.log('currentBoardSize: '+this.currentBoardWidth+' '+this.currentBoardHeight)
+                      if(this.currentBoardWidth == 0 && this.currentBoardHeight == 0){
+                        console.log(JSON.stringify(event.nativeEvent.layoutMeasurement))
+                        this.currentBoardHeight = event.nativeEvent.layoutMeasurement.height;
+                        this.currentBoardWidth = event.nativeEvent.layoutMeasurement.width;  
+                      }*/
+                    }}
                     horizontal = {true}
                     showsHorizontalScrollIndicator = {true}
                     keyboardShouldPersistTaps = {'always'} 
@@ -1296,7 +1381,14 @@ class BoardScreen extends Component {
                   </ScrollView>
               </ScrollView>
             </View>
-            <View style={{flex: 2, flexDirection: 'row', backgroundColor: 'white',}}>
+            <View style={{
+              //flex: 2,
+              height: 75, 
+              flexDirection: 'row', 
+              backgroundColor: 'white',
+              borderColor: 'black',
+              borderWidth: 0.5,
+            }}>
               <View style = {{flex: 2, flexDirection: 'row'}}>
                 <View style = {{flex: 1}}> 
                   {this._renderTextInput('Search Note', 
@@ -1323,8 +1415,8 @@ class BoardScreen extends Component {
                       top: 0, 
                       bottom: 0,
                       position: 'absolute',
-                      width: 400,
-                      height: 150,
+                      width: 200,
+                      //height: 150,
                       borderColor: 'gray',
                       borderWidth: 0.5,
                     }}>
@@ -1359,8 +1451,8 @@ class BoardScreen extends Component {
                   </View>
                 </View>
             </View>
-          </View>
-        
+         
+        </View>
       );
     }
     else {

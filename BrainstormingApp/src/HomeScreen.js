@@ -727,8 +727,8 @@ class HomeScreen extends Component {
 
   render() {
     return (
-      <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {false}>
-        <View style={{flex: 1, flexDirection: 'column'}}>
+      <View style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}>
+        <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {false}>
           <Modal isVisible={this.state.visibleNewBoardModal}>
               {this._renderNewBoardModal()}
           </Modal>
@@ -738,31 +738,52 @@ class HomeScreen extends Component {
           <Modal isVisible={this.state.visibleNotificationModal}>
               {this._renderNotificationModal()}
           </Modal>
-          <View style={{flex: 1, flexDirection: 'row'}}>
-            <View style={{ marginVertical: 20, 
+          <View style={{
+            flex: 1, 
+            flexDirection: 'row',
+            borderColor: 'black',
+            borderWidth: 0.5,
+          }}>
+            <View style={{ 
+              marginVertical: 10,
               marginHorizontal: 20,
-              //width: 125, 
-              height: 50,
-              flex: 2.5
+              justifyContent: 'center',
+              alignItems: 'flex-start',
             }}>
-              {this._renderButton("Create Board", () => this.setState({visibleNewBoardModal:true}))}
+              <TouchableWithoutFeedback
+                onPress = {() => this.setState({visibleNewBoardModal: true})}
+              >
+                <View  style={{ 
+                  backgroundColor: 'lightblue',
+                  borderRadius: 10,
+                }}>
+                  <Text style = {{
+                    fontSize: 14,
+                    color: 'black',
+                    marginVertical: 5, 
+                    marginHorizontal: 10, 
+                  }}>
+                    New Board
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
             </View>
 
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 2 }}>
             </View>
 
             <View style={{ 
-              marginVertical: 20, 
+              marginVertical: 5, 
               marginHorizontal: 10, 
-              //width: 40, 
-              height: 50,
-              flex: 1.5
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
             }}>
               <TouchableWithoutFeedback
                 onPress={() => this.setState({visibleNotificationModal: true})}
               >
                 <ImageBackground
-                  style={{width: 32, height: 32, marginTop: 8, marginHorizontal: 10}}
+                  style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
                   source={require('../img/message.png')}
                 >
                   {
@@ -791,26 +812,50 @@ class HomeScreen extends Component {
             </View>
 
             <View style={{ 
-              marginVertical: 20, 
-              marginLeft: 10,
-              marginRight: 20, 
-              //width: 60, 
-              height: 50,
-              flex: 1.5
+              marginVertical: 10, 
+              marginHorizontal: 20,
+              flex: 2,
+              justifyContent: 'center',
+              alignItems: 'flex-end',
             }}>
-              {this._renderButton("Logout", () => this.logout())}
+              <TouchableWithoutFeedback
+                onPress = {() => this.logout()}
+              >
+                <View style = {{
+                  backgroundColor: 'lightblue',
+                  borderRadius: 10,
+                }}>
+                  <Text style = {{
+                    fontSize: 14,
+                    color: 'black',
+                    marginVertical: 5, 
+                    marginHorizontal: 10,
+                  }}>
+                    Logout
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
             </View>
           </View>
-          <View style = {{flex: 1 }}>
-            <Text style={{fontSize: 30, 
+          <View style = {{
+            flex: 1,
+            borderColor: 'black',
+            borderWidth: 0.5, 
+          }}>
+            <Text style={{
+              fontSize: 30, 
               color: 'grey',  
-              marginVertical: 20, 
-              marginHorizontal: 20 
+              marginVertical: 5, 
+              marginHorizontal: 10 
             }}>My Boards</Text>
           </View>
 
-          <View style = {{flex: 5 }}>
-            <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {true}>
+          <View style = {{
+            flex: 14,
+            borderColor: 'black',
+            borderWidth: 0.5, 
+          }}>
+            
               {this.state.myBoards.map((board) => {
                 return(
                   <TouchableWithoutFeedback 
@@ -837,10 +882,10 @@ class HomeScreen extends Component {
                   </TouchableWithoutFeedback>
                 )
               })}
-            </ScrollView>
+            
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     );
   }
 }

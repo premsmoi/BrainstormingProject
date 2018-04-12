@@ -239,8 +239,8 @@ class LoginScreen extends Component {
 
   render() {
     return (
+      <View style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}>
       <KeyboardAwareScrollView  keyboardShouldPersistTaps = {'always'} >
-      <View style={{flex: 1, flexDirection: 'column'}}>
         <Modal isVisible={this.state.visibleRegModal}>
             {this._renderRegModal()}
         </Modal>
@@ -302,8 +302,8 @@ class LoginScreen extends Component {
           <View style={{flex: 1}}/>
         </View>
         <View style={{flex:2}}/>
-      </View>
       </KeyboardAwareScrollView>
+      </View>
     );
   }
 }

@@ -13,6 +13,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Picker,
+  ScrollView,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
@@ -223,188 +224,200 @@ class BoardManagerScreen extends Component {
   render() {
     return (
       <View style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}>
-        <Modal isVisible={this.state.visibleNewTagModal}>
-          {this._renderNewTagModal()}
-        </Modal>
-        <View style={{flex: 1, flexDirection: 'row'}}>
-        	<View style={{ marginVertical: 20, 
-            marginHorizontal: 20,
-            //width: 125, 
-            height: 50,
-            flex: 2
+        <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {false}>
+          <Modal isVisible={this.state.visibleNewTagModal}>
+            {this._renderNewTagModal()}
+          </Modal>
+          <View style={{
+            flex: 1, 
+            flexDirection: 'row',
+            alignItems: 'center',
           }}>
-            {this._renderButton("Add tag", () => {
-            this.setState({visibleNewTagModal: true})
-            })}
-      		</View>
-
-          <View style={{ marginVertical: 20, 
-            marginHorizontal: 20,
-            //width: 125, 
-            height: 50,
-            flex: 2
-          }}>
-          </View>
-
-          <View style={{ 
-            marginVertical: 20, 
-            marginHorizontal: 10, 
-            //width: 40, 
-            height: 50,
-            flex: 1.5
-          }}>
-          </View>
-
-          <View style={{ 
-            marginVertical: 20, 
-            marginLeft: 10,
-            marginRight: 20, 
-            //width: 60, 
-            height: 50,
-            flex: 1.5
-          }}>
-            {
-              this._renderButton("Back", () => {
-                this.props.navigation.navigate(
-                  'Board', {
-                    user: this.props.navigation.state.params.user,
-                    boardId: this.props.navigation.state.params.boardId,
-                    boardName: this.props.navigation.state.params.boardName
-                  }
-                )
-                var updateBoardRequest = {
-                  from: 'BoardManager',
-                  code: 'updateBoard',
-                  boardId: this.props.navigation.state.params.boardId,
-                  setTime: this.state.setTime,
-                  mode: this.state.mode,
-                  numberOfVote: this.state.numberOfVote,
-                }
-                var requestString = JSON.stringify(updateBoardRequest)
-                console.log('Set Board Time Request')
-                this.ws.send(requestString)
-                this.setState({
-                  openWebSocket: false
-                })
-                this.ws.close()
-              })
-            }
-          </View>
-        </View>
-        <View style = {{flex: 2 }}>
-          <Text style={{fontSize: 20, 
-            color: 'grey',  
-            marginVertical: 5, 
-            marginHorizontal: 20 
-          }}>Mode</Text>
-          <View style = {{flexDirection: 'row', marginLeft: 20}}>
-            <View style = {{flex: 1 }}>
-              <Picker selectedValue = {this.state.mode} onValueChange = {(mode) => {this.setState({mode: mode})}}>
-                <Picker.Item label = "None" value = "none" />
-                <Picker.Item label = "Timing" value = "timing" />
-                <Picker.Item label = "Goal" value = "goal" />
-              </Picker>
-            </View>
-            <View style = {{flex: 3}}/>
-          </View>
-          <View style = {{marginLeft: 20}}>
-            {
-              this.state.mode == 'timing' && (
-                <View>
-                  <View style = {{flexDirection: 'row', marginLeft: 20}}>
-                    <View style = {{flexDirection: 'row', flex: 1}}>
-                      <View style={{borderWidth: 3, borderColor: 'white'}}>
-                        <Text style = {{fontSize: 16, textAlign: 'center'}}>Time: </Text>
-                      </View>
-                      {
-                        <TextInput
-                          style={{
-                            height: 36, 
-                            width: 50,
-                          }}
-                          placeholderTextColor = 'gray'
-                          placeholder = 'Input'
-                          onChangeText= {(setTime) => this.setState({setTime})}
-                          value = {String(this.state.setTime)}
-                        />
-                      }
-                    </View>
-                    <View style = {{flex: 1}}>
-                      
-                    </View>
-                    <View style = {{flex: 1}}/>
-                  </View>
-                </View>
-                )
-            }
-          </View>
-        </View>
-        <View style = {{flex: 1 }}>
-         <Text style={{fontSize: 20, 
-            color: 'grey',  
-            marginVertical: 5, 
-            marginHorizontal: 20 
-          }}>Vote</Text>
-          <View style = {{marginLeft: 20}}>
-           
-                  <View style = {{flexDirection: 'row', marginLeft: 20}}>
-                    <View style = {{flexDirection: 'row', flex: 1}}>
-                      <View style={{borderWidth: 3, borderColor: 'white'}}>
-                        <Text style = {{fontSize: 16, textAlign: 'center'}}>Number of vote: </Text>
-                      </View>
-                      {
-                        <TextInput
-                          style={{
-                            height: 36, 
-                            width: 50,
-                          }}
-                          placeholderTextColor = 'gray'
-                          placeholder = 'Input'
-                          onChangeText= {(numberOfVote) => this.setState({numberOfVote})}
-                          value = {String(this.state.numberOfVote)}
-                        />
-                      }
-                    </View>
-                    <View style = {{flex: 1}}>
-                      
-                    </View>
-                    <View style = {{flex: 1}}/>
-                  </View>
-                </View>
-          </View>
-        <View style = {{flex: 5 }}>
-          <Text style={{fontSize: 20, 
-            color: 'grey',  
-            marginVertical: 5, 
-            marginHorizontal: 20 
-          }}>Tags</Text>
-          {this.state.tagList.map((tag) => {
-            return(
-                <View style={{flexDirection: 'row'}} key = {tag} >
-                  <TouchableWithoutFeedback 
-                    onPress={() => {
-                      this.deleteTag(tag)
-                     }
-                    }
-                  >
-                  <Image
-                    style={{width: 16, height: 16, marginTop: 8, marginLeft: 30}}
-                    source={require('../img/cross.png')}
-                  />
-                  </TouchableWithoutFeedback>
-                  <Text 
-                    style={{
-                      fontSize: 18, 
-                      color: 'black',  
-                      marginVertical: 5,
-                      marginLeft: 10,
-                    }}>
-                      {tag}
+          	<View style={{ 
+              justifyContent: 'center',
+              alignItems: 'flex-start',
+              flex: 1,
+              marginVertical: 5, 
+              marginHorizontal: 20,
+            }}>
+              <TouchableWithoutFeedback
+                onPress={() => this.setState({visibleNewTagModal: true})}
+              >
+                <View style = {{
+                  backgroundColor: 'lightblue',
+                  borderRadius: 10,
+                }}>
+                  <Text style = {{fontSize: 14, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                    Add tag
                   </Text>
+                </View>
+              </TouchableWithoutFeedback>
+        		</View>
+
+            <View style={{
+              flex: 2,
+            }}/>
+            <View style={{
+              justifyContent: 'center',
+              alignItems: 'flex-end', 
+              flex: 1,
+              marginVertical: 10, 
+              marginHorizontal: 20,
+            }}>
+               <TouchableWithoutFeedback
+                onPress={() => {
+                  this.props.navigation.navigate(
+                    'Board', {
+                      user: this.props.navigation.state.params.user,
+                      boardId: this.props.navigation.state.params.boardId,
+                      boardName: this.props.navigation.state.params.boardName
+                    }
+                  )
+                  var updateBoardRequest = {
+                    from: 'BoardManager',
+                    code: 'updateBoard',
+                    boardId: this.props.navigation.state.params.boardId,
+                    setTime: this.state.setTime,
+                    mode: this.state.mode,
+                    numberOfVote: this.state.numberOfVote,
+                  }
+                  var requestString = JSON.stringify(updateBoardRequest)
+                  console.log('Set Board Time Request')
+                  this.ws.send(requestString)
+                  this.setState({
+                    openWebSocket: false
+                  })
+                  this.ws.close()
+                }}
+              >
+                <View style = {{
+                  backgroundColor: 'lightblue',
+                  borderRadius: 10,
+                }}>
+                  <Text style = {{fontSize: 14, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                    Back
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </View>
+          <View style = {{flex: 2 }}>
+            <Text style={{
+              fontSize: 20, 
+              color: 'grey',  
+              marginVertical: 5, 
+              marginHorizontal: 20 
+            }}>Mode</Text>
+            <View style = {{
+              flexDirection: 'row', 
+              marginLeft: 20
+            }}>
+              <View style = {{width: 150/*flex: 1 */}}>
+                <Picker selectedValue = {this.state.mode} onValueChange = {(mode) => {this.setState({mode: mode})}}>
+                  <Picker.Item label = "None" value = "none" />
+                  <Picker.Item label = "Timing" value = "timing" />
+                  <Picker.Item label = "Goal" value = "goal" />
+                </Picker>
               </View>
-            )
-          })}
-        </View>
+              <View style = {{/*flex: 2*/}}/>
+            </View>
+            <View style = {{marginLeft: 20}}>
+              {
+                this.state.mode == 'timing' && (
+                  <View>
+                    <View style = {{flexDirection: 'row', marginLeft: 20}}>
+                      <View style = {{flexDirection: 'row', flex: 1}}>
+                        <View style={{borderWidth: 3, borderColor: 'white'}}>
+                          <Text style = {{fontSize: 16, textAlign: 'center'}}>Time: </Text>
+                        </View>
+                        {
+                          <TextInput
+                            style={{
+                              height: 36, 
+                              width: 50,
+                            }}
+                            placeholderTextColor = 'gray'
+                            placeholder = 'Input'
+                            onChangeText= {(setTime) => this.setState({setTime})}
+                            value = {String(this.state.setTime)}
+                            maxLength = {5}
+                            textAlign={'right'}
+                          />
+                        }
+                      </View>
+                      <View style = {{flex: 1}}/>
+                    </View>
+                  </View>
+                  )
+              }
+            </View>
+          </View>
+          <View style = {{flex: 1 }}>
+           <Text style={{fontSize: 20, 
+              color: 'grey',  
+              marginVertical: 5, 
+              marginHorizontal: 20 
+            }}>Vote</Text>
+            <View style = {{marginLeft: 20}}>
+             
+                    <View style = {{flexDirection: 'row', marginLeft: 20}}>
+                      <View style = {{flexDirection: 'row', flex: 1}}>
+                        <View style={{borderWidth: 3, borderColor: 'white'}}>
+                          <Text style = {{fontSize: 16, textAlign: 'center'}}>Vote limit: </Text>
+                        </View>
+                        {
+                          <TextInput
+                            style={{
+                              height: 36, 
+                              width: 50,
+                            }}
+                            placeholderTextColor = 'gray'
+                            placeholder = 'Input'
+                            onChangeText= {(numberOfVote) => this.setState({numberOfVote})}
+                            value = {String(this.state.numberOfVote)}
+                            maxLength = {5}
+                            textAlign={'right'}
+                          />
+                        }
+                      </View>
+                      <View style = {{flex: 1}}/>
+                    </View>
+                  </View>
+            </View>
+          <View style = {{flex: 5 }}>
+            <Text style={{fontSize: 20, 
+              color: 'grey',  
+              marginVertical: 5, 
+              marginHorizontal: 20 
+            }}>Tags</Text>
+            {this.state.tagList.map((tag) => {
+              return(
+                  <View style={{flexDirection: 'row'}} key = {tag} >
+                    <TouchableWithoutFeedback 
+                      onPress={() => {
+                        this.deleteTag(tag)
+                       }
+                      }
+                    >
+                    <Image
+                      style={{width: 16, height: 16, marginTop: 8, marginLeft: 30}}
+                      source={require('../img/cross.png')}
+                    />
+                    </TouchableWithoutFeedback>
+                    <Text 
+                      style={{
+                        fontSize: 18, 
+                        color: 'black',  
+                        marginVertical: 5,
+                        marginLeft: 10,
+                      }}>
+                        {tag}
+                    </Text>
+                </View>
+              )
+            })}
+          </View>
+        </ScrollView>
       </View>
     );
   }
