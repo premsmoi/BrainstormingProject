@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
   Picker,
   ScrollView,
+  CheckBox,
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import GroupScreen from './GroupScreen';
@@ -35,19 +36,25 @@ class BoardManagerScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      board: this.props.navigation.state.params.board,
       newTag: '',
       visibleNewTagModal: false,
       visibleInviteModal: false,
       tagList: [],
       members: [],
+      newBoardName: this.props.navigation.state.params.board.boardName,
+      description: this.props.navigation.state.params.board.description,
       mode: this.props.navigation.state.params.board.mode,
       openWebSocket: false,
+      hasTime: this.props.navigation.state.params.board.hasTime,
+      hasGoal: this.props.navigation.state.params.board.hasGoal,
       setTime: this.props.navigation.state.params.board.limitedTime,
+      goal: this.props.navigation.state.params.board.goal,
       numberOfVote: this.props.navigation.state.params.board.numberOfVote,
     }
 
     this.ws = new WebSocket('ws://'+ip, 'echo-protocol');
-
+    console.log('Hi '+JSON.stringify(this.props.navigation.state.params.board))
     this.ws.onmessage = (e) => {
       // a message was received
       var obj = JSON.parse(e.data)
@@ -72,13 +79,12 @@ class BoardManagerScreen extends Component {
     this.ws.onopen = () => {
       // connection opened
       this.setState({openWebSocket: true})
-      this.getMembers()
-
+     
       var tagClientRequest = {
         from: 'BoardManager',
         code: 'tagBoardManager',
         username: this.props.navigation.state.params.user.username,
-        boardId: this.props.navigation.state.params.boardId
+        boardId: this.state.board._id
       }
       var requestString = JSON.stringify(tagClientRequest)
       //console.log('props: '+this.props)
@@ -87,7 +93,7 @@ class BoardManagerScreen extends Component {
       var getTagsRequest = {
         from: 'BoardManager',
         code: 'boardGetTags',
-        boardId: this.props.navigation.state.params.boardId
+        boardId: this.state.board._id
       }
       var requestString = JSON.stringify(getTagsRequest)
       //console.log('props: '+this.props)
@@ -112,7 +118,6 @@ class BoardManagerScreen extends Component {
         { 
           user: this.props.navigation.state.params.user, 
           boardId: this.props.navigation.state.params.boardId, 
-          boardName: this.props.navigation.state.params.boardName 
         }
       )
     return true;
@@ -142,18 +147,6 @@ class BoardManagerScreen extends Component {
     this.ws.send(requestString)
 
     //Alert.alert('delete '+tag)
-  }
-
-
-  async getMembers(){
-     var getMembersRequest = {
-        from: 'BoardManager',
-        code: 'getMembers',
-        boardId: this.props.navigation.state.params.boardId
-      }
-      var requestString = JSON.stringify(getMembersRequest)
-      //console.log('props: '+this.props)
-      this.ws.send(requestString)
   }
 
    _renderTextInput = (placeholder, onChange, value) => (
@@ -213,7 +206,7 @@ class BoardManagerScreen extends Component {
             {this._renderNewTagModal()}
           </Modal>
           <View style={{
-            flex: 1, 
+            //flex: 1, 
             flexDirection: 'row',
             alignItems: 'center',
           }}>
@@ -244,18 +237,22 @@ class BoardManagerScreen extends Component {
                   this.props.navigation.navigate(
                     'Board', {
                       user: this.props.navigation.state.params.user,
-                      boardId: this.props.navigation.state.params.boardId,
-                      boardName: this.props.navigation.state.params.boardName
+                      boardId: this.state.board._id,
                     }
                   )
                   var updateBoardRequest = {
                     from: 'BoardManager',
                     code: 'updateBoard',
-                    boardId: this.props.navigation.state.params.boardId,
+                    boardId: this.state.board._id,
                     updatedObj: {
+                      hasTime: this.state.hasTime,
+                      hasGoal: this.state.hasGoal,
                       limitedTime: this.state.setTime,
+                      goal: this.state.goal,
                       mode: this.state.mode,
                       numberOfVote: this.state.numberOfVote,
+                      boardName: this.state.newBoardName,
+                      description: this.state.description,
                     }
                   }
                   var requestString = JSON.stringify(updateBoardRequest)
@@ -269,89 +266,169 @@ class BoardManagerScreen extends Component {
               }
             </View>
           </View>
-          <View style = {{flex: 2 }}>
+          <View style = {{ 
+          }}>
             <Text style={{
               fontSize: 20, 
               color: 'grey',  
               marginVertical: 5, 
-              marginHorizontal: 20 
-            }}>Mode</Text>
-            <View style = {{
-              flexDirection: 'row', 
-              marginLeft: 20
+              marginLeft: 20 
             }}>
-              <View style = {{width: 150/*flex: 1 */}}>
-                <Picker selectedValue = {this.state.mode} onValueChange = {(mode) => {this.setState({mode: mode})}}>
-                  <Picker.Item label = "None" value = "none" />
-                  <Picker.Item label = "Timing" value = "timing" />
-                  <Picker.Item label = "Goal" value = "goal" />
-                </Picker>
-              </View>
-              <View style = {{/*flex: 2*/}}/>
-            </View>
-            <View style = {{marginLeft: 20}}>
-              {
-                this.state.mode == 'timing' && (
-                  <View>
-                    <View style = {{flexDirection: 'row', marginLeft: 20}}>
-                      <View style = {{flexDirection: 'row', flex: 1}}>
-                        <View style={{borderWidth: 3, borderColor: 'white'}}>
-                          <Text style = {{fontSize: 16, textAlign: 'center'}}>Time: </Text>
-                        </View>
-                        {
-                          <TextInput
-                            style={{
-                              height: 36, 
-                              width: 50,
-                            }}
-                            placeholderTextColor = 'gray'
-                            placeholder = 'Input'
-                            onChangeText= {(setTime) => this.setState({setTime})}
-                            value = {String(this.state.setTime)}
-                            maxLength = {5}
-                            textAlign={'right'}
-                          />
-                        }
-                      </View>
-                      <View style = {{flex: 1}}/>
-                    </View>
-                  </View>
-                  )
-              }
+              Board Setting
+            </Text>
+          </View>
+          <View style = {{marginLeft: 30}}>
+            <View style = {{flexDirection: 'row'}}>
+              <Text style = {{
+                fontSize: 16, 
+                color: 'grey',  
+                marginVertical: 5, 
+                marginRight: 5 
+              }}>
+                Board Name: 
+              </Text>
+              <TextInput
+                style={{
+                  height: 36, 
+                  width: 200,
+                }}
+                placeholderTextColor = 'gray'
+                placeholder = 'Input'
+                onChangeText= {(newBoardName) => this.setState({newBoardName})}
+                value = {String(this.state.newBoardName)}
+                maxLength = {30}
+                textAlign={'left'}
+                underlineColorAndroid = {'black'}
+              />
             </View>
           </View>
-          <View style = {{flex: 1 }}>
-           <Text style={{fontSize: 20, 
-              color: 'grey',  
-              marginVertical: 5, 
-              marginHorizontal: 20 
-            }}>Vote</Text>
-            <View style = {{marginLeft: 20}}>
-             
-                    <View style = {{flexDirection: 'row', marginLeft: 20}}>
-                      <View style = {{flexDirection: 'row', flex: 1}}>
-                        <View style={{borderWidth: 3, borderColor: 'white'}}>
-                          <Text style = {{fontSize: 16, textAlign: 'center'}}>Vote limit: </Text>
-                        </View>
-                        {
-                          <TextInput
-                            style={{
-                              height: 36, 
-                              width: 50,
-                            }}
-                            placeholderTextColor = 'gray'
-                            placeholder = 'Input'
-                            onChangeText= {(numberOfVote) => this.setState({numberOfVote})}
-                            value = {String(this.state.numberOfVote)}
-                            maxLength = {5}
-                            textAlign={'right'}
-                          />
-                        }
-                      </View>
-                      <View style = {{flex: 1}}/>
-                    </View>
-                  </View>
+          <View style = {{marginLeft: 30}}>
+            <View style = {{flexDirection: 'row'}}>
+              <Text style = {{
+                fontSize: 16, 
+                color: 'grey',  
+                marginVertical: 5, 
+                marginRight: 5 
+              }}>
+                Description:  
+              </Text>
+              <TextInput
+                style={{
+                  marginTop: 10,
+                  borderWidth: 0.5,
+                  borderColor: 'gray',
+                  width: 200,
+                  textAlignVertical: "top",
+                }}
+                placeholderTextColor = 'gray'
+                placeholder = 'Input'
+                onChangeText= {(description) => this.setState({description})}
+                value = {String(this.state.description)}
+                //maxLength = {5}
+                multiline = {true}
+                numberOfLines = {3}
+                underlineColorAndroid = {'white'}
+                //textAlign={'center'}
+              />
             </View>
+          </View>
+          <View style = {{
+            marginLeft: 30,
+          }}>
+            <View style = {{
+              flexDirection: 'row',
+            }}>
+              <CheckBox
+                value={this.state.hasTime}
+                onValueChange={() => this.setState({ hasTime: !this.state.hasTime })}
+              />
+              <Text style={{
+                fontSize: 16, 
+                color: 'grey',  
+                marginVertical: 5, 
+                marginRight: 5 
+              }}>
+                Time:
+              </Text>
+              <TextInput
+                style = {{
+                    height: 36,
+                    width: 50,
+                }}
+                placeholderTextColor = 'gray'
+                placeholder = 'Input'
+                onChangeText = {
+                  (setTime) => this.setState({
+                    setTime
+                  })
+                }
+                value = {String(this.state.setTime)}
+                maxLength = {5}
+                textAlign = {'center'}
+                editable = {this.state.hasTime}
+                underlineColorAndroid = {'black'}
+              />
+            </View>
+            <View style = {{
+              flexDirection: 'row',
+            }}>
+              <CheckBox
+                value={this.state.hasGoal}
+                onValueChange={() => this.setState({ hasGoal: !this.state.hasGoal })}
+              />
+              <Text style={{
+                fontSize: 16, 
+                color: 'grey',  
+                marginVertical: 5, 
+                marginRight: 5 
+              }}>
+                Goal: 
+              </Text>
+              <TextInput
+                style = {{
+                    height: 36,
+                    width: 50,
+                }}
+                placeholderTextColor = 'gray'
+                placeholder = 'Input'
+                onChangeText = {
+                  (goal) => this.setState({
+                    goal
+                  })
+                }
+                value = {String(this.state.goal)}
+                maxLength = {5}
+                textAlign = {'center'}
+                editable = {this.state.hasGoal}
+                underlineColorAndroid = {'black'}
+              />
+            </View>
+          </View>
+          <View style = {{marginLeft: 30}}>
+            <View style = {{flexDirection: 'row'}}>
+              <Text style = {{
+                fontSize: 16, 
+                color: 'grey',  
+                marginVertical: 5, 
+                marginRight: 5 
+              }}>
+                Vote limit: 
+              </Text>
+              <TextInput
+                style={{
+                  height: 36, 
+                  width: 50,
+                }}
+                placeholderTextColor = 'gray'
+                placeholder = 'Input'
+                onChangeText= {(numberOfVote) => this.setState({numberOfVote})}
+                value = {String(this.state.numberOfVote)}
+                maxLength = {5}
+                textAlign={'center'}
+                underlineColorAndroid = {'black'}
+              />
+            </View>
+          </View>
           <View style = {{flex: 5 }}>
             <Text style={{fontSize: 20, 
               color: 'grey',  

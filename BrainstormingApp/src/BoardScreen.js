@@ -25,6 +25,7 @@ import {
   noteColor,
   borderColor
 } from './colors'
+import ImagePicker from 'react-native-image-picker';
 import Modal from "react-native-modal";
 import {
   StackNavigator,
@@ -64,7 +65,6 @@ class BoardScreen extends Component {
     this.state = {
       board: null,
       openWebSocket: false,
-      boardName: '',
       startButtonText: 'Start',
       startedBoard: '',
       timeRemaining: null,
@@ -96,6 +96,8 @@ class BoardScreen extends Component {
       scrollX: 0,
       scrollY: 0,
       currentDetailMember: '',
+      imgSrc: null,
+      imgData: null,
     }
     this.user = this.props.navigation.state.params.user
     this.isVisibleOpenNoteModal = false;
@@ -117,6 +119,7 @@ class BoardScreen extends Component {
     this.unvoteNote = this.unvoteNote.bind(this);
     this.getLastPress = this.getLastPress.bind(this);
     this.setLastPress = this.setLastPress.bind(this);
+    this.uploadPicture = this.uploadPicture.bind(this);
     //console.log(this.props)
     this.state.tags.map((tag) => {
           let tempTagSelection = this.state.newTagSelection
@@ -336,8 +339,6 @@ class BoardScreen extends Component {
     this.props.navigation.navigate(
       'BoardManager', {
         user: this.props.navigation.state.params.user,
-        boardId: this.props.navigation.state.params.boardId,
-        boardName: this.props.navigation.state.params.boardName,
         board: this.state.board,
       }
     )
@@ -430,7 +431,7 @@ class BoardScreen extends Component {
       code: 'inviteUser',
       username: this.state.selectedUserToInvite,
       boardId: this.props.navigation.state.params.boardId,
-      boardName: this.props.navigation.state.params.boardName,
+      boardName: this.state.board.boardName,
     }
     var requestString = JSON.stringify(inviteUserRequest)
     console.log('Invite User Request')
@@ -762,11 +763,38 @@ class BoardScreen extends Component {
     this.ws.send(requestString)
   }
 
-  searchNote(){
-    Alert.alert('search')
-    this.forceUpdate()
-  }
+  uploadPicture(){
+    const options = {
+      quality: 1.0,
+      maxWidth: 500,
+      maxHeight: 500,
+      storageOptions: {
+        skipBackup: true
+      }
+    };
 
+    ImagePicker.showImagePicker(options, (response) => {
+      //console.log('Response = ', response);
+
+      if (response.didCancel) {
+        console.log('User cancelled photo picker');
+      }
+      else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      }
+      else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      }
+      else {
+        let source = { uri: 'data:image/jpg;base64,'+response.data };
+        console.log('data: '+String(response.data))
+        this.setState({
+          imgSrc: source,
+          imgData: response.data, 
+        });
+      }
+    });
+  }
 
   _renderColorPicker = (color) => (
     <TouchableOpacity onPress={() => this.setState({newColor: color})}>
@@ -1170,7 +1198,7 @@ class BoardScreen extends Component {
         marginVertical: 5,
       }}>
         {
-          renderButton('Set Facilitator', () => {
+          this.user.username == this.state.board.facilitator && renderButton('Set Facilitator', () => {
             this.updateBoard({ facilitator: this.state.currentDetailMember })
             this.setState({visibleMemberDetail: false})
           })
@@ -1389,8 +1417,6 @@ class BoardScreen extends Component {
                         //position: 'absolute',
                       }}>
                       </View>
-                      <Text style={{fontSize:16}}></Text>
-                    
                       {this.state.noteList.map((note) => {
                         //console.log('single note: '+JSON.stringify(note))
                         if((note.text).includes(this.state.noteSearchQuery)){
@@ -1411,6 +1437,7 @@ class BoardScreen extends Component {
                               unvoteNote = {this.unvoteNote}
                               getLastPress = {this.getLastPress}
                               setLastPress = {this.setLastPress}
+                              uploadPicture = {this.uploadPicture}
                               key = {note._id}
                               id = {note._id}
                               x = {note.x} 
@@ -1418,6 +1445,7 @@ class BoardScreen extends Component {
                               color = {note.color}
                               voteScore = {note.voteScore}
                               text = {note.text}
+                              img = {note.img}
                               tags = {note.tags}/>
                           //</DoubleClick>
                           )
@@ -1446,14 +1474,7 @@ class BoardScreen extends Component {
                   </View>
                 </View>
                 <View style = {{flex: 1}}>
-                  <TouchableWithoutFeedback
-                    onPress={() => this.searchNote()}
-                  >
-                   <Image 
-                        style={{width: 16, height: 16, marginTop: 8, marginHorizontal: 10}}
-                        source={require('../img/search.png')}
-                    />
-                  </TouchableWithoutFeedback>
+                  {renderButton('Upload Picture', () => this.uploadPicture())}
                 </View>
               </View>
               <View style = {{flex: 0.7}}>

@@ -488,7 +488,7 @@ class HomeScreen extends Component {
             this.ws.close()
             this.props.navigation.navigate('Board',
               {user: this.state.user, 
-                boardName : this.state.showDetailBoard.boardName, 
+                //boardName : this.state.showDetailBoard.boardName, 
                 boardId : this.state.showDetailBoard._id
               }
             )

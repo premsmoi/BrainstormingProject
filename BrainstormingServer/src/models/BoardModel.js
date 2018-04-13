@@ -13,6 +13,10 @@ var boardSchema = new Schema({
     	required : true, 
     	//dropDups: true
     },
+    description: {
+        type: String,
+        default: '',
+    },
     hasPassword: Boolean,
     password: {
     	type: String,
@@ -31,8 +35,26 @@ var boardSchema = new Schema({
     }],
     tags: [String],
     mode: String,
-    limitedTime: Number,
-    numberOfVote: Number,
+    hasTime: {
+        type: Boolean,
+        default: false,
+    },
+    hasGoal: {
+        type: Boolean,
+        default: false,
+    },
+    limitedTime: {
+        type: Number,
+        default: 300,
+    },
+    goal: {
+        type: Number,
+        default: 1,
+    },
+    numberOfVote: {
+        type: Number,
+        default: 1,
+    }
 });
 //userSchema.plugin(uniqueValidator);
 

@@ -15,7 +15,11 @@ var noteSchema = new Schema({
     writer: {
             type: String,
             required : true,
-    },  
+    },
+    img: {
+            data: String,
+            contentType: String
+    },
     text: String,
     color: {
         type: String,

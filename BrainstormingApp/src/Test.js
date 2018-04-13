@@ -1,108 +1,128 @@
-import ViewShot from "react-native-view-shot";
-import React, {
-  Component
-} from 'react';
-
+import React from 'react';
 import {
-  Alert,
   AppRegistry,
-  Button,
   StyleSheet,
-  View,
-  TextInput,
   Text,
-  TouchableWithoutFeedback,
+  View,
+  PixelRatio,
   TouchableOpacity,
-  BackHandler,
-  KeyboardAvoidingView,
   Image,
-  ImageBackground,
-  ScrollView,
-  Dimensions,
 } from 'react-native';
 
-import Modal from "react-native-modal";
-import ImageViewer from 'react-native-image-zoom-viewer';
-import ImageZoom from 'react-native-image-pan-zoom';
+import ImagePicker from 'react-native-image-picker';
 
-// capture ScrollView content
-class Test extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-    	uri: '..',
-		visibleModal: false,
-    }
+export default class Test extends React.Component {
+
+  state = {
+    avatarSource: null,
+    videoSource: null
+  };
+
+  selectPhotoTapped() {
+    const options = {
+      quality: 1.0,
+      maxWidth: 500,
+      maxHeight: 500,
+      storageOptions: {
+        skipBackup: true
+      }
+    };
+
+    ImagePicker.showImagePicker(options, (response) => {
+      console.log('Response = ', response);
+
+      if (response.didCancel) {
+        console.log('User cancelled photo picker');
+      }
+      else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      }
+      else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      }
+      else {
+        let source = { uri: response.uri };
+
+        // You can also display the image using data:
+        // let source = { uri: 'data:image/jpeg;base64,' + response.data };
+
+        this.setState({
+          avatarSource: source
+        });
+      }
+    });
   }
 
-  onCapture = uri => {
-    console.log(uri);
-    this.setState({uri: uri})
-  };
+  selectVideoTapped() {
+    const options = {
+      title: 'Video Picker',
+      takePhotoButtonTitle: 'Take Video...',
+      mediaType: 'video',
+      videoQuality: 'medium'
+    };
 
-  onImageLoad = () => {
-    this.refs.viewShot.capture().then(uri => {
-      console.log("do something with ", uri);
-    })
-  };
+    ImagePicker.showImagePicker(options, (response) => {
+      console.log('Response = ', response);
 
-   _renderButton = (text, onPress) => (
-    <TouchableOpacity onPress={onPress}>
-      <View style=
-      {{
-        backgroundColor: "lightblue",
-        padding: 6,
-        margin: 8,
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius: 4,
-        borderColor: "rgba(0, 0, 0, 0.1)"
-      }}>
-        <Text>{text}</Text>
-      </View>
-    </TouchableOpacity>
-  )
-
-  _renderModal = () => (
-    <View>
-      <Image source={{uri: "file:///data/user/0/com.brainstormingapp/cache/ReactNative-snapshot-image2085461881.png"}} />
-    </View>
-  )
+      if (response.didCancel) {
+        console.log('User cancelled video picker');
+      }
+      else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      }
+      else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      }
+      else {
+        this.setState({
+          videoSource: response.uri
+        });
+      }
+    });
+  }
 
   render() {
-  	//console.log('uri: '+this.state.uri)
     return (
-    	<View style = {{flex: 1}}>
-    		<View style = {{flex: 1}}>
-		      <ScrollView>
-		        <ViewShot onCapture={this.onCapture} captureMode="mount">
-		          <Text>...The Scroll View Content Goes Here...</Text>
-		          {this._renderButton('Capture', () => {
-		          	this.setState({visibleModal: true})
-		          })}
-		        </ViewShot>
-		      </ScrollView>
-		     </View>
-	      <View style = {{flex: 1}}>
-	      	<Image 
-                        style={{width: 16, height: 16, marginTop: 8, marginHorizontal: 10}}
-                        source={require('../img/search.png')}
-                    />
-	        
-	      </View>
-	       <ImageZoom cropWidth={Dimensions.get('window').width}
-                       cropHeight={Dimensions.get('window').height}
-                       imageWidth={400}
-                       imageHeight={400}
-                       >    
-		      	<Image
-			        style={{width: 400, height: 60}}
-			        source={{isStatic: true, uri: this.state.uri}}
-			     />
-			</ImageZoom>
-	     </View>
+      <View style={styles.container}>
+        <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
+          <View style={[styles.avatar, styles.avatarContainer, {marginBottom: 20}]}>
+          { this.state.avatarSource === null ? <Text>Select a Photo</Text> :
+            <Image style={styles.avatar} source={this.state.avatarSource} />
+          }
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={this.selectVideoTapped.bind(this)}>
+          <View style={[styles.avatar, styles.avatarContainer]}>
+            <Text>Select a Video</Text>
+          </View>
+        </TouchableOpacity>
+
+        { this.state.videoSource &&
+          <Text style={{margin: 8, textAlign: 'center'}}>{this.state.videoSource}</Text>
+        }
+      </View>
     );
   }
+
 }
 
-export default Test;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF'
+  },
+  avatarContainer: {
+    borderColor: '#9B9B9B',
+    borderWidth: 1 / PixelRatio.get(),
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  avatar: {
+    borderRadius: 75,
+    width: 150,
+    height: 150
+  }
+});

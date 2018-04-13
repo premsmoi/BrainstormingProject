@@ -123,6 +123,7 @@
       "resolved": "https://registry.npmjs.org/fresh/-/fresh-0.5.2.tgz",
       "version": "0.5.2"
     },
+    "fs": "0.0.1-security",
     "http": "0.0.0",
     "http-errors": {
       "dependencies": {
@@ -262,6 +263,7 @@
       "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz",
       "version": "2.0.0"
     },
+    "multer": "^1.3.0",
     "negotiator": {
       "integrity": "sha1-KzJxhOiZIQEXeyhWP7XnECrNDKk=",
       "resolved": "https://registry.npmjs.org/negotiator/-/negotiator-0.6.1.tgz",

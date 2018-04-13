@@ -33,6 +33,7 @@ export default class Note extends Component {
     this.boardState = this.props.getState()
     this.state = {
       lastPress: new Date().getTime(),
+      img: this.props.img,
       text: this.props.text,
       nextText: this.props.text,
       COLOR: this.props.color,
@@ -47,7 +48,7 @@ export default class Note extends Component {
       tagSelection: {},
       newTagSelection: {},
     }
-    //console.log('tags: '+this.state.tags)
+    console.log('data in note: '+JSON.stringify(this.state.img.data))
     //console.log('newNoteTags: '+this.state.newNoteTags)
     this._rectangleStyles = {
       style: {
@@ -103,7 +104,7 @@ export default class Note extends Component {
       //alignItems: "center",
       borderRadius: 4,
     }}>
-      <View style={{flexDirection: 'row', padding: 6, margin: 8,}}>
+      <View style={{flexDirection: 'row', padding: 6, margin: 8, justifyContent: 'center'}}>
         {this._renderColorPicker('red')}
         {this._renderColorPicker('pink')}
         {this._renderColorPicker('green')}
@@ -177,8 +178,12 @@ export default class Note extends Component {
               text: this.state.nextText,
               tags: this.state.newNoteTags,
               updated: new Date().getTime(),
+              img: {
+                data: this.props.getState().imgData,
+                contentType: 'img/jpg'
+              }
             }
-            console.log('tags me : '+this.state.newNoteTags)
+            //console.log('data in note: '+this.props.getState().imgData)
             this.props.updateNote(updatedObj)
             this.props.setVisibleOpenNoteModal(false)
             //this.setState({newNoteTags: []})
@@ -225,7 +230,16 @@ export default class Note extends Component {
             }
           })}
         </View>
-        <View style = {{flex: 11}}/>
+        <View style = {{flex: 1}}/>
+        <View style = {{flex: 9}}>
+          {
+            this._renderButton('Upload Image', () => {
+              this.props.uploadPicture()
+              //this.setState({isVisibleOpenNoteModal: false})
+            })
+          }
+        </View>
+        <View style = {{flex: 1}}/>
       </View>
     </View>
   );
@@ -388,8 +402,11 @@ export default class Note extends Component {
               marginHorizontal: 10,
               color: 'black',
             }}>{this.state.text}</Text>
+            <View style = {{marginHorizontal: 15}}>
+              <Image style={{ width: 120, height: 120 }} source={{uri: 'data:image/jpg;base64,'+this.state.img.data}} />
+            </View>
           </View>
-          <View style = {{flex: 1, padding: 10}}>
+          <View style = {{flex: 1, padding: 5}}>
             <Text style={{
               fontSize: 14,
               //marginBottom: 10,

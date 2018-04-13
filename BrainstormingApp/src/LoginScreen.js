@@ -180,6 +180,7 @@ class LoginScreen extends Component {
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
           onChangeText={onChange}
+          underlineColorAndroid = {'black'}
       />
     </View>
   );
@@ -255,6 +256,7 @@ class LoginScreen extends Component {
                   }}
                   placeholderTextColor = 'gray'
                   placeholder = 'Username'
+                  underlineColorAndroid = {'black'}
                   onChangeText=  {(loginUsername) => this.setState({loginUsername})}
                    ref={element => {
                     this.loginUsernameInput = element
@@ -275,6 +277,7 @@ class LoginScreen extends Component {
                   placeholderTextColor = 'gray'
                   placeholder = 'Password'
                   secureTextEntry = {true}
+                  underlineColorAndroid = {'black'}
                   onChangeText=  {(loginPassword) => this.setState({loginPassword})}
                    ref={element => {
                     this.loginPasswordInput = element
