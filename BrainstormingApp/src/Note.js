@@ -12,8 +12,10 @@ import {
   TextInput,
   Image,
   CheckBox,
+  Picker,
 } from "react-native";
 import TimerMixin from 'react-timer-mixin';
+import ImagePicker from 'react-native-image-picker';
 import BoardScreen from './BoardScreen';
 import styles from "./app.style";
 import {noteColor, borderColor} from './colors'
@@ -28,12 +30,20 @@ export default class Note extends Component {
     this.x = this.props.x;
     this.y = this.props.y;
     this.id = this.props.id;
+    this.writer = this.props.writer;
+    this.isOwner = this.props.writer == this.props.getUser().username;
+    console.log('isOwner: '+this.isOwner)
+    console.log('writer: '+this.props.writer)
+    console.log('user: '+this.props.getUser().username)
     //this.COLOR = this.props.color;
     this.rectangle = (null : ?{ setNativeProps(props: Object): void });
     this.boardState = this.props.getState()
     this.state = {
       lastPress: new Date().getTime(),
       img: this.props.img,
+      newImgData: this.props.img.data,
+      noteType: this.props.noteType,
+      newNoteType: this.props.noteType,
       text: this.props.text,
       nextText: this.props.text,
       COLOR: this.props.color,
@@ -76,6 +86,38 @@ export default class Note extends Component {
         })
   }
 
+  uploadPicture(){
+    const options = {
+      quality: 1.0,
+      maxWidth: 500,
+      maxHeight: 500,
+      storageOptions: {
+        skipBackup: true
+      }
+    };
+    //this.setState({imgData: null})
+    ImagePicker.showImagePicker(options, (response) => {
+      //console.log('Response = ', response);
+
+      if (response.didCancel) {
+        console.log('User cancelled photo picker');
+      }
+      else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      }
+      else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      }
+      else {
+        let source = { uri: 'data:image/jpg;base64,'+response.data };
+        console.log('data: '+String(response.data))
+        this.setState({
+          newImgData: response.data, 
+        });
+      }
+    });
+  }
+
   _renderColorPicker = (color) => (
     <TouchableOpacity onPress={() => this.setState({newColor: color})}>
       <View style={{
@@ -104,32 +146,64 @@ export default class Note extends Component {
       //alignItems: "center",
       borderRadius: 4,
     }}>
-      <View style={{flexDirection: 'row', padding: 6, margin: 8, justifyContent: 'center'}}>
-        {this._renderColorPicker('red')}
-        {this._renderColorPicker('pink')}
-        {this._renderColorPicker('green')}
-        {this._renderColorPicker('blue')}
-        {this._renderColorPicker('yellow')}
+      {
+        this.isOwner && (
+          <View style={{flexDirection: 'row', padding: 6, margin: 8, justifyContent: 'center'}}>
+            {this._renderColorPicker('red')}
+            {this._renderColorPicker('pink')}
+            {this._renderColorPicker('green')}
+            {this._renderColorPicker('blue')}
+            {this._renderColorPicker('yellow')}
+          </View>
+          )
+      }
+      
+      <View style={{flexDirection: 'row', padding: 6, margin: 8}}>
+        <Text style = {{
+          fontSize: 14,
+        }}>
+          Type: 
+        </Text>
+        <Picker
+          selectedValue={this.state.newNoteType}
+          style={{ height: 20, width: 100 }}
+          enabled = {this.isOwner? true : false}
+          onValueChange={(newNoteType) => this.setState({newNoteType})}>
+          <Picker.Item label="Text" value="text" />
+          <Picker.Item label="Image" value="image" />
+        </Picker>
       </View>
       <View>
-        <TextInput
-          style={{ 
-            fontSize: 20,
-            marginTop   : 15,
-            marginLeft  : 15,
-            marginRight : 15,
-            textAlignVertical: "top",
-            //borderColor: 'black',
-            //borderWidth: 0.5,
-          }}
-          onChangeText={(nextText) => this.setState({nextText})}
-          value={this.state.nextText}
-          multiline = {true}
-          numberOfLines = {6}
-          maxLength = {100}
-          placeholder = {'Text Here..'}
-          underlineColorAndroid = {noteColor[this.state.newColor]}
-        />
+        {
+          this.state.newNoteType == 'text' && (
+              <TextInput
+                style={{ 
+                  fontSize: 20,
+                  marginTop   : 15,
+                  marginLeft  : 15,
+                  marginRight : 15,
+                  textAlignVertical: "top",
+                  //borderColor: 'black',
+                  //borderWidth: 0.5,
+                }}
+                onChangeText={(nextText) => this.setState({nextText})}
+                value={this.state.nextText}
+                multiline = {true}
+                numberOfLines = {6}
+                maxLength = {100}
+                placeholder = {'Text Here..'}
+                underlineColorAndroid = {noteColor[this.state.newColor]}
+              />
+            )
+        }
+        {
+          this.state.newNoteType == 'image' && (
+            <View style = {{marginHorizontal: 15}}>
+                <Image style={{ width: 300, height: 300 }} source={{uri: 'data:image/jpg;base64,'+this.state.newImgData}} />
+              </View>
+            )
+        }
+        
       </View>
       <View style = {{flexDirection: 'row'}} >
         <Text 
@@ -152,95 +226,124 @@ export default class Note extends Component {
               </Text>
             )
           })}
-          <TouchableOpacity onPress = {() => {this.setState({visibleSelectTagsModal: true})}}>
-            <Image
-              style={{width: 16, height: 16, marginTop: 8, marginLeft: 5}}
-              source={require('../img/pencil.png')}
-            />
-          </TouchableOpacity>
-      </View>
-      <View style = {{flexDirection: 'row'}} >
-        <View style = {{flex: 1}}/>
-        <View style = {{flex: 4}}>
-          {this._renderButton("OK", () => {
-            this.setState({ isVisibleOpenNoteModal: false, text: this.state.nextText, COLOR: this.state.newColor})
-           
-            console.log('color: '+this.state.newColor)
-            this.setState({
-              color: this.state.newColor,
-              text: this.state.nextText,
-              tags: this.state.newNoteTags,
-              tagSelection: this.state.newTagSelection,
-            })
-             var updatedObj = {
-              id: this.id,
-              color: this.state.newColor,
-              text: this.state.nextText,
-              tags: this.state.newNoteTags,
-              updated: new Date().getTime(),
-              img: {
-                data: this.props.getState().imgData,
-                contentType: 'img/jpg'
-              }
-            }
-            //console.log('data in note: '+this.props.getState().imgData)
-            this.props.updateNote(updatedObj)
-            this.props.setVisibleOpenNoteModal(false)
-            //this.setState({newNoteTags: []})
-          })}
-        </View>
-        <View style = {{flex: 1}}/>
-        <View style = {{flex: 4}}>
-          {this._renderButton("Cancel", () => {
-            console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
-              console.log('tagSelection: '+JSON.stringify(this.state.tagSelection))  
-            this.setState({
-              isVisibleOpenNoteModal: false,
-              nextText: this.state.text,
-              newColor: this.state.COLOR,
-              newNoteTags: this.state.tags,
-              newTagSelection: this.state.tagSelection,
-            }, () => {
-              console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
-              console.log('tagSelection: '+JSON.stringify(this.state.tagSelection))  
-            })
-            
-            this.props.setVisibleOpenNoteModal(false)
-          })}
-        </View>  
-        <View style = {{flex: 1}}/>
-        <View style = {{flex: 4}}>
-          {this._renderButton("Delete", () => {
-            this.props.deleteNote(this.id)
-            this.setState({isVisibleOpenNoteModal: false})
-            this.props.setVisibleOpenNoteModal(false)
-          })}
-        </View>  
-        <View style = {{flex: 1}}/>
-      </View>
-      <View style = {{flexDirection: 'row'}}>
-        <View style = {{flex: 1}}/>
-        <View style = {{flex: 4}}>  
-          {this._renderButton(this.props.getVoteStatus(this.id)? 'Unvote' : 'Vote', () => {
-            if(this.props.getVoteStatus(this.id)){
-              this.props.unvoteNote(this.id)
-            }
-            else{
-              this.props.voteNote(this.id)
-            }
-          })}
-        </View>
-        <View style = {{flex: 1}}/>
-        <View style = {{flex: 9}}>
           {
-            this._renderButton('Upload Image', () => {
-              this.props.uploadPicture()
-              //this.setState({isVisibleOpenNoteModal: false})
-            })
+            this.isOwner && (
+              <TouchableOpacity onPress = {() => {this.setState({visibleSelectTagsModal: true})}}>
+                <Image
+                  style={{width: 16, height: 16, marginTop: 8, marginLeft: 5}}
+                  source={require('../img/pencil.png')}
+                />
+              </TouchableOpacity>
+              )
           }
-        </View>
-        <View style = {{flex: 1}}/>
+          
       </View>
+        {
+          this.isOwner && (
+            <View>
+              <View style = {{flexDirection: 'row'}} >
+                <View style = {{flex: 1}}/>
+                <View style = {{flex: 4}}>
+                  {this._renderButton("OK", () => {
+                    this.setState({ isVisibleOpenNoteModal: false, text: this.state.nextText, COLOR: this.state.newColor})
+                   
+                    console.log('color: '+this.state.newColor)
+                    this.setState({
+                      color: this.state.newColor,
+                      text: this.state.nextText,
+                      tags: this.state.newNoteTags,
+                      tagSelection: this.state.newTagSelection,
+                    })
+                     var updatedObj = {
+                      id: this.id,
+                      color: this.state.newColor,
+                      noteType: this.state.newNoteType,
+                      text: this.state.nextText,
+                      tags: this.state.newNoteTags,
+                      updated: new Date().getTime(),
+                      img: {
+                        data: this.state.newImgData,
+                        contentType: 'img/jpg',
+                      },
+                    }
+
+                    var updatedObjWithoutImg = {
+                      id: this.id,
+                      color: this.state.newColor,
+                      noteType: this.state.newNoteType,
+                      text: this.state.nextText,
+                      tags: this.state.newNoteTags,
+                      updated: new Date().getTime(),
+                    }
+                    //console.log('data in note: '+this.props.getState().imgData)
+                    this.props.updateNote(this.state.img.data == this.state.newImgData? updatedObjWithoutImg : updatedObj)
+                    this.props.setVisibleOpenNoteModal(false)
+                    //this.setState({newNoteTags: []})
+                  })}
+                </View>
+                <View style = {{flex: 1}}/>
+
+                <View style = {{flex: 4}}>
+                  {this._renderButton("Cancel", () => {
+                    console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
+                      console.log('tagSelection: '+JSON.stringify(this.state.tagSelection))  
+                    this.setState({
+                      isVisibleOpenNoteModal: false,
+                      nextText: this.state.text,
+                      newColor: this.state.COLOR,
+                      newNoteTags: this.state.tags,
+                      newTagSelection: this.state.tagSelection,
+                      newImgData: this.state.img.data,
+                      newNoteType: this.state.noteType,
+                    }, () => {
+                      console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
+                      console.log('tagSelection: '+JSON.stringify(this.state.tagSelection))  
+                    })
+                    
+                    this.props.setVisibleOpenNoteModal(false)
+                  })}
+                </View>  
+                <View style = {{flex: 1}}/>
+                <View style = {{flex: 4}}>
+                  {this._renderButton("Delete", () => {
+                    this.props.deleteNote(this.id)
+                    this.setState({isVisibleOpenNoteModal: false})
+                    this.props.setVisibleOpenNoteModal(false)
+                  })}
+                </View>  
+                <View style = {{flex: 1}}/>
+              </View>
+              <View style = {{flexDirection: 'row'}}>
+                <View style = {{flex: 1}}/>
+                <View style = {{flex: 4}}>  
+                  {this._renderButton(this.props.getVoteStatus(this.id)? 'Unvote' : 'Vote', () => {
+                    if(this.props.getVoteStatus(this.id)){
+                      this.props.unvoteNote(this.id)
+                    }
+                    else{
+                      this.props.voteNote(this.id)
+                    }
+                  })}
+                </View>
+                <View style = {{flex: 1}}/>
+                <View style = {{flex: 9}}>
+                  {
+                    this.state.newNoteType == 'image' && this._renderButton('Upload Image', () => {
+                      this.uploadPicture();
+                    })
+                  }
+                </View>
+                <View style = {{flex: 1}}/>
+              </View>
+            </View>
+            )
+        }
+        {
+          !this.isOwner && (
+            this._renderButton('OK', () => this.setState({isVisibleOpenNoteModal: false}))
+            )
+        }
+      
     </View>
   );
 
@@ -396,15 +499,23 @@ export default class Note extends Component {
             </View>
           </View>
           <View style = {{flex: 7}}>
-            <Text style={{
-              fontSize: 14,
-              //marginVertical: 10,
-              marginHorizontal: 10,
-              color: 'black',
-            }}>{this.state.text}</Text>
-            <View style = {{marginHorizontal: 15}}>
-              <Image style={{ width: 120, height: 120 }} source={{uri: 'data:image/jpg;base64,'+this.state.img.data}} />
-            </View>
+          {
+            this.state.noteType == 'text' && (
+                <Text style={{
+                  fontSize: 14,
+                  //marginVertical: 10,
+                  marginHorizontal: 10,
+                  color: 'black',
+                }}>{this.state.text}</Text>
+              )
+          }
+          {
+            this.state.noteType == 'image' && (
+              <View style = {{marginHorizontal: 15}}>
+                <Image style={{ width: 115, height: 115 }} source={{uri: 'data:image/jpg;base64,'+this.state.img.data}} />
+              </View>
+            )
+          }
           </View>
           <View style = {{flex: 1, padding: 5}}>
             <Text style={{

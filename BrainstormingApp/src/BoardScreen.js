@@ -19,6 +19,7 @@ import {
   KeyboardAvoidingView,
   Dimensions,
   TouchableHighlight,
+  Picker,
 } from 'react-native';
 import styles from "./app.style";
 import {
@@ -84,7 +85,9 @@ class BoardScreen extends Component {
       newColor: 'red',
       newNoteText: '',
       newNoteTags: [],
+      newNoteType: 'text',
       newTagSelection: {},
+      newImgData: '',
       tags: [],
       newNoteTags: [],
       tagSelection: {},
@@ -96,8 +99,6 @@ class BoardScreen extends Component {
       scrollX: 0,
       scrollY: 0,
       currentDetailMember: '',
-      imgSrc: null,
-      imgData: null,
     }
     this.user = this.props.navigation.state.params.user
     this.isVisibleOpenNoteModal = false;
@@ -119,7 +120,7 @@ class BoardScreen extends Component {
     this.unvoteNote = this.unvoteNote.bind(this);
     this.getLastPress = this.getLastPress.bind(this);
     this.setLastPress = this.setLastPress.bind(this);
-    this.uploadPicture = this.uploadPicture.bind(this);
+    this.getUser = this.getUser.bind(this);
     //console.log(this.props)
     this.state.tags.map((tag) => {
           let tempTagSelection = this.state.newTagSelection
@@ -332,6 +333,10 @@ class BoardScreen extends Component {
    this.lastPressObj = obj
   }
 
+  getUser(){
+    return this.user;
+  }
+
   toBoardManager() {
     this.setState({
       openWebSocket: false
@@ -526,6 +531,11 @@ class BoardScreen extends Component {
       x: 100,
       y: 200,
       color: this.state.newColor,
+      noteType: this.state.newNoteType,
+      img: {
+        data: this.state.newImgData,
+        contentType: 'img/jpg'
+      },
       text: this.state.newNoteText,
       tags: this.state.newNoteTags,
       updated: new Date().getTime(),
@@ -772,7 +782,7 @@ class BoardScreen extends Component {
         skipBackup: true
       }
     };
-
+    //this.setState({imgData: null})
     ImagePicker.showImagePicker(options, (response) => {
       //console.log('Response = ', response);
 
@@ -789,8 +799,7 @@ class BoardScreen extends Component {
         let source = { uri: 'data:image/jpg;base64,'+response.data };
         console.log('data: '+String(response.data))
         this.setState({
-          imgSrc: source,
-          imgData: response.data, 
+          newImgData: response.data, 
         });
       }
     });
@@ -830,32 +839,58 @@ class BoardScreen extends Component {
       //alignItems: "center",
       borderRadius: 4,
     }}>
-      <View style={{flexDirection: 'row', padding: 6, margin: 8,}}>
+      <View style={{flexDirection: 'row', padding: 6, margin: 8, justifyContent: 'center'}}>
         {this._renderColorPicker('red')}
         {this._renderColorPicker('pink')}
         {this._renderColorPicker('green')}
         {this._renderColorPicker('blue')}
         {this._renderColorPicker('yellow')}
       </View>
+      <View style={{flexDirection: 'row', padding: 6, margin: 8}}>
+        <Text style = {{
+          fontSize: 14,
+        }}>
+          Type: 
+        </Text>
+        <Picker
+          selectedValue={this.state.newNoteType}
+          style={{ height: 20, width: 100 }}
+          onValueChange={(newNoteType) => this.setState({newNoteType})}>
+          <Picker.Item label="Text" value="text" />
+          <Picker.Item label="Image" value="image" />
+        </Picker>
+      </View>
       <View>
-        <TextInput
-            style={{ 
-              fontSize: 20,
-              marginTop   : 15,
-              marginLeft  : 15,
-              marginRight : 15,
-              textAlignVertical: "top",
-              //borderColor: 'black',
-              //borderWidth: 0.5,
-            }}
-            onChangeText={(newNoteText) => this.setState({newNoteText})}
-            value={this.state.newNoteText}
-            multiline = {true}
-            numberOfLines = {6}
-            maxLength = {100}
-            placeholder = {'Text Here..'}
-            underlineColorAndroid = {noteColor[this.state.newColor]}
-        />
+        {
+          this.state.newNoteType == 'text' && (
+              <TextInput
+                style={{ 
+                  fontSize: 20,
+                  marginTop   : 15,
+                  marginLeft  : 15,
+                  marginRight : 15,
+                  textAlignVertical: "top",
+                  //borderColor: 'black',
+                  //borderWidth: 0.5,
+                }}
+                onChangeText={(newNoteText) => this.setState({newNoteText})}
+                value={this.state.newNoteText}
+                multiline = {true}
+                numberOfLines = {6}
+                maxLength = {100}
+                placeholder = {'Text Here..'}
+                underlineColorAndroid = {noteColor[this.state.newColor]}
+              />
+            )
+        }
+        {
+          this.state.newNoteType == 'image' && (
+            <View style = {{marginHorizontal: 15}}>
+                <Image style={{ width: 300, height: 300 }} source={{uri: 'data:image/jpg;base64,'+this.state.newImgData}} />
+              </View>
+            )
+        }
+        
       </View>
       <View style = {{flexDirection: 'row'}} >
         <Text 
@@ -890,7 +925,20 @@ class BoardScreen extends Component {
             />
           </TouchableOpacity>
       </View>
-      <View style={{flexDirection: 'row'}}>
+      {
+        this.state.newNoteType == 'image' && (
+          <View style = {{flexDirection: 'row', padding: 5}}>
+            <View style = {{flex: 1}}/>
+            <View style = {{flex: 8}}>
+            {
+              renderButton('Uplaod Image', () => this.uploadPicture())
+            }
+            </View>
+            <View style = {{flex: 1}}/>          
+          </View>
+        )
+      }
+      <View style={{flexDirection: 'row', padding: 5,}}>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
           {renderButton("OK", () => {
@@ -1419,7 +1467,7 @@ class BoardScreen extends Component {
                       </View>
                       {this.state.noteList.map((note) => {
                         //console.log('single note: '+JSON.stringify(note))
-                        if((note.text).includes(this.state.noteSearchQuery)){
+                        if( ((note.text).includes(this.state.noteSearchQuery) && note.noteType == 'text') || note.noteType == 'image' ){
                           return(
                           //<DoubleClick onClick={this.handleClick}>
                             <Note 
@@ -1437,13 +1485,15 @@ class BoardScreen extends Component {
                               unvoteNote = {this.unvoteNote}
                               getLastPress = {this.getLastPress}
                               setLastPress = {this.setLastPress}
-                              uploadPicture = {this.uploadPicture}
+                              getUser = {this.getUser}
                               key = {note._id}
                               id = {note._id}
                               x = {note.x} 
                               y = {note.y} 
+                              writer = {note.writer}
                               color = {note.color}
                               voteScore = {note.voteScore}
+                              noteType = {note.noteType}
                               text = {note.text}
                               img = {note.img}
                               tags = {note.tags}/>
@@ -1464,17 +1514,25 @@ class BoardScreen extends Component {
               borderWidth: 0.5,
             }}>
               <View style = {{flex: 2, flexDirection: 'row'}}>
-                <View style = {{flex: 1}}> 
-                  {this._renderTextInput('Search Note', 
-                    (noteSearchQuery) => { this.setState({noteSearchQuery})},
-                    this.state.noteSearchQuery
-                  )}
+                <View style = {{flex: 1}}>
+                  <TextInput
+                    style = {{
+                      height: 36,
+                      width: 100,
+                    }}
+                    placeholderTextColor = 'gray'
+                    placeholder = 'Search Note'
+                    onChangeText = {(noteSearchQuery) => { this.setState({noteSearchQuery})}}
+                    value = {this.state.noteSearchQuery}
+                    maxLength = {100}
+                    textAlign = {'left'}
+                    underlineColorAndroid = {'black'}
+                  />
                   <View style = {{marginLeft: 5}}>
                     <Text style = {{fontSize: 16, color: 'black',}}>Votes: {this.state.board.numberOfVote - this.state.votedNoteList.length}</Text>
                   </View>
                 </View>
                 <View style = {{flex: 1}}>
-                  {renderButton('Upload Picture', () => this.uploadPicture())}
                 </View>
               </View>
               <View style = {{flex: 0.7}}>
@@ -1490,7 +1548,7 @@ class BoardScreen extends Component {
 
                       {this.state.noteList.map((note) => {
                           //console.log('single note: '+JSON.stringify(note))
-                          if((note.text).includes(this.state.noteSearchQuery)){
+                          if(((note.text).includes(this.state.noteSearchQuery) && note.noteType == 'text') || note.noteType == 'image'){
                             return(
                             //<DoubleClick onClick={this.handleClick}>
                               <SmallNote

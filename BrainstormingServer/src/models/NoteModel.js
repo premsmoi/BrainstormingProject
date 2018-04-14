@@ -7,6 +7,10 @@ var bcrypt = require('bcryptjs')
 var Schema = mongoose.Schema;
 
 var noteSchema = new Schema({
+    noteType: {
+        type: String,
+        default: 'text',
+    },
     boardId: {
             type: Schema.Types.ObjectId, 
             ref: 'Board',
@@ -17,8 +21,11 @@ var noteSchema = new Schema({
             required : true,
     },
     img: {
-            data: String,
-            contentType: String
+            data: {
+                type: String,
+                default: '',
+            },
+            contentType: String,
     },
     text: String,
     color: {
