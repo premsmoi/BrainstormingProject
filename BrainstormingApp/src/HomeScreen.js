@@ -50,6 +50,7 @@ class HomeScreen extends Component {
 
   constructor(props) {
     super(props);
+    this.totalLoad = 2;
     this.state = {
       user: this.props.navigation.state.params.user,
       myBoards: [],
@@ -71,6 +72,7 @@ class HomeScreen extends Component {
       numberOfUnreadNotification: 0,
       notifications: [],
       openWebSocket: false,
+      currentLoad: 0,
     }
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
 
@@ -84,14 +86,16 @@ class HomeScreen extends Component {
       if (obj.body.code == 'getBoardList') {
         console.log('I got board list')
         this.setState({
-          myBoards: obj.body.boards
+          myBoards: obj.body.boards,
+          currentLoad: ++this.state.currentLoad
         })
       }
 
       if (obj.body.code == 'getUser') {
         console.log('I got user')
         this.setState({
-          user: obj.body.user
+          user: obj.body.user,
+          //currentLoad: ++this.state.currentLoad
         })
       }
 
@@ -107,12 +111,11 @@ class HomeScreen extends Component {
 
       if (obj.body.code == 'getNotification') {
         console.log('I got notification')
-        console.log('notification: ' + JSON.stringify(obj.body.notifications))
+        //console.log('notification: ' + JSON.stringify(obj.body.notifications))
         this.setState({
           notifications: obj.body.notifications,
-        })
-        this.setState({
-          numberOfUnreadNotification: this.countUnreadNotification()
+          numberOfUnreadNotification: this.countUnreadNotification(),
+          currentLoad: ++this.state.currentLoad,
         })
       }
 
@@ -462,15 +465,6 @@ class HomeScreen extends Component {
       //alignItems: "center",
       //borderRadius: 4,
     }}>
-      <View style={{flexDirection: 'row'}}>
-        <View style={{borderWidth: 3, borderColor: 'white'}}>
-          <Text style={{fontSize: 16, textAlign: 'center'}}>Board Name : </Text>
-        </View>
-        {this._renderTextInput('Board Name', 
-          (changeBoardName) => { this.setState({changeBoardName})},
-          this.state.changeBoardName
-        )}
-      </View>
       <View style = {{flexDirection: 'row'}}>
         <View style={{borderWidth: 3, borderColor: 'white'}}>
         </View>
@@ -482,44 +476,16 @@ class HomeScreen extends Component {
       <View style={{flexDirection: 'row'}}>
         <View style = {{flex: 1}}/>
         <View style = {{flex: 3}}>
-          {renderButton("Enter", () => {
+          {renderButton("OK", () => {
             this.setState({ visibleBoardDetailModal: false })
-            this.setState({changeBoardName: '', openWebSocket: false})
-            this.ws.close()
-            this.props.navigation.navigate('Board',
-              {user: this.state.user, 
-                //boardName : this.state.showDetailBoard.boardName, 
-                boardId : this.state.showDetailBoard._id
-              }
-            )
-            }
-          )}
+            })
+          }
         </View>
         <View style = {{flex: 2}}/>
         <View style = {{flex: 3}}>
           {renderButton("Delete", () => {
             this.setState({ visibleBoardDetailModal: false })
             this.deleteBoard();
-            //this.setState({changeBoardName: ''})
-            }
-          )}
-        </View>
-        <View style = {{flex: 1}}/>
-      </View>
-      <View style={{flexDirection: 'row'}}>
-        <View style = {{flex: 1}}/>
-        <View style = {{flex: 3}}>
-          {renderButton("OK", () => {
-            this.setState({ visibleBoardDetailModal: false })
-            this.updateBoardName()
-            })
-          }
-        </View>
-        <View style = {{flex: 2}}/>
-        <View style = {{flex: 3}}>
-          {renderButton("Cancel", () => {
-            this.setState({ visibleBoardDetailModal: false })
-            this.setState({changeBoardName: ''})
             }
           )}
         </View>
@@ -640,7 +606,9 @@ class HomeScreen extends Component {
   )
 
   render() {
-    return (
+    console.log('currentLoad: '+this.state.currentLoad)
+    if(this.state.currentLoad >= this.totalLoad){
+      return (
       <View style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}>
         <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {false}>
           <Modal isVisible={this.state.visibleNewBoardModal}>
@@ -746,12 +714,23 @@ class HomeScreen extends Component {
                 return(
                   <TouchableHighlight 
                     onPress={() => {
+                      this.setState({ visibleBoardDetailModal: false })
+                      this.setState({changeBoardName: '', openWebSocket: false})
+                      this.ws.close()
+                      this.props.navigation.navigate('Board',
+                        {
+                          user: this.state.user, 
+                          boardId : board._id
+                        }
+                      )
+                      }
+                    }
+                    onLongPress = {() => {
                       this.setState({showDetailBoard: board})
                       this.setState({changeBoardName: board.boardName})
                       this.setState({visibleBoardDetailModal: true})
                       //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board.boardId})
-                      }
-                    }
+                      }}
                     key = {board._id}
                     underlayColor = {'#f2f2f2'}  
                   >
@@ -777,6 +756,19 @@ class HomeScreen extends Component {
         </ScrollView>
       </View>
     );
+  }
+  else {
+    return(
+      <View style = {{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white'
+      }}>
+        <Text>Loading..</Text>
+      </View>
+    )
+  }
   }
 }
 

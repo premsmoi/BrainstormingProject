@@ -12,23 +12,25 @@ import {
 } from 'react-native'; 
 
 renderButton = (text, onPress) => (
-	<TouchableOpacity onPress={onPress}>
-      <View style={{
-      	backgroundColor: 'lightblue',
-        borderRadius: 10,
-        justifyContent: "center",
-      	alignItems: "center",
-      }}>
-        <Text style = {{
-			fontSize: 14,
-			color: 'black',
-			marginVertical: 5,
-			marginHorizontal: 10,
+  <View style = {{padding: 5}}>
+  	<TouchableOpacity onPress={onPress}>
+        <View style={{
+        	backgroundColor: 'lightblue',
+          borderRadius: 10,
+          justifyContent: "center",
+        	alignItems: "center",
         }}>
-        	{text}
-        </Text>
-      </View>
+          <Text style = {{
+  			fontSize: 14,
+  			color: 'black',
+  			marginVertical: 5,
+  			marginHorizontal: 10,
+          }}>
+          	{text}
+          </Text>
+        </View>
     </TouchableOpacity>
+  </View>
 )
 
 renderIconButton = (src, onPress) => (

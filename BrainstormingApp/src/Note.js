@@ -19,6 +19,7 @@ import ImagePicker from 'react-native-image-picker';
 import BoardScreen from './BoardScreen';
 import styles from "./app.style";
 import {noteColor, borderColor} from './colors'
+import {renderButton, renderIconButton} from './RenderUtilities'
 //var noteColor = {'red': '#ff9999', 'pink': '#ff99c2', 'green': '#99ff99', 'blue': '#99ffff', 'yellow': '#ffff99'}
 //var borderColor = {'red': '#ff8080', 'pink': '#ff80b3', 'green': '#80ff80', 'blue': '#80ffff', 'yellow': '#ffff80'}
 //var COLOR = 'blue';
@@ -130,14 +131,6 @@ export default class Note extends Component {
     </TouchableOpacity>
   );
 
-   _renderButton = (text, onPress) => (
-    <TouchableOpacity onPress={onPress}>
-      <View style={styles.button}>
-        <Text>{text}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-
    _renderOpenNoteModal = () => (
     <View style={{
       backgroundColor: noteColor[this.state.newColor],
@@ -166,7 +159,7 @@ export default class Note extends Component {
         </Text>
         <Picker
           selectedValue={this.state.newNoteType}
-          style={{ height: 20, width: 100 }}
+          style={{ height: 20, width: 150 }}
           enabled = {this.isOwner? true : false}
           onValueChange={(newNoteType) => this.setState({newNoteType})}>
           <Picker.Item label="Text" value="text" />
@@ -244,7 +237,7 @@ export default class Note extends Component {
               <View style = {{flexDirection: 'row'}} >
                 <View style = {{flex: 1}}/>
                 <View style = {{flex: 4}}>
-                  {this._renderButton("OK", () => {
+                  {renderButton("OK", () => {
                     this.setState({ isVisibleOpenNoteModal: false, text: this.state.nextText, COLOR: this.state.newColor})
                    
                     console.log('color: '+this.state.newColor)
@@ -284,7 +277,7 @@ export default class Note extends Component {
                 <View style = {{flex: 1}}/>
 
                 <View style = {{flex: 4}}>
-                  {this._renderButton("Cancel", () => {
+                  {renderButton("Cancel", () => {
                     console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
                       console.log('tagSelection: '+JSON.stringify(this.state.tagSelection))  
                     this.setState({
@@ -305,7 +298,7 @@ export default class Note extends Component {
                 </View>  
                 <View style = {{flex: 1}}/>
                 <View style = {{flex: 4}}>
-                  {this._renderButton("Delete", () => {
+                  {renderButton("Delete", () => {
                     this.props.deleteNote(this.id)
                     this.setState({isVisibleOpenNoteModal: false})
                     this.props.setVisibleOpenNoteModal(false)
@@ -316,7 +309,7 @@ export default class Note extends Component {
               <View style = {{flexDirection: 'row'}}>
                 <View style = {{flex: 1}}/>
                 <View style = {{flex: 4}}>  
-                  {this._renderButton(this.props.getVoteStatus(this.id)? 'Unvote' : 'Vote', () => {
+                  {renderButton(this.props.getVoteStatus(this.id)? 'Unvote' : 'Vote', () => {
                     if(this.props.getVoteStatus(this.id)){
                       this.props.unvoteNote(this.id)
                     }
@@ -328,7 +321,7 @@ export default class Note extends Component {
                 <View style = {{flex: 1}}/>
                 <View style = {{flex: 9}}>
                   {
-                    this.state.newNoteType == 'image' && this._renderButton('Upload Image', () => {
+                    this.state.newNoteType == 'image' && renderButton('Upload Image', () => {
                       this.uploadPicture();
                     })
                   }
@@ -339,9 +332,19 @@ export default class Note extends Component {
             )
         }
         {
-          !this.isOwner && (
-            this._renderButton('OK', () => this.setState({isVisibleOpenNoteModal: false}))
-            )
+          !this.isOwner && 
+            renderButton(this.props.getVoteStatus(this.id)? 'Unvote' : 'Vote', () => {
+                    if(this.props.getVoteStatus(this.id)){
+                      this.props.unvoteNote(this.id)
+                    }
+                    else{
+                      this.props.voteNote(this.id)
+                    }
+                  })
+        }
+        {
+          !this.isOwner &&
+            renderButton('OK', () => this.setState({isVisibleOpenNoteModal: false}))      
         }
       
     </View>
@@ -373,7 +376,7 @@ export default class Note extends Component {
           </View>
         )
       })}
-      {this._renderButton("OK", () => {
+      {renderButton("OK", () => {
         this.setState({ visibleSelectTagsModal: false })
         let newTags = [];
         this.setState({newNoteTags: []})

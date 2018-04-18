@@ -63,6 +63,7 @@ class BoardScreen extends Component {
     }
     this.currentBoardWidth = 0;
     this.currentBoardHeight = 0;
+    this.pressExit = false;
     this.state = {
       board: null,
       openWebSocket: false,
@@ -576,22 +577,24 @@ class BoardScreen extends Component {
   }
 
   exitBoard() {
-    this.setState({
-      openWebSocket: false
-    })
-    var exitBoardRequest = {
-      from: 'Board',
-      code: 'exitBoard',
-      username: this.user.username,
-      boardId: this.props.navigation.state.params.boardId,
+    if(!this.pressExit){
+      this.setState({
+        openWebSocket: false
+      })
+      var exitBoardRequest = {
+        from: 'Board',
+        code: 'exitBoard',
+        username: this.user.username,
+        boardId: this.props.navigation.state.params.boardId,
+      }
+      var requestString = JSON.stringify(exitBoardRequest)
+      console.log('exitBoard')
+      this.ws.send(requestString)
+      this.props.navigation.navigate('Home', {
+        user: this.props.navigation.state.params.user
+      })
+      this.pressExit = true;
     }
-    var requestString = JSON.stringify(exitBoardRequest)
-    console.log('exitBoard')
-    this.ws.send(requestString)
-    this.props.navigation.navigate('Home', {
-      user: this.props.navigation.state.params.user
-    })
-    //this.ws.close()
   }
 
   startBoard() {
@@ -854,7 +857,7 @@ class BoardScreen extends Component {
         </Text>
         <Picker
           selectedValue={this.state.newNoteType}
-          style={{ height: 20, width: 100 }}
+          style={{ height: 20, width: 150 }}
           onValueChange={(newNoteType) => this.setState({newNoteType})}>
           <Picker.Item label="Text" value="text" />
           <Picker.Item label="Image" value="image" />
@@ -1339,7 +1342,7 @@ class BoardScreen extends Component {
                     //flex: 1 
                   }}>
                     <TouchableWithoutFeedback
-                      onPress={() => this.exitBoard()}
+                      onPressIn={() => this.exitBoard()}
                     >
                       <View>
                         <Text style = {{fontSize: 20, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
@@ -1582,7 +1585,14 @@ class BoardScreen extends Component {
     }
     else {
       return(
-        <View style={{flex: 1, flexDirection: 'row', backgroundColor: 'white',}}/>
+        <View style = {{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'white'
+        }}>
+          <Text>Loading..</Text>
+        </View>
       )
     }
   }

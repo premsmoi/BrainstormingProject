@@ -72,6 +72,11 @@ app.get('/', function(req, res) {
   res.send('INDEX');
 })
 
+app.get('/download/brainstormingapp', function(req, res){
+  var file = __dirname + '/files/brainstorming.apk';
+  res.download(file); // Set disposition and send it.
+});
+
 // This responds a POST request for the homepage
 app.post('/post', function(req, res) {
   console.log("Got a POST request for the homepage");
