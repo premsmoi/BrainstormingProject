@@ -682,7 +682,7 @@ class HomeScreen extends Component {
             <View style={{ 
               marginVertical: 10, 
               marginHorizontal: 20,
-              flex: 2,
+              flex: 3,
               justifyContent: 'center',
               alignItems: 'flex-end',
             }}>
