@@ -111,12 +111,16 @@ class HomeScreen extends Component {
 
       if (obj.body.code == 'getNotification') {
         console.log('I got notification')
-        //console.log('notification: ' + JSON.stringify(obj.body.notifications))
+        console.log('notification: ' + JSON.stringify(obj.body.notifications))
         this.setState({
           notifications: obj.body.notifications,
-          numberOfUnreadNotification: this.countUnreadNotification(),
-          currentLoad: ++this.state.currentLoad,
+        }, () => {
+          this.setState({
+            numberOfUnreadNotification: this.countUnreadNotification(),
+            currentLoad: ++this.state.currentLoad,
+          })
         })
+
       }
 
       if (obj.body.code == 'getNotificationTrigger') {
@@ -661,7 +665,7 @@ class HomeScreen extends Component {
                         height: 16,
                         borderRadius: 8,
                         backgroundColor: 'red',
-                        marginLeft: 24,
+                        marginLeft: 20,
                       }}>
                         <Text style={{
                           fontSize: 10, 
