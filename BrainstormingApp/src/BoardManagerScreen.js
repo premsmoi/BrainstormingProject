@@ -128,7 +128,7 @@ class BoardManagerScreen extends Component {
         from: 'BoardManager',
         code: 'boardAddTag',
         tag: this.state.newTag,
-        boardId: this.props.navigation.state.params.boardId
+        boardId: this.state.board._id
       }
       var requestString = JSON.stringify(newTagRequest)
       console.log('New Tag Request')
@@ -140,7 +140,7 @@ class BoardManagerScreen extends Component {
         from: 'BoardManager',
         code: 'boardDeleteTag',
         tag: tag,
-        boardId: this.props.navigation.state.params.boardId
+        boardId: this.state.board._id
       }
     var requestString = JSON.stringify(deleteTagRequest)
     console.log('Delete Tag Request')

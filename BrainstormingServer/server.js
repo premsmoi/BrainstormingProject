@@ -829,9 +829,11 @@ wsServer.on('connection', function connection(connection, request) {
               board: board,
             }
           })
-          if(obj.from == 'Board'){
-            connection.send(json)  
-          }
+          wsServer.clients.forEach(function each(client) {
+              if (client['boardId'] == connection['boardId']) {
+                client.send(json)
+              }
+            });
           
         })
       });
