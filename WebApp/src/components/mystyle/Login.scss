@@ -1,0 +1,17 @@
+.background {
+    background-color: #ffc100;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+}
+
+.login-window {
+    border-radius: 10px;
+    background-color: white;
+    width: 400px;
+    height: 500px;
+    position: fixed;
+    top: calc(50% - 500px/2);
+    left: calc(50% - 400px/2);
+    padding: 30px;
+}

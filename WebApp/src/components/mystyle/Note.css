@@ -1,0 +1,145 @@
+.container {
+    min-width: 100vw;
+    background-color: #EEE;
+    min-height: 70vh;
+    overflow: scroll;
+    position: relative;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    margin-right: 5vh;
+    margin-bottom: 5vh;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.menu-member {
+    margin: 10px;
+    color: black;
+    text-align: center;
+}
+
+.idea-box {
+    padding: 20px;
+    width: 300px;
+    min-height: 20%;
+    word-wrap: break-word;
+    position: absolute;
+}
+
+.input-idea {
+    top: 25vh;
+    left: 25vw;
+    width: 50vw;
+    height: 50vh;
+    background-color: #FFF;
+    position: fixed;
+    padding: 20px;
+}
+
+.color-panel {
+    display: flex;
+}
+
+.edit-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    background-color: rgba(0, 0, 0, 0);
+    cursor: pointer;
+}
+
+.move-button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    background-color: rgba(0, 0, 0, 0);
+    cursor: move;
+}
+
+.setting-button {
+    background-color: rgba(0, 0, 0, 0);
+    cursor: pointer;
+}
+
+.red {
+    margin: 5px;
+    background-color: lightsalmon;
+    width: 50px;
+    height: 50px;
+    :hover{
+        background-color: lightsalmon;
+    }
+    :after {
+        background-color: black;
+    }
+}
+
+.blue {
+    margin: 5px;
+    background-color: lightblue;
+    width: 50px;
+    height: 50px;
+    :hover{
+        background-color: lightblue;
+    }
+}
+
+.green {
+    margin: 5px;
+    background-color: lightgreen;
+    width: 50px;
+    height: 50px;
+    :hover{
+        background-color: lightgreen;
+    }
+}
+
+.yellow {
+    margin: 5px;
+    background-color: lightyellow;
+    width: 50px;
+    height: 50px;
+    :hover{
+        background-color: lightyellow;
+    }
+}
+
+.grey {
+    margin: 5px;
+    background-color: lightgrey;
+    width: 50px;
+    height: 50px;
+    :hover{
+        background-color: lightgrey;
+    }
+}
+
+.white {
+    margin: 5px;
+    background-color: white;
+    width: 50px;
+    height: 50px;
+}
+
+.new-idea {
+    width: 98% !important;
+    height: 25vh !important;
+}
+
+.red-text {
+    color: red;
+}
+
+.green-text {
+    color: green;
+}

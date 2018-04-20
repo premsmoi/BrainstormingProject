@@ -1,0 +1,16 @@
+.container {
+    width: auto;
+    background-color: #EEE;
+    display: flex;
+    flex-wrap: wrap;
+    height: 10vh;
+}
+
+.board-box {
+    margin: 20px;
+    padding: 20px;
+    width: 10%;
+    height: 10%;
+    word-wrap: break-word;
+    background-color: lightsalmon;
+}

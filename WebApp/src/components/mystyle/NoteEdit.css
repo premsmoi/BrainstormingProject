@@ -1,0 +1,38 @@
+.edit-panel {
+    position: fixed;
+    top: 25vh;
+    left: 25vw;
+    width: 50vw;
+    height: 50vh;
+    padding: 20px;
+    display: none;
+}
+
+.button-group {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}
+
+.save-button {
+    border-radius: 5px;
+    border: 1px #EEE;
+    background-image: linear-gradient(-180deg, #34d058 0%, #28a745 90%);
+    line-height: 30px;
+    color: white;
+    margin: 5px;
+}
+
+.delete-button {
+    border-radius: 5px;
+    border: 1px #EEE;
+    background-image: linear-gradient(-180deg, #db0000 0%, #b40000 90%);
+    line-height: 30px;
+    color: white;
+    margin: 5px;
+}
+
+.new-idea {
+    width: 98% !important;
+    height: 25vh !important;
+}
