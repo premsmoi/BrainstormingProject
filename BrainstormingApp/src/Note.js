@@ -33,9 +33,9 @@ export default class Note extends Component {
     this.id = this.props.id;
     this.writer = this.props.writer;
     this.isOwner = this.props.writer == this.props.getUser().username;
-    console.log('isOwner: '+this.isOwner)
-    console.log('writer: '+this.props.writer)
-    console.log('user: '+this.props.getUser().username)
+    //console.log('isOwner: '+this.isOwner)
+    //console.log('writer: '+this.props.writer)
+    //console.log('user: '+this.props.getUser().username)
     //this.COLOR = this.props.color;
     this.rectangle = (null : ?{ setNativeProps(props: Object): void });
     this.boardState = this.props.getState()
@@ -58,8 +58,9 @@ export default class Note extends Component {
       newNoteTags: this.props.tags,
       tagSelection: {},
       newTagSelection: {},
+      voteStatus: this.props.getVoteStatus(this.id),
     }
-    console.log('data in note: '+JSON.stringify(this.state.img.data))
+    //console.log('data in note: '+JSON.stringify(this.state.img.data))
     //console.log('newNoteTags: '+this.state.newNoteTags)
     this._rectangleStyles = {
       style: {
@@ -111,7 +112,7 @@ export default class Note extends Component {
       }
       else {
         let source = { uri: 'data:image/jpg;base64,'+response.data };
-        console.log('data: '+String(response.data))
+        //console.log('data: '+String(response.data))
         this.setState({
           newImgData: response.data, 
         });
@@ -309,12 +310,14 @@ export default class Note extends Component {
               <View style = {{flexDirection: 'row'}}>
                 <View style = {{flex: 1}}/>
                 <View style = {{flex: 4}}>  
-                  {renderButton(this.props.getVoteStatus(this.id)? 'Unvote' : 'Vote', () => {
-                    if(this.props.getVoteStatus(this.id)){
+                  {renderButton(this.state.voteStatus? 'Unvote' : 'Vote', () => {
+                    if(this.state.voteStatus){
                       this.props.unvoteNote(this.id)
+                      this.setState({voteStatus: false})
                     }
                     else{
                       this.props.voteNote(this.id)
+                      this.setState({voteStatus: true})
                     }
                   })}
                 </View>
@@ -333,18 +336,20 @@ export default class Note extends Component {
         }
         {
           !this.isOwner && 
-            renderButton(this.props.getVoteStatus(this.id)? 'Unvote' : 'Vote', () => {
-                    if(this.props.getVoteStatus(this.id)){
+            renderButton(this.state.voteStatus? 'Unvote' : 'Vote', () => {
+                    if(this.state.voteStatus){
                       this.props.unvoteNote(this.id)
+                      this.setState({voteStatus: false})
                     }
                     else{
                       this.props.voteNote(this.id)
+                      this.setState({voteStatus: true})
                     }
                   })
         }
         {
           !this.isOwner &&
-            renderButton('OK', () => this.setState({isVisibleOpenNoteModal: false}))      
+            renderButton('OK', () => this.setState({isVisibleOpenNoteModal: false}))
         }
       
     </View>

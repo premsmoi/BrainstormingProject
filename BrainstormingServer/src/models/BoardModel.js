@@ -47,6 +47,10 @@ var boardSchema = new Schema({
         type: Number,
         default: 300,
     },
+    timeRemaining: {
+        type: Number,
+        default: 300,
+    },
     goal: {
         type: Number,
         default: 1,
@@ -54,6 +58,10 @@ var boardSchema = new Schema({
     numberOfVote: {
         type: Number,
         default: 1,
+    },
+    start: {
+        type: Boolean,
+        default: false,
     }
 });
 //userSchema.plugin(uniqueValidator);

@@ -72,7 +72,7 @@ app.get('/', function(req, res) {
   res.send('INDEX');
 })
 
-app.get('/download/brainstormingapp', function(req, res){
+app.get('/download/brainstormingapp', function(req, res) {
   var file = __dirname + '/files/brainstorming.apk';
   res.download(file); // Set disposition and send it.
 });
@@ -565,25 +565,24 @@ wsServer.on('connection', function connection(connection, request) {
           })
 
         })
-      } else if (obj.code == 'boardGetTimer') {
+      } else if (obj.code == 'getTimeRemaining') {
         console.log(obj)
-        userList.getUserByUsername(obj.username, function(err, user) {
+        boardList.getBoardById(obj.boardId, function(err, board) {
           if (err)
             console.log(err)
-          user.boards.forEach(function(board) {
-            if (board.boardId == obj.boardId) {
-              var json = JSON.stringify({
-                body: {
-                  code: 'getTimer',
-                  timeRemaining: board.timeRemaining
-                }
-              })
-              connection.send(json)
-              //console.log(json)
+          var json = JSON.stringify({
+            body: {
+              code: 'getTimeRemaining',
+              timeRemaining: board.timeRemaining
             }
           })
-
+          wsServer.clients.forEach(function each(client) {
+            if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+              client.send(json)
+            }
+          });
         })
+
       } else if (obj.code == 'voteNote') {
         console.log(obj)
         userList.voteNote({
@@ -619,7 +618,11 @@ wsServer.on('connection', function connection(connection, request) {
                   code: 'getNotesTrigger'
                 }
               })
-              connection.send(json)
+              wsServer.clients.forEach(function each(client) {
+                if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+                  client.send(json)
+                }
+              });
             })
           })
         });
@@ -656,7 +659,11 @@ wsServer.on('connection', function connection(connection, request) {
                   code: 'getNotesTrigger'
                 }
               })
-              connection.send(json)
+              wsServer.clients.forEach(function each(client) {
+                if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+                  client.send(json)
+                }
+              });
             })
           })
         });
@@ -820,8 +827,8 @@ wsServer.on('connection', function connection(connection, request) {
       }, function(err, numAffected) {
         if (err)
           console.log(err)
-        boardList.getBoardById(obj.boardId, function(err, board){
-          if(err)
+        boardList.getBoardById(obj.boardId, function(err, board) {
+          if (err)
             console.log(err)
           var json = JSON.stringify({
             body: {
@@ -830,11 +837,11 @@ wsServer.on('connection', function connection(connection, request) {
             }
           })
           wsServer.clients.forEach(function each(client) {
-              if (client['boardId'] == connection['boardId']) {
-                client.send(json)
-              }
-            });
-          
+            if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+              client.send(json)
+            }
+          });
+
         })
       });
     }
@@ -891,14 +898,14 @@ wsServer.on('connection', function connection(connection, request) {
 });
 
 function countTimer() {
-  userList.countTimer(0, function(err, numAffected) {
+  boardList.countTimer(0, function(err, numAffected) {
     if (err)
       console.log(err)
     var now = new Date()
     dateFormat(now, 'default')
     //console.log(dateFormat(now, 'd mmmm yyyy HH:MM'))
   })
-  userList.setFinish(0, function(err, numAffected) {
+  boardList.setFinish(0, function(err, numAffected) {
     if (err)
       console.log(err)
   })

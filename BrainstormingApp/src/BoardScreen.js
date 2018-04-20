@@ -147,7 +147,10 @@ class BoardScreen extends Component {
       if (obj.body.code == 'getBoard') {
         console.log('I got board')
         this.setState({currentLoad: ++this.state.currentLoad})
-        this.setState({board: obj.body.board, timeRemaining: obj.body.board.limitedTime})
+        this.setState({
+          board: obj.body.board, 
+          timeRemaining: obj.body.board.timeRemaining
+        })
       }
 
       if (obj.body.code == 'getNotesTrigger') {
@@ -212,12 +215,13 @@ class BoardScreen extends Component {
         this.setState({currentLoad: ++this.state.currentLoad})
       }
 
-      if (obj.body.code == 'getTimer') {
+      if (obj.body.code == 'getTimeRemaining') {
         console.log('I got timer')
         this.setState({
-          timeRemaining: obj.body.timeRemaining
+          timeRemaining: obj.body.timeRemaining,
+          currentLoad: ++this.state.currentLoad,
         })
-        this.setState({currentLoad: ++this.state.currentLoad})
+        
       }
 
       if(obj.body.code == 'getUserSearchResult'){
@@ -285,12 +289,12 @@ class BoardScreen extends Component {
 
       var boardGetTimerRequest = {
         from: 'Board',
-        code: 'boardGetTimer',
+        code: 'getTimeRemaining',
         username: this.user.username,
         boardId: this.props.navigation.state.params.boardId,
       }
       var requestString = JSON.stringify(boardGetTimerRequest)
-      //this.ws.send(requestString)
+      this.ws.send(requestString)
 
       var getBoardRequest = {
         from: 'Board',
@@ -394,17 +398,35 @@ class BoardScreen extends Component {
 
 
   countTimer() {
-    //console.log('startedBoard: '+this.state.startedBoard)
-    if (this.state.startedBoard == 1 && this.state.timeRemaining > 0 && this.state.openWebSocket == true) {
-      var boardGetTimerRequest = {
-        from: 'Board',
-        code: 'boardGetTimer',
-        username: this.user.username,
-        boardId: this.props.navigation.state.params.boardId,
+    if (this.state.currentLoad >= this.totalLoad && this.state.openWebSocket == true) {
+
+      if(this.state.timeRemaining == 0){
+        this.updateBoard({
+          timeRemaining: this.state.board.limitedTime,
+        })
       }
-      var requestString = JSON.stringify(boardGetTimerRequest)
-      this.ws.send(requestString)
-      console.log('count timer')
+
+      if (this.state.board.timeRemaining != this.state.board.limitedTime) {
+        if (!this.state.board.start) {
+          this.updateBoard({
+            timeRemaining: this.state.board.limitedTime
+          })
+        }
+      }
+      //console.log('startedBoard: '+this.state.startedBoard)
+
+      if (this.state.board.start && this.state.timeRemaining > 0) {
+        var boardGetTimerRequest = {
+          from: 'Board',
+          code: 'getTimeRemaining',
+          username: this.user.username,
+          boardId: this.props.navigation.state.params.boardId,
+        }
+        var requestString = JSON.stringify(boardGetTimerRequest)
+        this.ws.send(requestString)
+        console.log('count timer')
+      }
+
     }
   }
 
@@ -600,10 +622,11 @@ class BoardScreen extends Component {
   startBoard() {
     var starttBoardRequest = {
       from: 'Board',
-      code: 'startBoard',
-      username: this.user.username,
+      code: 'updateBoard',
       boardId: this.props.navigation.state.params.boardId,
-      setTime: this.state.timeRemaining,
+      updatedObj: {
+        start: true,
+      }
     }
     var requestString = JSON.stringify(starttBoardRequest)
     console.log('Start Board !!!')
@@ -1270,7 +1293,7 @@ class BoardScreen extends Component {
     console.log('render')
    //console.log(new Date().getTime())
     //console.log('noteSearchQuery: '+this.state.noteSearchQuery)
-    if(this.state.currentLoad >= this.totalLoad || (this.state.currentLoad >= this.totalLoad - 1 && this.state.startedBoard == 0)){
+    if(this.state.currentLoad >= this.totalLoad ){
       return (
           <View style={{flex: 1, backgroundColor: 'white'}}>
             <Modal isVisible={this.state.visibleNewNoteModal}>
@@ -1367,7 +1390,7 @@ class BoardScreen extends Component {
                     flex: 1
                   }}>
                     <Text style = {{fontSize: 20, color: 'black'}}>
-                      {this.state.board.mode != 'timing'?  '' : (this.state.timeRemaining == 0? 'Time\'s up' : this.state.timeRemaining)}
+                      {this.state.board.hasTime?  (this.state.timeRemaining == 0? 'Time\'s up' : this.state.timeRemaining) : ''}
                     </Text>
                 </View>
                 <View style = {{flex: 1}}/>
@@ -1388,11 +1411,11 @@ class BoardScreen extends Component {
                     flex: 1 
                   }}>
                     {
-                          !this.state.startedBoard && this.state.board.mode == 'timing' 
+                          !this.state.board.start && this.state.board.hasTime 
                           &&  <TouchableWithoutFeedback
                                 onPress={() => {
                                   this.startBoard()
-                                  this.getBoardStartStatus()
+                                  //this.getBoardStartStatus()
                                 }}
                               >
                                 <View style ={{

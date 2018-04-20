@@ -11,7 +11,7 @@ import {
   Image,
 } from 'react-native'; 
 
-renderButton = (text, onPress) => (
+renderButton = (text, onPress,) => (
   <View style = {{padding: 5}}>
   	<TouchableOpacity onPress={onPress}>
         <View style={{

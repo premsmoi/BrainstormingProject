@@ -189,6 +189,36 @@ module.exports.updateBoard = function(obj, callback){
               }, callback)
 }
 
+
+module.exports.countTimer = function(boardId, callback) {
+  Board.update({ 
+        'start': true,
+        'timeRemaining': {
+          $gt: 0
+        }
+      }, {
+      $inc: {
+        'timeRemaining': -1
+      }
+    }, {
+      multi: true,
+    },
+    callback
+  )
+}
+
+exports.setFinish = function(obj, callback) {
+  Board.update({
+      'timeRemaining': 0
+    }, {
+      $set: {
+        'start': false,
+      }
+    },
+    callback
+  )
+}
+
 module.exports.list_all_boards = function(req, res) {
   Board.find({}, function(err, board) {
     if (err)

@@ -234,12 +234,8 @@ class BoardManagerScreen extends Component {
             }}>
               {
                 renderButton('Back', () => {
-                  this.props.navigation.navigate(
-                    'Board', {
-                      user: this.props.navigation.state.params.user,
-                      boardId: this.state.board._id,
-                    }
-                  )
+                  
+
                   var updateBoardRequest = {
                     from: 'BoardManager',
                     code: 'updateBoard',
@@ -247,7 +243,8 @@ class BoardManagerScreen extends Component {
                     updatedObj: {
                       hasTime: this.state.hasTime,
                       hasGoal: this.state.hasGoal,
-                      limitedTime: this.state.setTime,
+                      limitedTime: parseInt(this.state.setTime),
+                      timeRemaining: parseInt(this.state.setTime),
                       goal: this.state.goal,
                       mode: this.state.mode,
                       numberOfVote: this.state.numberOfVote,
@@ -255,13 +252,33 @@ class BoardManagerScreen extends Component {
                       description: this.state.description,
                     }
                   }
+                  if(this.state.board.start){
+                    updateBoardRequest = {
+                    from: 'BoardManager',
+                    code: 'updateBoard',
+                    boardId: this.state.board._id,
+                    updatedObj: {
+                      numberOfVote: this.state.numberOfVote,
+                      boardName: this.state.newBoardName,
+                      description: this.state.description,
+                    }
+                  }
+                  }
                   var requestString = JSON.stringify(updateBoardRequest)
-                  console.log('Set Board Time Request')
+                  console.log('Set BoardManager Time Request')
                   this.ws.send(requestString)
                   this.setState({
                     openWebSocket: false
                   })
                   this.ws.close()
+                  setTimeout( () => {
+                    this.props.navigation.navigate(
+                    'Board', {
+                      user: this.props.navigation.state.params.user,
+                      boardId: this.state.board._id,
+                    }
+                  )
+                  }, 0)
                 })
               }
             </View>
@@ -341,6 +358,7 @@ class BoardManagerScreen extends Component {
               <CheckBox
                 value={this.state.hasTime}
                 onValueChange={() => this.setState({ hasTime: !this.state.hasTime })}
+                disabled = {this.state.board.start}
               />
               <Text style={{
                 fontSize: 16, 
@@ -375,6 +393,7 @@ class BoardManagerScreen extends Component {
               <CheckBox
                 value={this.state.hasGoal}
                 onValueChange={() => this.setState({ hasGoal: !this.state.hasGoal })}
+                disabled = {this.state.board.start}
               />
               <Text style={{
                 fontSize: 16, 
