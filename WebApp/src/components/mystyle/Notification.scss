@@ -1,0 +1,29 @@
+.normal {
+
+}
+
+.reply {
+    
+}
+
+.noti-item {
+    width: 30vw;
+    word-wrap: break-word;
+    white-space: normal;
+    border-top: 1px solid #ddd;
+    a {
+        word-wrap: break-word;
+        white-space: normal !important;
+    }
+}
+
+.noti-menu {
+    height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-width: 30vw;
+}
+
+.unread {
+    background-color: #eee;
+}
