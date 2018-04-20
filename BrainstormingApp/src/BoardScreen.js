@@ -1387,13 +1387,17 @@ class BoardScreen extends Component {
                 <View style={{ 
                     justifyContent: 'center',
                     alignItems: 'center',
-                    flex: 1
+                    flex: 2
                   }}>
-                    <Text style = {{fontSize: 20, color: 'black'}}>
-                      {this.state.board.hasTime?  (this.state.timeRemaining == 0? 'Time\'s up' : this.state.timeRemaining) : ''}
-                    </Text>
+                    <View style = {{flexDirection: 'row'}}>
+                      <Text style = {{fontSize: 16, color: 'gray', marginTop: 3}}>
+                        {this.state.board.hasTime?  (this.state.timeRemaining == 0? '' : 'Time Remaining:') : ''}
+                      </Text>
+                      <Text style = {{fontSize: 20, color: 'black', marginHorizontal: 5}}>
+                        {this.state.board.hasTime?  (this.state.timeRemaining == 0? 'Time\'s up' : this.state.timeRemaining) : ''}
+                      </Text>
+                    </View>
                 </View>
-                <View style = {{flex: 1}}/>
                  <View style={{ 
                     //marginVertical: 10, 
                     //marginHorizontal: 20,

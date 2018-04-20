@@ -293,7 +293,7 @@ export default class Note extends Component {
                       console.log('newTagSelection: '+JSON.stringify(this.state.newTagSelection))
                       console.log('tagSelection: '+JSON.stringify(this.state.tagSelection))  
                     })
-                    
+                    this.props.updateNote({id: this.id})
                     this.props.setVisibleOpenNoteModal(false)
                   })}
                 </View>  
@@ -313,11 +313,11 @@ export default class Note extends Component {
                   {renderButton(this.state.voteStatus? 'Unvote' : 'Vote', () => {
                     if(this.state.voteStatus){
                       this.props.unvoteNote(this.id)
-                      this.setState({voteStatus: false})
+                      this.setState({voteStatus: false, voteScore: this.state.voteScore--})
                     }
                     else{
                       this.props.voteNote(this.id)
-                      this.setState({voteStatus: true})
+                      this.setState({voteStatus: true, voteScore: this.state.voteScore++})
                     }
                   })}
                 </View>
@@ -339,17 +339,22 @@ export default class Note extends Component {
             renderButton(this.state.voteStatus? 'Unvote' : 'Vote', () => {
                     if(this.state.voteStatus){
                       this.props.unvoteNote(this.id)
-                      this.setState({voteStatus: false})
+                      this.setState({voteStatus: false, voteScore: this.state.voteScore--})
                     }
                     else{
                       this.props.voteNote(this.id)
-                      this.setState({voteStatus: true})
+                      this.setState({voteStatus: true, voteScore: this.state.voteScore++})
                     }
                   })
         }
         {
           !this.isOwner &&
-            renderButton('OK', () => this.setState({isVisibleOpenNoteModal: false}))
+            renderButton('OK', () => {
+              this.setState({isVisibleOpenNoteModal: false})
+              this.props.updateNote({id: this.id})
+              this.props.setVisibleOpenNoteModal(false)
+
+            })
         }
       
     </View>

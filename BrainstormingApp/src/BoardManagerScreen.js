@@ -387,7 +387,8 @@ class BoardManagerScreen extends Component {
                 underlineColorAndroid = {'black'}
               />
             </View>
-            <View style = {{
+            {/*
+              <View style = {{
               flexDirection: 'row',
             }}>
               <CheckBox
@@ -422,6 +423,7 @@ class BoardManagerScreen extends Component {
                 underlineColorAndroid = {'black'}
               />
             </View>
+            */}
           </View>
           <View style = {{marginLeft: 30}}>
             <View style = {{flexDirection: 'row'}}>
