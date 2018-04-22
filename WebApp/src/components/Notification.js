@@ -12,12 +12,13 @@ class Notification extends Component {
             read: false,
             unreadNotification: 0,
             notifications: []
-            //notifications: [{ notificationType: "normal", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "reply", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestReplyNoti", read: false, date: "25-01-2556" }, { notificationType: "normal", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestNoti", read: false, date: "25-01-2556" }, { notificationType: "normal", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestNoti", read: false, date: "25-01-2556" }, { notificationType: "normal", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "TestNoti", read: false, date: "25-01-2556" }, { notificationType: "normal", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "VeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLong", read: false, date: "25-01-2556" }, { notificationType: "normal", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "VeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLong", read: false, date: "25-01-2556" }, { notificationType: "normal", boardName: "Test", boardId: "5ad4150ea779a349659475fb", user: "Emerald01", detail: "VeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLongVeryVeryVeryVeryLong", read: false, date: "25-01-2556" }]
         };
         this.detectDropdown = this.detectDropdown.bind(this);
         this.countUnreadNotification = this.countUnreadNotification.bind(this);
         this.read = this.read.bind(this);
         this.acceptInvite = this.acceptInvite.bind(this);
+        this.readReply = this.readReply.bind(this);
+        this.declineInvite = this.declineInvite.bind(this);
     }
 
     countUnreadNotification() {
@@ -25,31 +26,29 @@ class Notification extends Component {
         this.state.notifications.map(function (noti) {
             if (noti.read === false) {
                 read++;
-                //console.log(read);
             }
         });
-        //console.log('read: '+read);
         return read;
     }
 
     acceptInvite(e, noti) {
         e.preventDefault();
         this.props.acceptInvite(noti);
-        //console.log(noti);
+
+        this.readReply(noti);
+    }
+
+    declineInvite(e, noti) {
+        e.preventDefault();
+        this.readReply(noti);
     }
 
     componentWillMount() {
-        //this.setState({ notifications: this.props.notifications });
-        this.setState({ unreadNotification: this.props.unreadNotification, notifications: this.props.notifications})
-        //var self=this;
-        //this.setState({ unreadNotification: this.countUnreadNotification() });
+        this.setState({ unreadNotification: this.props.unreadNotification, notifications: this.props.notifications });
     }
 
     componentDidMount() {
-        //this.setState({ notifications: this.props.notifications });
-        this.setState({ unreadNotification: this.props.unreadNotification, notifications: this.props.notifications })
-        //var self=this;
-        //this.setState({ unreadNotification: this.countUnreadNotification() });
+        this.setState({ unreadNotification: this.props.unreadNotification, notifications: this.props.notifications });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -61,17 +60,24 @@ class Notification extends Component {
     read() {
         var self = this;
         this.state.notifications.map(function (notification) {
-            if (notification.read === false) {
+            if (notification.read === false && notification.notificationType !== 'reply') {
                 self.props.readNotification(notification);
             }
-        })
+        });
+    }
+
+    readReply(noti) {
+        if (noti.read === false) {
+            this.props.readNotification(noti);
+        }
+        this.read();
     }
 
     detectDropdown(e) {
         e.preventDefault();
         const cn = e.target.parentNode.className;
         if (cn.indexOf("open") === -1 && this.state.read === false) {
-            this.setState({read: true});
+            this.setState({ read: true });
             console.log(this.state.unreadNotification);
         }
         if (cn.indexOf("open") !== -1 && this.state.read === true && this.state.unreadNotification > 0) {
@@ -79,40 +85,10 @@ class Notification extends Component {
                 this.read();
                 console.log("done");
             }
-            this.setState({read: false});
+            this.setState({ read: false });
         }
     }
 
-    //<MenuItem eventKey="1">Action</MenuItem>
-    //<MenuItem eventKey="2">Another action</MenuItem>
-    //<MenuItem eventKey="3" active>
-    //    Active Item
-    //                    </MenuItem>
-    //<MenuItem divider />
-    //<MenuItem eventKey="4">Separated link</MenuItem>
-
-
-    //<MenuItem eventKey={index.toString()} key={index.toString()} className={noti.notificationType === 'reply' ? "reply" : "normal"}>
-    //{noti.detail}
-    //</MenuItem>
-    //<MenuItem divider />
-
-    //    {
-    //    this.state.notifications.map((noti, index) => {
-    //        if (noti.notificationType === 'reply') {
-    //            return (<MenuItem eventKey={index.toString()} key={index.toString()}>
-    //                {noti.detail}
-    //                <Button>Accept</Button>
-    //                <Button>Decline</Button>
-    //            </MenuItem>);
-    //        }
-    //        else {
-    //            return (<MenuItem eventKey={index.toString()} key={index.toString()}>
-    //                {noti.detail}
-    //            </MenuItem>);
-    //        }
-    //    })
-    //}
     render() {
         return (
             <div>
@@ -124,10 +100,10 @@ class Notification extends Component {
                     <Dropdown.Menu className="super-colors noti-menu">
                         {this.state.notifications.map((noti, index) => {
                             if (noti.notificationType === 'reply') {
-                                return (<MenuItem eventKey={index.toString()} key={index.toString()} className={(noti.read === false) ? 'noti-item unread' : 'noti-item'}>
+                                return (<MenuItem eventKey={index.toString()} key={index.toString()} className={(noti.read === false) ? 'noti-item unread' : 'noti-item read'}>
                                     {noti.detail}
                                     <Button onClick={(e) => this.acceptInvite(e, noti)}>Accept</Button>
-                                    <Button>Decline</Button>
+                                    <Button onClick={(e) => this.declineInvite(e, noti)}>Decline</Button>
                                 </MenuItem>);
                             }
                             else {

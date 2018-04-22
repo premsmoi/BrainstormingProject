@@ -7,29 +7,12 @@ class UserList extends Component {
         super(props);
 
         this.state = {
-            users: []
+            users: [],
+            invited: false
         }
 
         this.invite = this.invite.bind(this);
         this.setInvitedUser = this.setInvitedUser.bind(this);
-    }
-
-    componentWillMount() {
-        //window.fetch('http://127.0.0.1:3001/user_list', {
-        //    method: 'GET',
-        //    headers: {
-        //        "Content-Type": "application/json"
-        //    },
-        //    credentials: "same-origin"
-        //}).then(res => { return res.json() })
-        //    .then((data) => {
-        //        //                    console.log(data);
-        //        const arr = data;
-        //        this.setState({ users: arr }, () => {
-        //            console.log(this.state.users);
-        //        });
-        //    });
-        //this.setState({ users: this.props.userSearchResult});
     }
 
     componentWillReceiveProps(nextProps) {
@@ -41,6 +24,7 @@ class UserList extends Component {
     invite(e) {
         e.preventDefault();
         this.props.inviteUser();
+        this.setState({invited: true});
     }
 
     setInvitedUser(e, username) {
@@ -53,8 +37,9 @@ class UserList extends Component {
             <div className="block">
                 {this.state.users.map((user, index) =>
                     <div key={user.username} className="list relative">{user.username}
-                        <Button bsSize="xsmall" style={{ display: user.joined ? 'none' : 'block', float: 'right' }} onClick={this.invite} onMouseOver={(e) => this.setInvitedUser(e, user.username)}>invite</Button>
+                        <Button bsSize="xsmall" style={{ display: user.joined ? 'none' : (this.state.invited === true ? 'none' : 'block'), float: 'right' }} onClick={this.invite} onMouseOver={(e) => this.setInvitedUser(e, user.username)}>invite</Button>
                         <span style={{ display: user.joined ? 'block' : 'none', float: 'right' }}>joined</span>
+                        <span style={{ display: this.state.invited === true ? 'block' : 'none', float: 'right' }}>invite sent</span>
                     </div>
                 )}
             </div>

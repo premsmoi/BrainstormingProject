@@ -5,15 +5,11 @@ import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import Auth from './Auth';
-//import { withCookies, Cookies } from 'react-cookie';
-//import { instanceOf } from 'prop-types';
+
+//const ip = 'localhost:3001';
+const ip = '54.169.35.33:8080';
 
 class Login extends Component {
-
-    //    static propTypes = {
-    //        cookies: instanceOf(Cookies).isRequired
-    //    };
-
     constructor(props) {
         super(props);
         this.state = {
@@ -23,24 +19,6 @@ class Login extends Component {
         this.login = this.login.bind(this);
         this.handleChange = this.handleChange.bind(this);
         //this.Auth = new Auth();
-    }
-
-    componentWillMount() {
-        //        const { cookies } = this.props;
-
-        //        if(cookies.get('username')) {
-        //            this.setState({username: cookies.get('username')});
-        //        }
-        //        window.localStorage.setItem('test','hello');
-        //        console.log(window.localStorage.getItem('test'));
-    }
-
-    isAuthenticated() {
-        //        const { cookies } = this.props;
-        //        
-        //        if(cookies.get('username')) {
-        //            return true;
-        //        }
     }
 
     login(e) {
@@ -53,7 +31,7 @@ class Login extends Component {
 
         //this.Auth.login(this.state.username, this.state.password);
 
-        window.fetch('http://54.169.35.33:8080/login', {
+        window.fetch('http://'+ip+'/login', {
             method: "POST",
             body: JSON.stringify(params),
             headers: {

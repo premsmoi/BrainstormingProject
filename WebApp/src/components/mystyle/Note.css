@@ -26,10 +26,11 @@
 
 .idea-box {
     padding: 20px;
-    width: 300px;
-    min-height: 20%;
+    width: 150px;
+    min-height: 150px;
     word-wrap: break-word;
     position: absolute;
+    border: 1px solid #AAA;
 }
 
 .input-idea {
@@ -68,9 +69,9 @@
 
 .vote {
     position: absolute;
-    right: 0;
+    right: 5px;
     bottom: 0;
-    height: 30px;
+    height: 20px;
 }
 
     .vote span {
@@ -89,76 +90,35 @@
 
 .red {
     margin: 5px;
-    background-color: lightsalmon;
+    background-color: #ff9999;
     width: 50px;
     height: 50px;
-    : hover
-
-{
-    background-color: lightsalmon;
-}
-
-:after {
-    background-color: black;
-}
-
 }
 
 .blue {
     margin: 5px;
-    background-color: lightblue;
+    background-color: #ff99c2;
     width: 50px;
     height: 50px;
-    : hover
-
-{
-    background-color: lightblue;
-}
-
 }
 
 .green {
     margin: 5px;
-    background-color: lightgreen;
+    background-color: #99ff99;
     width: 50px;
     height: 50px;
-    : hover
-
-{
-    background-color: lightgreen;
-}
-
 }
 
 .yellow {
     margin: 5px;
-    background-color: lightyellow;
+    background-color: #99ffff;
     width: 50px;
     height: 50px;
-    : hover
-
-{
-    background-color: lightyellow;
-}
-
 }
 
 .grey {
     margin: 5px;
-    background-color: lightgrey;
-    width: 50px;
-    height: 50px;
-    : hover
-
-{
-    background-color: lightgrey;
-}
-
-}
-
-.white {
-    margin: 5px;
-    background-color: white;
+    background-color: #ffff99;
     width: 50px;
     height: 50px;
 }

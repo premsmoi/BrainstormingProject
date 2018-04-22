@@ -1,9 +1,7 @@
 .normal {
-
 }
 
 .reply {
-    
 }
 
 .noti-item {
@@ -11,6 +9,7 @@
     word-wrap: break-word;
     white-space: normal;
     border-top: 1px solid #ddd;
+
     a {
         word-wrap: break-word;
         white-space: normal !important;
@@ -26,4 +25,8 @@
 
 .unread {
     background-color: #eee;
+}
+
+.read button {
+    display: none;
 }

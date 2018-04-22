@@ -6,6 +6,9 @@ import './mystyle/General.scss';
 import { Button, Modal } from 'react-bootstrap';
 import './mystyle/HeadNav.css';
 
+//const ip = 'localhost:3001';
+const ip = '54.169.35.33:8080';
+
 class Home extends Component {
     constructor(props) {
         super(props);
@@ -19,7 +22,6 @@ class Home extends Component {
             unreadNotification: 0,
             name: ''
         }
-        //        this.show = this.show.bind(this);
         this.createBoard = this.createBoard.bind(this);
         this.closeCreateModal = this.closeCreateModal.bind(this);
         this.openCreateModal = this.openCreateModal.bind(this);
@@ -35,7 +37,7 @@ class Home extends Component {
         this.logout = this.logout.bind(this);
         this.goHome = this.goHome.bind(this);
 
-        this.ws = new WebSocket('ws://54.169.35.33:8080/');
+        this.ws = new WebSocket('ws://'+ip+'/');
         var self = this;
         this.ws.onopen = function () {
             var req = {
@@ -79,7 +81,7 @@ class Home extends Component {
                     });
                 });
                 console.log(self.countUnreadNotification());
-            } else if (message.body.code == 'getNotificationTrigger') {
+            } else if (message.body.code === 'getNotificationTrigger') {
                 console.log('I got notification trigger')
                 self.getNotification()
             }
@@ -87,19 +89,7 @@ class Home extends Component {
     }
 
     componentWillMount() {
-        //        var req = {
-        //                from: 'Home',
-        //                code: 'tagUser',
-        //                username: 'this.props.location.state.user'
-        //            }
-        //            var json = JSON.stringify(req);
-        //            this.ws.send(json);
         this.setState({ username: this.props.location.state.username, name: this.props.location.state.name });
-    }
-
-    componentDidMount() {
-        //console.log(this.props.location.state.username);
-        //this.setState({ username: this.props.location.state.username });
     }
 
     openCreateModal() {
@@ -173,15 +163,15 @@ class Home extends Component {
     }
 
     countUnreadNotification() {
-        var count = 0
-        console.log(this.state.notifications)
+        var count = 0;
+        console.log(this.state.notifications);
         this.state.notifications.map(function (notification) {
             if (!notification.read) {
-                count++
+                count++;
             }
-        })
-        console.log('count: ' + count)
-        return count
+        });
+        console.log('count: ' + count);
+        return count;
     }
 
     acceptInvite(notification) {
@@ -191,10 +181,9 @@ class Home extends Component {
             username: this.state.username,
             boardId: notification.boardId,
             boardName: notification.boardName,
-        }
-        var requestString = JSON.stringify(acceptInviteRequest)
-        //console.log('props: '+this.props)
-        this.ws.send(requestString)
+        };
+        var requestString = JSON.stringify(acceptInviteRequest);
+        this.ws.send(requestString);
     }
 
     readNotification(notification) {
@@ -203,10 +192,9 @@ class Home extends Component {
             code: 'readNotification',
             id: notification._id,
             username: this.state.username,
-        }
-        var requestString = JSON.stringify(readNotificationRequest)
-        //console.log('props: '+this.props)
-        this.ws.send(requestString)
+        };
+        var requestString = JSON.stringify(readNotificationRequest);
+        this.ws.send(requestString);
     }
 
     setUnreadNotification(a) {
@@ -216,7 +204,7 @@ class Home extends Component {
     createBoard(e) {
         e.preventDefault();
         var self = this;
-        window.fetch('http://54.169.35.33:8080/create_board', {
+        window.fetch('http://'+ip+'/create_board', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -226,14 +214,13 @@ class Home extends Component {
         }).then((res) => res.json()).then((text) => {
             console.log(text);
             if (text.status === 1) {
-                window.fetch('http://54.169.35.33:8080/user_add_board', {
+                window.fetch('http://'+ip+'/user_add_board', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ username: self.state.username, newBoardId: text.newBoardId })
                 }).then(res => res.json()).then((result) => {
-                    //console.log(result);
                     self.getUser();
                     self.closeCreateModal();
                     self.setState({ boardNameInput: '' });
@@ -243,14 +230,12 @@ class Home extends Component {
     }
 
     logout() {
-        console.log(this.state.user.username + ' -> Logout');
-        window.fetch('http://54.169.35.33:8080/logout')
+        window.fetch('http://'+ip+'/logout')
             .then((response) => {
                 const location = {
                     pathname: '/login'
                 };
                 this.props.history.push(location);
-                //console.log(response);
                 return response.json()
             })
             .catch((error) => {

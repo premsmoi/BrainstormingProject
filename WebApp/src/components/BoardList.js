@@ -11,7 +11,11 @@ class BoardList extends Component {
             boards: [],
             username: ''
         };
+        this.fetchBoard = this.fetchBoard.bind(this);
         this.accessBoard = this.accessBoard.bind(this);
+    }
+
+    fetchBoard() {
     }
 
     accessBoard(e, name, id) {
@@ -26,6 +30,10 @@ class BoardList extends Component {
     componentWillMount() {
         console.log(this.props.boards);
         this.setState({ boards: this.props.boards });
+    }
+
+    componentDidMount() {
+        //this.fetchBoard();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -43,7 +51,7 @@ class BoardList extends Component {
                 {this.state.boards.map((obj) =>
                     <Link to={{ pathname: "/view/" + obj._id.toString(), state: {boardName: obj.boardName, username: this.state.username, name: this.state.name} }} key={obj._id} id={obj._id.toString()} className="board-box" onClick={(e) => this.accessBoard(e, obj.boardName, obj._id.toString())}>
                         <div>{obj.boardName}</div>
-                        <Button bsSize='xsmall' className='flex-right' style={{display: obj.facilitator === this.props.username ? "block" : "none"}} onClick={(e) => { this.props.deleteBoard(e, obj._id) }}>delete</Button>
+                        <Button bsSize='xsmall' className='flex-right' bsStyle='danger' style={{display: obj.facilitator === this.props.username ? "block" : "none"}} onClick={(e) => { this.props.deleteBoard(e, obj._id) }}>delete</Button>
                     </Link>)}
             </div>
         );

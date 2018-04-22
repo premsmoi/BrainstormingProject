@@ -23,14 +23,33 @@ class TagPicker extends Component {
         this.setNoteTag = this.setNoteTag.bind(this);
         this.sendNoteTag = this.sendNoteTag.bind(this);
     }
-
+    
     componentDidMount() {
-        //this.setState({ items: this.props.tags });
+        this.setState({ items: this.props.tags });
 
-        //const tags_num = this.state.items.map((item) => {
-        //    return 0;
-        //});
-        //this.setState({ tags_num: tags_num });
+        const tags_num = [];
+        if (this.props.tags_of_note !== undefined) {
+            console.log('edit');
+            this.setState({ tags_of_note: this.props.tags_of_note, hasNotes: true });
+
+            this.props.tags.map((item, index) => {
+                if (this.props.tags_of_note.indexOf(item) > -1) {
+                    console.log(index);
+                    tags_num.push(1);
+                }
+                else {
+                    tags_num.push(0);
+                }
+            });
+            this.setState({ tags_num: tags_num });
+        }
+
+        else {
+            this.props.tags.map((item) => {
+                tags_num.push(0);
+            });
+            this.setState({ tags_num: tags_num });
+        }
     }
 
     componentWillReceiveProps(nextProps) {
