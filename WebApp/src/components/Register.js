@@ -62,20 +62,17 @@ class Register extends Component {
             },
             credentials: "same-origin"
         })
-            .then((response) => {
-                var body = JSON.parse(response._bodyText);
-                console.log(body)
-                console.log(body['status'])
+            .then((res) => res.json()).then((body) => {
                 if (body['status'] === 0) {
+                    alert("Register incomplete! please try again");
+                } else {
                     alert("Register complete");
                     const location = {
                         pathname: '/login'
                     };
                     self.props.history.push(location);
-                } else {
-                    alert("Register incomplete! please try again");
+                    console.log(body);
                 }
-                return response.json()
             })
             .catch((error) => {
                 throw error;
