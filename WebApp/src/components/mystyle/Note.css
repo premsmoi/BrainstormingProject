@@ -66,6 +66,22 @@
     cursor: move;
 }
 
+.vote {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: 30px;
+}
+
+    .vote span {
+        margin: 3px;
+        cursor: pointer;
+    }
+
+.voted {
+    background-color: grey;
+}
+
 .setting-button {
     background-color: rgba(0, 0, 0, 0);
     cursor: pointer;
@@ -76,12 +92,16 @@
     background-color: lightsalmon;
     width: 50px;
     height: 50px;
-    :hover{
-        background-color: lightsalmon;
-    }
-    :after {
-        background-color: black;
-    }
+    : hover
+
+{
+    background-color: lightsalmon;
+}
+
+:after {
+    background-color: black;
+}
+
 }
 
 .blue {
@@ -89,9 +109,12 @@
     background-color: lightblue;
     width: 50px;
     height: 50px;
-    :hover{
-        background-color: lightblue;
-    }
+    : hover
+
+{
+    background-color: lightblue;
+}
+
 }
 
 .green {
@@ -99,9 +122,12 @@
     background-color: lightgreen;
     width: 50px;
     height: 50px;
-    :hover{
-        background-color: lightgreen;
-    }
+    : hover
+
+{
+    background-color: lightgreen;
+}
+
 }
 
 .yellow {
@@ -109,9 +135,12 @@
     background-color: lightyellow;
     width: 50px;
     height: 50px;
-    :hover{
-        background-color: lightyellow;
-    }
+    : hover
+
+{
+    background-color: lightyellow;
+}
+
 }
 
 .grey {
@@ -119,9 +148,12 @@
     background-color: lightgrey;
     width: 50px;
     height: 50px;
-    :hover{
-        background-color: lightgrey;
-    }
+    : hover
+
+{
+    background-color: lightgrey;
+}
+
 }
 
 .white {

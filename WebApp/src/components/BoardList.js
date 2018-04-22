@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { Button } from 'react-bootstrap';
 import './mystyle/Board.css';
 import axios from 'axios';
 
@@ -64,7 +65,7 @@ class BoardList extends Component {
     componentWillReceiveProps(nextProps) {
         //console.log(nextProps.boards);
         if (nextProps !== this.props) {
-            this.setState({ boards: nextProps.boards, username: nextProps.username });
+            this.setState({ boards: nextProps.boards, username: nextProps.username, name: nextProps.name });
         }
     }
 
@@ -74,9 +75,9 @@ class BoardList extends Component {
         return (
             <div className="container">
                 {this.state.boards.map((obj) =>
-                    <Link to={{ pathname: "/view/" + obj._id.toString(), state: {boardName: obj.boardName, username: this.state.username} }} key={obj._id} id={obj._id.toString()} className="board-box" onClick={(e) => this.accessBoard(e, obj.boardName, obj._id.toString())}>
+                    <Link to={{ pathname: "/view/" + obj._id.toString(), state: {boardName: obj.boardName, username: this.state.username, name: this.state.name} }} key={obj._id} id={obj._id.toString()} className="board-box" onClick={(e) => this.accessBoard(e, obj.boardName, obj._id.toString())}>
                         <div>{obj.boardName}</div>
-                        <button className='flex-right' onClick={(e) => { this.props.deleteBoard(e, obj._id) }}>delete</button>
+                        <Button bsSize='xsmall' className='flex-right' style={{display: obj.facilitator === this.props.username ? "block" : "none"}} onClick={(e) => { this.props.deleteBoard(e, obj._id) }}>delete</Button>
                     </Link>)}
             </div>
         );

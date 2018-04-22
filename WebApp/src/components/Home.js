@@ -4,6 +4,7 @@ import Notification from './Notification';
 import './mystyle/Home.scss';
 import './mystyle/General.scss';
 import { Button, Modal } from 'react-bootstrap';
+import './mystyle/HeadNav.css';
 
 class Home extends Component {
     constructor(props) {
@@ -15,7 +16,8 @@ class Home extends Component {
             boards: [],
             createModal: false,
             notifications: [],
-            unreadNotification: 0
+            unreadNotification: 0,
+            name: ''
         }
         //        this.show = this.show.bind(this);
         this.createBoard = this.createBoard.bind(this);
@@ -31,8 +33,9 @@ class Home extends Component {
         this.readNotification = this.readNotification.bind(this);
         this.setUnreadNotification = this.setUnreadNotification.bind(this);
         this.logout = this.logout.bind(this);
+        this.goHome = this.goHome.bind(this);
 
-        this.ws = new WebSocket('ws://54.169.35.33:8080/');
+        this.ws = new WebSocket('ws://localhost:3001/');
         var self = this;
         this.ws.onopen = function () {
             var req = {
@@ -91,7 +94,7 @@ class Home extends Component {
         //            }
         //            var json = JSON.stringify(req);
         //            this.ws.send(json);
-        this.setState({ username: this.props.location.state.username });
+        this.setState({ username: this.props.location.state.username, name: this.props.location.state.name });
     }
 
     componentDidMount() {
@@ -105,6 +108,15 @@ class Home extends Component {
 
     closeCreateModal() {
         this.setState({ createModal: false });
+    }
+
+    goHome() {
+        var self = this;
+        const location = {
+            pathname: '/home',
+            state: { username: self.state.username, name: self.state.name }
+        };
+        this.props.history.push(location);
     }
 
     handleChange(e) {
@@ -204,7 +216,7 @@ class Home extends Component {
     createBoard(e) {
         e.preventDefault();
         var self = this;
-        window.fetch('http://54.169.35.33:8080/create_board', {
+        window.fetch('http://localhost:3001/create_board', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -214,7 +226,7 @@ class Home extends Component {
         }).then((res) => res.json()).then((text) => {
             console.log(text);
             if (text.status === 1) {
-                window.fetch('http://54.169.35.33:8080/user_add_board', {
+                window.fetch('http://localhost:3001/user_add_board', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -231,9 +243,14 @@ class Home extends Component {
     }
 
     logout() {
-        fetch('http://54.169.35.33:8080/logout')
+        console.log(this.state.user.username + ' -> Logout');
+        //fetch('http://10.0.2.2:8080/logout')
+        fetch('http://localhost:3001/logout')
             .then((response) => {
-                this.props.navigation.navigate('Login')
+                const location = {
+                    pathname: '/login'
+                };
+                this.props.history.push(location);
                 //console.log(response);
                 return response.json()
             })
@@ -246,6 +263,10 @@ class Home extends Component {
     render() {
         return (
             <div>
+                <div className="Nav">
+                    <div className="Nav-member" onClick={this.goHome} style={{ cursor: 'pointer' }}>Home</div>
+                    <div className="Nav-member" onClick={this.logout} style={{ cursor: 'pointer' }}>Log out</div>
+                </div>
                 <div className="flex flex-inline header">
                     <h1>Hello {this.state.username}</h1>
                     <Notification notifications={this.state.notifications} unreadNotification={this.state.unreadNotification} readNotification={this.readNotification} setUnreadNotification={this.setUnreadNotification} getNotification={this.getNotification} acceptInvite={this.acceptInvite} ws={this.ws} />
@@ -254,7 +275,7 @@ class Home extends Component {
                     <h4>My Board</h4>
                     <Button bsSize='small' bsStyle='primary' className='lrmargin' onClick={this.openCreateModal}>create board</Button>
                 </div>
-                <BoardList boards={this.state.boards} deleteBoard={this.deleteBoard} username={this.state.username} />
+                <BoardList boards={this.state.boards} deleteBoard={this.deleteBoard} username={this.state.username} name={this.state.name}/>
                 <Modal show={this.state.createModal} onHide={this.closeCreateModal}>
                     <Modal.Header>Create Board</Modal.Header>
                     <Modal.Body>
