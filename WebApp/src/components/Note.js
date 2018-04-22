@@ -69,7 +69,7 @@ class NoteView extends Component {
         this.logout = this.logout.bind(this);
         this.goHome = this.goHome.bind(this);
 
-        this.ws = new WebSocket('ws://localhost:3001/');
+        this.ws = new WebSocket('ws://54.169.35.33:8080/');
         var self = this;
 
         this.ws.onopen = function () {
@@ -183,7 +183,7 @@ class NoteView extends Component {
     }
 
     logout() {
-        fetch('http://127.0.0.1:3001/logout')
+        window.fetch('http://54.169.35.33:8080/logout')
             .then((response) => {
                 const location = {
                     pathname: '/login'

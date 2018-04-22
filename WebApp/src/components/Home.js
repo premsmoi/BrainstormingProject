@@ -35,7 +35,7 @@ class Home extends Component {
         this.logout = this.logout.bind(this);
         this.goHome = this.goHome.bind(this);
 
-        this.ws = new WebSocket('ws://localhost:3001/');
+        this.ws = new WebSocket('ws://54.169.35.33:8080/');
         var self = this;
         this.ws.onopen = function () {
             var req = {
@@ -216,7 +216,7 @@ class Home extends Component {
     createBoard(e) {
         e.preventDefault();
         var self = this;
-        window.fetch('http://localhost:3001/create_board', {
+        window.fetch('http://54.169.35.33:8080/create_board', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -226,7 +226,7 @@ class Home extends Component {
         }).then((res) => res.json()).then((text) => {
             console.log(text);
             if (text.status === 1) {
-                window.fetch('http://localhost:3001/user_add_board', {
+                window.fetch('http://54.169.35.33:8080/user_add_board', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -244,8 +244,7 @@ class Home extends Component {
 
     logout() {
         console.log(this.state.user.username + ' -> Logout');
-        //fetch('http://10.0.2.2:8080/logout')
-        fetch('http://localhost:3001/logout')
+        window.fetch('http://54.169.35.33:8080/logout')
             .then((response) => {
                 const location = {
                     pathname: '/login'

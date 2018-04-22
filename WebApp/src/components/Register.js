@@ -34,9 +34,8 @@ class Register extends Component {
         };
 
         console.log('Register for ' + JSON.stringify(params))
-
-        //fetch('http://10.0.2.2:8080/register', {
-        fetch('http://127.0.0.1:3001/register', {
+        
+        fetch('http://54.169.35.33:8080/register', {
             method: "POST",
             body: JSON.stringify(params),
             headers: {

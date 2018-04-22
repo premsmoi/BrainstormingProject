@@ -11,37 +11,7 @@ class BoardList extends Component {
             boards: [],
             username: ''
         };
-        this.fetchBoard = this.fetchBoard.bind(this);
         this.accessBoard = this.accessBoard.bind(this);
-    }
-
-    fetchBoard() {
-        //        axios.get('http://localhost:3001/api/boards')
-        //                .then(res => {
-        //                    this.setState({boards: res.data});
-        //                });
-
-        //fetch('http://localhost:3001/all_boards', {
-        //    method: 'GET',
-        //    headers: {
-        //        'Content-Type': 'application/json'
-        //    }
-        //}).then(res => res.json()).then((result) => {
-        //this.setState({ boards: result });
-        //console.log(result);
-        //});
-
-        //var self = this;
-        //fetch('http://localhost:3001/get_board_list', {
-        //    method: 'POST',
-        //    headers: {
-        //        'Content-Type': 'application/json'
-        //    },
-        //    body: JSON.stringify({idList: self.props.board})
-        //}).then(res => { res.json(); console.log(res); }).then((result) => {
-        //    //this.setState({ boards: result });
-        //    console.log(result);
-        //});
     }
 
     accessBoard(e, name, id) {
@@ -56,10 +26,6 @@ class BoardList extends Component {
     componentWillMount() {
         console.log(this.props.boards);
         this.setState({ boards: this.props.boards });
-    }
-
-    componentDidMount() {
-        //this.fetchBoard();
     }
 
     componentWillReceiveProps(nextProps) {

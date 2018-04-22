@@ -21,7 +21,8 @@ boardList = require('./src/controllers/BoardController'),
   async = require('async'),
   includes = require('array-includes'),
   //sleep = require('sleep'),
-  dateFormat = require('dateformat');
+  dateFormat = require('dateformat'),
+  cors = require('cors');
 
 
 
@@ -43,6 +44,7 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 app.use(cookieParser());
+app.use(cors());
 
 app.use(validator());
 

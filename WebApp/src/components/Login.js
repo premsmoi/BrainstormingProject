@@ -53,7 +53,7 @@ class Login extends Component {
 
         //this.Auth.login(this.state.username, this.state.password);
 
-        window.fetch('http://127.0.0.1:3001/login', {
+        window.fetch('http://54.169.35.33:8080/login', {
             method: "POST",
             body: JSON.stringify(params),
             headers: {
