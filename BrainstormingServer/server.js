@@ -118,15 +118,10 @@ wsServer.on('connection', function connection(connection, request) {
   connection.on('message', function incomiing(message) {
     var obj = JSON.parse(message)
 
-    /*
-      ########## HOME ##########
-    */
-    if (obj.from == 'Home') {
 
 
       if (obj.code == 'tagUser') {
         connection['username'] = obj.username
-        connection['from'] = obj.from
         var cc = util.inspect(connection)
         console.log('Client: ' + connection['username'] + ' connect to server')
       } else if (obj.code == 'getBoardList') {
@@ -253,7 +248,7 @@ wsServer.on('connection', function connection(connection, request) {
                 }
               });
               wsServer.clients.forEach(function each(client) {
-                if (includes(res_users, client['username']) && client['from'] == 'Home') {
+                if (includes(res_users, client['username'])) {
                   client.send(json)
                 }
               });
@@ -303,13 +298,10 @@ wsServer.on('connection', function connection(connection, request) {
           })
         })
       }
-    }
-
-    if (obj.from == 'Board') {
+    
       if (obj.code == 'tagBoard') {
         connection['boardId'] = obj.boardId
         connection['username'] = obj.username
-        connection['from'] = obj.from
         var cc = util.inspect(connection)
         console.log('Client: ' + connection['username'] + ' connect board: ' + connection['boardId'])
       } else if (obj.code == 'createNote') {
@@ -329,7 +321,7 @@ wsServer.on('connection', function connection(connection, request) {
                 }
               })
               wsServer.clients.forEach(function each(client) {
-                if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+                if (client['boardId'] == connection['boardId']) {
                   //sleep.msleep(100)
                   client.send(json)
                 }
@@ -363,7 +355,7 @@ wsServer.on('connection', function connection(connection, request) {
                   }
                 });
                 wsServer.clients.forEach(function each(client) {
-                  if (includes(board.members, client['username']) && client['from'] == 'Home' && client['username'] != note.writer) {
+                  if (includes(board.members, client['username']) && client['username'] != note.writer) {
                     client.send(json)
                   }
                 });
@@ -419,7 +411,7 @@ wsServer.on('connection', function connection(connection, request) {
             }
           })
           wsServer.clients.forEach(function each(client) {
-            if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+            if (client['boardId'] == connection['boardId']) {
               client.send(json)
             }
           });
@@ -436,7 +428,7 @@ wsServer.on('connection', function connection(connection, request) {
             }
           })
           wsServer.clients.forEach(function each(client) {
-            if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+            if (client['boardId'] == connection['boardId']) {
               client.send(json)
             }
           });
@@ -577,7 +569,7 @@ wsServer.on('connection', function connection(connection, request) {
             }
           })
           wsServer.clients.forEach(function each(client) {
-            if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+            if (client['boardId'] == connection['boardId']) {
               client.send(json)
             }
           });
@@ -619,7 +611,7 @@ wsServer.on('connection', function connection(connection, request) {
                 }
               })
               wsServer.clients.forEach(function each(client) {
-                if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+                if (client['boardId'] == connection['boardId']) {
                   client.send(json)
                 }
               });
@@ -660,7 +652,7 @@ wsServer.on('connection', function connection(connection, request) {
                 }
               })
               wsServer.clients.forEach(function each(client) {
-                if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+                if (client['boardId'] == connection['boardId']) {
                   client.send(json)
                 }
               });
@@ -754,7 +746,7 @@ wsServer.on('connection', function connection(connection, request) {
             }
           });
           wsServer.clients.forEach(function each(client) {
-            if (client['from'] == 'Home' && client['username'] == obj.username) {
+            if (client['username'] == obj.username) {
               client.send(json)
               //console.log('msg is sent to '+client['username'])
               //console.log(json)
@@ -762,7 +754,7 @@ wsServer.on('connection', function connection(connection, request) {
           });
         })
       }
-    } else if (obj.from == 'BoardManager') {
+    
 
       if (obj.code == 'tagBoardManager') {
         connection['boardId'] = obj.boardId
@@ -818,7 +810,7 @@ wsServer.on('connection', function connection(connection, request) {
           })
         });
       }
-    }
+    
     if (obj.code == 'updateBoard') {
       console.log(obj)
       boardList.updateBoard({
@@ -837,7 +829,7 @@ wsServer.on('connection', function connection(connection, request) {
             }
           })
           wsServer.clients.forEach(function each(client) {
-            if (client['boardId'] == connection['boardId'] && client['from'] == 'Board') {
+            if (client['boardId'] == connection['boardId']) {
               client.send(json)
             }
           });

@@ -1,15 +1,11 @@
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import { AppRegistry } from 'react-native';
-import LoginScreen from './src/LoginScreen';
-import Draggable from './src/Draggable';
-import Note from './src/Note';
-import HomeScreen from './src/HomeScreen';
-import GroupScreen from './src/GroupScreen';
-import BoardScreen from './src/BoardScreen';
-import MyComponent from './src/MyComponent';
-import BoardManagerScreen from './src/BoardManagerScreen';
-import DrawBoard from './src/DrawBoard'
-import Test from './src/Test'
+import LoginScreen from './src/screens/LoginScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import BoardScreen from './src/screens/BoardScreen';
+import Note from './src/components/Note';
+import SmallNote from './src/components/SmallNote';
+import BoardManagerScreen from './src/screens/BoardManagerScreen';
 
 const myNavigator = StackNavigator({
   Login: {
@@ -20,9 +16,6 @@ const myNavigator = StackNavigator({
   },
   Home: {
     screen: HomeScreen,
-  },
-  Group: {
-    screen: GroupScreen,
   },
   Board: {
     screen: BoardScreen,

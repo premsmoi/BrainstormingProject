@@ -34,7 +34,6 @@ var boardSchema = new Schema({
         //dropDups: true,
     }],
     tags: [String],
-    mode: String,
     hasTime: {
         type: Boolean,
         default: false,
