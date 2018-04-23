@@ -1,25 +1,46 @@
-export default class Auth {
+import React, { Component } from 'react';
+
+class Auth extends Component {
     // Initializing important variables
-    constructor(domain) {
-        this.domain = domain || 'http://localhost:3001' // API server domain
-        this.fetch = this.fetch.bind(this) // React binding stuff
+    constructor(props) {
+        super(props);
+        //this.domain = domain || 'http://localhost:3001'
+        this.fetch = this.fetch.bind(this)
         this.login = this.login.bind(this)
-        this.getProfile = this.getProfile.bind(this)
+        //this.getProfile = this.getProfile.bind(this)
     }
 
     login(username, password) {
+        const self = this;
         // Get a token from api server using the fetch api
         return window.fetch('http://127.0.0.1:3001/login', {
             method: "POST",
-            body: JSON.stringify({username: username, password: password}),
+            body: JSON.stringify({ username: username, password: password }),
             headers: {
                 "Content-Type": "application/json"
             },
             credentials: "same-origin"
-        }).then(res => {
-            this.setToken(res.token) // Setting the token in localStorage
-            return Promise.resolve(res);
+        }).then(response => {
+            //this.setToken(res.token);
+            //console.log(res.token);
+            //return Promise.resolve(res);
+            return response.json().then(function (text) {
+                if (text.loginSuccess === true) {
+                    console.log(text.user.username + ' -> Login');
+                    const location = {
+                        pathname: '/home',
+                        state: { username: text.user.username, name: text.user.name }
+                    };
+                    self.props.history.push(location);
+                } else
+                    alert(text['message']);
+            });
         })
+    }
+
+    isAuthenticated() {
+        const token = this.getToken();
+        return !!token;
     }
 
     loggedIn() {
@@ -80,4 +101,10 @@ export default class Auth {
             throw error
         }
     }
+
+    render() {
+        return (<div />);
+    }
 }
+
+export default Auth;

@@ -4,6 +4,10 @@ import Notification from './Notification';
 import './mystyle/Home.scss';
 import './mystyle/General.scss';
 import { Button, Modal } from 'react-bootstrap';
+import './mystyle/HeadNav.css';
+
+//const ip = 'localhost:3001';
+const ip = '54.169.35.33:8080';
 
 class Home extends Component {
     constructor(props) {
@@ -15,9 +19,9 @@ class Home extends Component {
             boards: [],
             createModal: false,
             notifications: [],
-            unreadNotification: 0
+            unreadNotification: 0,
+            name: ''
         }
-        //        this.show = this.show.bind(this);
         this.createBoard = this.createBoard.bind(this);
         this.closeCreateModal = this.closeCreateModal.bind(this);
         this.openCreateModal = this.openCreateModal.bind(this);
@@ -31,8 +35,9 @@ class Home extends Component {
         this.readNotification = this.readNotification.bind(this);
         this.setUnreadNotification = this.setUnreadNotification.bind(this);
         this.logout = this.logout.bind(this);
+        this.goHome = this.goHome.bind(this);
 
-        this.ws = new WebSocket('ws://54.169.35.33:8080/');
+        this.ws = new WebSocket('ws://'+ip+'/');
         var self = this;
         this.ws.onopen = function () {
             var req = {
@@ -76,7 +81,7 @@ class Home extends Component {
                     });
                 });
                 console.log(self.countUnreadNotification());
-            } else if (message.body.code == 'getNotificationTrigger') {
+            } else if (message.body.code === 'getNotificationTrigger') {
                 console.log('I got notification trigger')
                 self.getNotification()
             }
@@ -84,19 +89,7 @@ class Home extends Component {
     }
 
     componentWillMount() {
-        //        var req = {
-        //                from: 'Home',
-        //                code: 'tagUser',
-        //                username: 'this.props.location.state.user'
-        //            }
-        //            var json = JSON.stringify(req);
-        //            this.ws.send(json);
-        this.setState({ username: this.props.location.state.username });
-    }
-
-    componentDidMount() {
-        //console.log(this.props.location.state.username);
-        //this.setState({ username: this.props.location.state.username });
+        this.setState({ username: this.props.location.state.username, name: this.props.location.state.name });
     }
 
     openCreateModal() {
@@ -105,6 +98,15 @@ class Home extends Component {
 
     closeCreateModal() {
         this.setState({ createModal: false });
+    }
+
+    goHome() {
+        var self = this;
+        const location = {
+            pathname: '/home',
+            state: { username: self.state.username, name: self.state.name }
+        };
+        this.props.history.push(location);
     }
 
     handleChange(e) {
@@ -161,15 +163,15 @@ class Home extends Component {
     }
 
     countUnreadNotification() {
-        var count = 0
-        console.log(this.state.notifications)
+        var count = 0;
+        console.log(this.state.notifications);
         this.state.notifications.map(function (notification) {
             if (!notification.read) {
-                count++
+                count++;
             }
-        })
-        console.log('count: ' + count)
-        return count
+        });
+        console.log('count: ' + count);
+        return count;
     }
 
     acceptInvite(notification) {
@@ -179,10 +181,9 @@ class Home extends Component {
             username: this.state.username,
             boardId: notification.boardId,
             boardName: notification.boardName,
-        }
-        var requestString = JSON.stringify(acceptInviteRequest)
-        //console.log('props: '+this.props)
-        this.ws.send(requestString)
+        };
+        var requestString = JSON.stringify(acceptInviteRequest);
+        this.ws.send(requestString);
     }
 
     readNotification(notification) {
@@ -191,10 +192,9 @@ class Home extends Component {
             code: 'readNotification',
             id: notification._id,
             username: this.state.username,
-        }
-        var requestString = JSON.stringify(readNotificationRequest)
-        //console.log('props: '+this.props)
-        this.ws.send(requestString)
+        };
+        var requestString = JSON.stringify(readNotificationRequest);
+        this.ws.send(requestString);
     }
 
     setUnreadNotification(a) {
@@ -204,7 +204,7 @@ class Home extends Component {
     createBoard(e) {
         e.preventDefault();
         var self = this;
-        window.fetch('http://54.169.35.33:8080/create_board', {
+        window.fetch('http://'+ip+'/create_board', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -214,14 +214,13 @@ class Home extends Component {
         }).then((res) => res.json()).then((text) => {
             console.log(text);
             if (text.status === 1) {
-                window.fetch('http://54.169.35.33:8080/user_add_board', {
+                window.fetch('http://'+ip+'/user_add_board', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ username: self.state.username, newBoardId: text.newBoardId })
                 }).then(res => res.json()).then((result) => {
-                    //console.log(result);
                     self.getUser();
                     self.closeCreateModal();
                     self.setState({ boardNameInput: '' });
@@ -231,10 +230,12 @@ class Home extends Component {
     }
 
     logout() {
-        fetch('http://54.169.35.33:8080/logout')
+        window.fetch('http://'+ip+'/logout')
             .then((response) => {
-                this.props.navigation.navigate('Login')
-                //console.log(response);
+                const location = {
+                    pathname: '/login'
+                };
+                this.props.history.push(location);
                 return response.json()
             })
             .catch((error) => {
@@ -246,6 +247,10 @@ class Home extends Component {
     render() {
         return (
             <div>
+                <div className="Nav">
+                    <div className="Nav-member" onClick={this.goHome} style={{ cursor: 'pointer' }}>Home</div>
+                    <div className="Nav-member" onClick={this.logout} style={{ cursor: 'pointer' }}>Log out</div>
+                </div>
                 <div className="flex flex-inline header">
                     <h1>Hello {this.state.username}</h1>
                     <Notification notifications={this.state.notifications} unreadNotification={this.state.unreadNotification} readNotification={this.readNotification} setUnreadNotification={this.setUnreadNotification} getNotification={this.getNotification} acceptInvite={this.acceptInvite} ws={this.ws} />
@@ -254,7 +259,7 @@ class Home extends Component {
                     <h4>My Board</h4>
                     <Button bsSize='small' bsStyle='primary' className='lrmargin' onClick={this.openCreateModal}>create board</Button>
                 </div>
-                <BoardList boards={this.state.boards} deleteBoard={this.deleteBoard} username={this.state.username} />
+                <BoardList boards={this.state.boards} deleteBoard={this.deleteBoard} username={this.state.username} name={this.state.name}/>
                 <Modal show={this.state.createModal} onHide={this.closeCreateModal}>
                     <Modal.Header>Create Board</Modal.Header>
                     <Modal.Body>

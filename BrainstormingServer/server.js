@@ -21,7 +21,8 @@ boardList = require('./src/controllers/BoardController'),
   async = require('async'),
   includes = require('array-includes'),
   //sleep = require('sleep'),
-  dateFormat = require('dateformat');
+  dateFormat = require('dateformat'),
+  cors = require('cors');
 
 
 
@@ -43,6 +44,7 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 app.use(cookieParser());
+app.use(cors());
 
 app.use(validator());
 
@@ -886,6 +888,44 @@ wsServer.on('connection', function connection(connection, request) {
   connection.on('close', function(reasonCode, description) {
     console.log('Client: ' + connection['username'] + ' disconnect')
     //console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
+
+      if (connection['boardId'] !== undefined) {
+          userList.exitBoard(connection['username'], function (err, numAffected) {
+              if (err)
+                  console.log(err)
+              boardList.getBoardById(connection['boardId'], function (err, board) {
+                  userList.getUsers(board.members, function (err, users) {
+                      if (err)
+                          console.log(err)
+                      var user_arr = []
+                      users.forEach(function (user) {
+                          user_arr.push({
+                              username: user.username,
+                              name: user.name,
+                              currentBoard: user.currentBoard
+                          })
+                      })
+                      var json = JSON.stringify({
+                          body: {
+                              code: 'getMembers',
+                              members: user_arr
+                          }
+                      })
+                      wsServer.clients.forEach(function each(client) {
+                          if (client['boardId'] == connection['boardId'] && client.readyState === WebSocket.OPEN) {
+                              client.send(json)
+                          }
+                      });
+                      //var json = JSON.stringify({
+                      //    body: {
+                      //        code: 'closeWebSocket',
+                      //    }
+                      //})
+                      //connection.send(json)
+                  })
+              })
+          })
+      }
   });
 });
 

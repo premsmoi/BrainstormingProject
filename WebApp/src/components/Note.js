@@ -5,12 +5,16 @@ import { Modal, Button, DropdownButton, MenuItem, ButtonToolbar } from 'react-bo
 import './mystyle/bootstrap.scss';
 import './mystyle/General.scss';
 import './mystyle/Note.css';
+import './mystyle/HeadNav.css';
 import UserList from './UserList';
 import NoteBox from './NoteBox';
 import ColorPalette from './ColorPalette';
 import TagInput from './TagInput';
 import TagPicker from './TagPicker';
 import Member from './Member';
+
+//const ip = 'localhost:3001';
+const ip = '54.169.35.33:8080';
 
 class NoteView extends Component {
     constructor(props) {
@@ -20,19 +24,13 @@ class NoteView extends Component {
             username: '',
             boardId: '',
             show: false,
-            //            value: "",
-            count: 0,
-            color: "lightsalmon",
-            //            board: [{id: '555', text: "z", x: 0, y: 0, color: "lightsalmon"}, {id: '666', text: "a", x: 1, y: 1, color: "lightblue"}, {id: '777', text: "b", x: 2, y: 2, color: "lightgreen"}]
-            //            note: []
+            color: "#FFF",
             note: {},
             update: false,
             tags: [],
-            boardTags: [],
             boardSetting: false,
             invite: false,
             invitedUser: '',
-            users: [],
             notes: [],
             noteTag: [],
             members: [],
@@ -41,8 +39,9 @@ class NoteView extends Component {
             newImgData: "",
             position: [],
             boardMember: false,
-            userSearchResult: []
-            //            writer: ""
+            userSearchResult: [],
+            userVotedNotes: [],
+            name: ''
         };
         this.toggleAdd = this.toggleAdd.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -55,7 +54,6 @@ class NoteView extends Component {
         this.inviteUser = this.inviteUser.bind(this);
         this.closeInvite = this.closeInvite.bind(this);
         this.setInvitedUser = this.setInvitedUser.bind(this);
-        this.getAllUsers = this.getAllUsers.bind(this);
         this.updateBoard = this.updateBoard.bind(this);
         this.boardAddTag = this.boardAddTag.bind(this);
         this.boardGetTags = this.boardGetTags.bind(this);
@@ -66,12 +64,15 @@ class NoteView extends Component {
         this.groupByColor = this.groupByColor.bind(this);
         this.spreadNote = this.spreadNote.bind(this);
         this.updateNote = this.updateNote.bind(this);
-        this.sendExitReq = this.sendExitReq.bind(this);
         this.showMember = this.showMember.bind(this);
         this.closeMember = this.closeMember.bind(this);
         this.searchUser = this.searchUser.bind(this);
+        this.voteNote = this.voteNote.bind(this);
+        this.unvoteNote = this.unvoteNote.bind(this);
+        this.logout = this.logout.bind(this);
+        this.goHome = this.goHome.bind(this);
 
-        this.ws = new WebSocket('ws://54.169.35.33:8080/');
+        this.ws = new WebSocket('ws://'+ip+'/');
         var self = this;
 
         this.ws.onopen = function () {
@@ -111,6 +112,15 @@ class NoteView extends Component {
             }
             var requestString = JSON.stringify(getBoardRequest)
             self.ws.send(requestString)
+
+            var getUserVotedNoteRequest = {
+                from: 'Board',
+                code: 'getUserVotedNotes',
+                username: self.state.username,
+                boardId: self.props.match.params.board_id,
+            }
+            var requestString = JSON.stringify(getUserVotedNoteRequest)
+            self.ws.send(requestString)
         };
 
         this.ws.onmessage = function (event) {
@@ -131,6 +141,7 @@ class NoteView extends Component {
                 //self.ws.send(json);
                 self.setState({ notes: message.body.notes }, () => {
                     const position = [];
+                    console.log(message.body.notes);
                     self.state.notes.map((note) => {
                         position.push(0);
                     });
@@ -159,24 +170,44 @@ class NoteView extends Component {
             } else if (message.body.code == 'getUserSearchResult') {
                 self.setState({ userSearchResult: message.body.userList })
                 console.log(message.body.userList)
-            } else if (message.body.code == 'exitBoardTrigger') {
-                self.sendExitReq();
+            } else if (message.body.code == 'getVotedNotes') {
+                self.setState({ userVotedNotes: message.body.votedNotes });
+                console.log(message.body.votedNotes);
             }
         };
     }
 
     componentWillMount() {
-        //console.log(this.props.location);
         const { boardName } = this.props.location.state;
         const { username } = this.props.location.state;
+        const { name } = this.props.location.state;
         const boardId = this.props.match.params.board_id;
-        this.setState({ boardName: boardName, newBoardName: boardName, username: username, boardId: boardId });
+        this.setState({ boardName: boardName, newBoardName: boardName, username: username, boardId: boardId, name: name });
     }
 
-    componentDidMount() {
-        //        console.log(this.props.match.params.board_id);
-        //        this.getAllUsers();
-        //console.log(this.props.location);
+    logout() {
+        this.ws.close();
+        window.fetch('http://'+ip+'/logout')
+            .then((response) => {
+                const location = {
+                    pathname: '/login'
+                };
+                this.props.history.push(location);
+                //console.log(response);
+                return response.json()
+            })
+            .catch((error) => {
+                throw error;
+            });
+    }
+
+    goHome() {
+        this.ws.close();
+        const location = {
+            pathname: '/home',
+            state: { username: this.state.username, name: this.state.name }
+        };
+        this.props.history.push(location);
     }
 
     updateBoard() {
@@ -190,6 +221,7 @@ class NoteView extends Component {
         };
         var json = JSON.stringify(updateBoardReq);
         this.ws.send(json);
+        this.setState({ boardName: this.state.newBoardName });
     }
 
     showSetting() {
@@ -232,31 +264,6 @@ class NoteView extends Component {
         this.ws.send(json);
     }
 
-    getAllUsers() {
-        window.fetch('http://127.0.0.1:3001/user_list', {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            credentials: "same-origin"
-        })
-            .then((response) => {
-                console.log(response.body);
-            })
-    }
-
-    sendExitReq() {
-        var exitBoardRequest = {
-            from: 'Board',
-            code: 'exitBoard',
-            username: this.state.username,
-            boardId: this.props.match.params.board_id
-        };
-        var requestString = JSON.stringify(exitBoardRequest);
-        console.log('exitBoard');
-        this.ws.send(requestString);
-    }
-
     searchUser(e) {
         e.preventDefault();
         var searchReq = {
@@ -269,13 +276,37 @@ class NoteView extends Component {
         this.ws.send(json);
     }
 
+    voteNote(a) {
+        var voteNoteReq = {
+            from: 'Board',
+            code: 'voteNote',
+            username: this.state.username,
+            boardId: this.state.boardId,
+            votedNoteId: a
+        };
+        var json = JSON.stringify(voteNoteReq);
+        this.ws.send(json);
+    }
+
+    unvoteNote(a) {
+        var unvoteNoteReq = {
+            from: 'Board',
+            code: 'unvoteNote',
+            username: this.state.username,
+            boardId: this.state.boardId,
+            unvotedNoteId: a
+        };
+        var json = JSON.stringify(unvoteNoteReq);
+        this.ws.send(json);
+    }
+
     setInvitedUser(user) {
         this.setState({ invitedUser: user });
         console.log(this.state.invitedUser);
     }
 
     closeInvite() {
-        this.setState({ invite: false });
+        this.setState({ invite: false, userSearch: '' });
     }
 
     toggleAdd() {
@@ -366,7 +397,7 @@ class NoteView extends Component {
             });
             //self.setState({ notes: newNoteList });
             positionYValue = 50;
-            positionXValue = positionXValue + 350;
+            positionXValue = positionXValue + 200;
         });
     }
 
@@ -375,7 +406,7 @@ class NoteView extends Component {
         console.log("color");
 
         var self = this;
-        var color_list = ["lightsalmon", "lightblue", "lightgreen", "lightyellow", "lightgrey", "white"];
+        var color_list = ["#ff9999", "#ff99c2", "#99ff99", "#99ffff", "#ffff99"];
         var newNoteList = this.state.notes;
         var positionXValue = 50;
         var positionYValue = 50;
@@ -395,7 +426,7 @@ class NoteView extends Component {
             });
             //self.setState({ notes: newNoteList });
             positionYValue = 50;
-            positionXValue = positionXValue + 350;
+            positionXValue = positionXValue + 200;
         });
     }
 
@@ -412,11 +443,11 @@ class NoteView extends Component {
             newNoteList[index].y = positionYValue;
 
             self.updateNote(newNoteList[index]);
-            positionXValue = positionXValue + 350;
+            positionXValue = positionXValue + 200;
 
-            if (positionXValue === 50 + (350 * 4)) {
+            if (positionXValue === 50 + (200 * 4)) {
                 positionXValue = 50;
-                positionYValue += 300;
+                positionYValue += 150;
             }
         });
     }
@@ -432,31 +463,13 @@ class NoteView extends Component {
         var requestString = JSON.stringify(inviteUserRequest)
         console.log('Invite User Request')
         this.ws.send(requestString)
-        //this.getMembers()
         this.setState({
-            invitedUser: '',
+            invitedUser: ''
         })
     }
 
     handleSubmit(event) {
         event.preventDefault();
-        //        fetch('http://localhost:3001/api/notes', {
-        //            method: 'POST',
-        //            headers: {
-        //                'content-type': 'application/json'
-        //            },
-        //            body: {"boardId": "5a96ec25eebae3391dd8e726","writer": "punpun", "text": this.state.value, "color": this.state.colors, "x": 15, "y": 15},
-        //        }).then(res => res.json())
-        //                .catch(error => console.error('Error:', error))
-        //                .then(response => console.log('Success:', response));
-
-        //        this.setState(prevState => ({
-        //                show: !prevState.show,
-        //                note: {boardId:"5a96ec25eebae3391cc8e726",writer:"punpun",text:this.state.value,color:this.state.color,x:0,y:0},
-        //                update: true
-        //            }));
-
-
 
         this.setState(prevState => ({
             show: !prevState.show,
@@ -473,7 +486,9 @@ class NoteView extends Component {
                 // note: make sure you use arrow function to maintain "this" context
                 this.setState({
                     update: false,
-                    value: ""
+                    value: "",
+                    noteTag: [],
+                    color: '#FFF'
                 })
             }
         );
@@ -482,8 +497,10 @@ class NoteView extends Component {
     render() {
         return (
             <div>
-                <script type="text/javascript" src="//d1l4stvdmqmdzl.cloudfront.net/3.9.6/mongoose.js">
-                </script>
+                <div className="Nav">
+                    <div className="Nav-member" onClick={this.goHome} style={{ cursor: 'pointer' }}>Home</div>
+                    <div className="Nav-member" onClick={this.logout} style={{ cursor: 'pointer' }}>Log out</div>
+                </div>
                 <div className="flex flex-inline header">
                     <h1>{this.state.boardName}</h1>
                     <Icon icon={cog} onClick={this.showSetting} className='setting-button lrmargin' />
@@ -504,10 +521,11 @@ class NoteView extends Component {
                         <Button className="lrmargin" bsStyle="primary" bsSize="small" onClick={this.showInvite}>
                             Invite
                         </Button>
+
+                        <Button className="lrmargin" onClick={this.toggleAdd} bsStyle='success' bsSize="small">
+                            Create
+                        </Button>
                     </div>
-                </div>
-                <div className="menu">
-                    <Button className="menu-member" onClick={this.toggleAdd}>Add</Button>
                 </div>
 
                 <Modal show={this.state.boardSetting} onHide={this.closeSetting}>
@@ -518,7 +536,7 @@ class NoteView extends Component {
                         <label className="block">
                             Board name:
                                 <input name="newBoardName" value={this.state.newBoardName} className="text-box" type="text" onChange={this.handleChange} />
-                                <Button onClick={this.updateBoard}>
+                            <Button onClick={this.updateBoard}>
                                 Save
                                 </Button>
                         </label>
@@ -568,18 +586,24 @@ class NoteView extends Component {
                     </Modal.Footer>
                 </Modal>
 
-                <NoteBox notes={this.state.notes} linkid={this.props.match.params.board_id} setColor={this.setColor} note={this.state.note} update={this.state.update} ws={this.ws} tags={this.state.tags} user={this.state.username} />
-                <div>
-                    <div className="input-idea" style={{ display: (this.state.show ? "block" : "none") }}>
+                <NoteBox notes={this.state.notes} linkid={this.props.match.params.board_id} setColor={this.setColor} note={this.state.note} update={this.state.update} ws={this.ws} tags={this.state.tags} user={this.state.username} userVotedNotes={this.state.userVotedNotes} voteNote={this.voteNote} unvoteNote={this.unvoteNote} />
+                <Modal show={this.state.show} onHide={this.toggleAdd}>
+                    <Modal.Header closeButton>
+                        Create Note
+                    </Modal.Header>
+                    <Modal.Body>
                         <label className="block">
                             Your Idea:
-                                <textarea name="value" className="text-box new-idea" value={this.state.value} onChange={this.handleChange} />
+                                <textarea name="value" className="text-box new-idea" value={this.state.value} onChange={this.handleChange}  style={{ backgroundColor: this.state.color }} />
                         </label>
                         <ColorPalette setColor={this.setColor} />
                         <TagPicker tags={this.state.tags} setNoteTag={this.setNoteTag} />
-                        <button onClick={this.handleSubmit}>submit</button>
-                    </div>
-                </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={this.handleSubmit} bsStyle='success'>Create</Button>
+                        <Button onClick={this.toggleAdd}>Close</Button>
+                    </Modal.Footer>
+                </Modal>
             </div>
         );
     }

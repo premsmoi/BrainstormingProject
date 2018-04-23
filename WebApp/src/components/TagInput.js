@@ -29,12 +29,6 @@ class TagInput extends React.Component {
 
     handleAdd() {
         const value = this.state.input;
-        //this.setState(state => ({
-        //    items: [...state.items, value],
-        //    input: ''
-        //}), () => {
-        //    this.props.setTag(this.state.items);
-        //});
         this.props.boardAddTag(value);
     }
 
@@ -82,14 +76,6 @@ class TagInput extends React.Component {
 
     handleInputKeyDown(evt) {
         if (evt.keyCode === 13) {
-            //const { value } = evt.target;
-            //this.setState(state => ({
-            //    items: [...state.items, value],
-            //    input: ''
-            //}), () => {
-            //    this.props.setTag(this.state.items);
-            //});
-
             const value = this.state.input;
             this.props.boardAddTag(value);
         }
@@ -103,18 +89,8 @@ class TagInput extends React.Component {
 
     handleRemoveItem(e, index) {
         e.preventDefault();
-        //return () => {
-        //    this.setState(state => ({
-        //        items: state.items.filter((item, i) => i !== index)
-        //    }));
-        //}
         this.props.boardDeleteTag(this.state.items[index]);
     }
 }
-
-//ReactDOM.render(
-//  <TagInput />,
-//  document.getElementById('app')
-//);
 
 export default TagInput;

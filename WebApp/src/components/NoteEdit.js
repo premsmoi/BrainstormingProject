@@ -5,6 +5,7 @@ import './mystyle/General.scss';
 import ColorPalette from './ColorPalette';
 import TagPicker from './TagPicker';
 import axios from 'axios';
+import { Modal, Button } from 'react-bootstrap';
 
 class NoteEdit extends Component {
     constructor(props) {
@@ -42,16 +43,6 @@ class NoteEdit extends Component {
     }
 
     deleteNote() {
-        //        var self = this;
-        //        axios.delete(`${'http://localhost:3001/api/notes'}/${this.props.note._id.toString()}`)
-        //                .then(function (response) {
-        //                    console.log(response);
-        //                    self.props.closeNoteEdit();
-        //                })
-        //                .catch(function (error) {
-        //                    console.log(error);
-        //                });
-
         var deleteNote = {
             from: 'Board',
             code: 'deleteNote',
@@ -65,17 +56,6 @@ class NoteEdit extends Component {
     }
 
     saveNote() {
-        //        var self = this;
-        //        sends the comment id and new author/text to our api
-        //        axios.put(`${'http://localhost:3001/api/notes'}/${this.props.note._id.toString()}`, {text: this.state.value, color: this.state.color})
-        //                .then(function (response) {
-        //                    console.log(response);
-        //                    self.props.closeNoteEdit();
-        //                })
-        //                .catch(err => {
-        //                    console.log(err);
-        //                });
-
         var updatedObj = {
             from: 'Board',
             code: 'updateNote',
@@ -97,32 +77,57 @@ class NoteEdit extends Component {
 
     handleChange(event) {
         this.setState({ value: event.target.value });
-        //        this.state.value = event.target.value;
     }
 
+    //    <div className="edit-panel" style={style}>
+    //    <form onSubmit={this.handleSubmit}>
+    //        <label className="block">
+    //            Your Idea:
+    //                                <textarea className="text-box new-idea" value={this.state.value} onChange={this.handleChange} />
+    //        </label>
+    //    </form>
+    //    <ColorPalette setColor={this.setColor} />
+    //    <TagPicker tags={this.props.tags} setNoteTag={this.setTag} tags_of_note={this.state.tags} />
+    //    <div className="button-group">
+    //        <button className="save-button" onClick={() => {
+    //            //                        this.props.closeNoteEdit();
+    //            this.saveNote();
+    //        }}>save</button>
+    //        <button className="delete-button" onClick={() => {
+    //            //                            this.props.closeNoteEdit();
+    //            this.deleteNote();
+    //        }}>delete</button>
+    //    </div>
+    //</div>
+
     render() {
-        var style = { backgroundColor: (this.props.note.color === this.state.color ? this.props.note.color : this.state.color), display: (this.props.edit ? "block" : "none") };
+        var style = { backgroundColor: (this.props.note.color === this.state.color ? this.props.note.color : this.state.color) };
         return (
-            <div className="edit-panel" style={style}>
-                <form onSubmit={this.handleSubmit}>
-                    <label className="block">
-                        Your Idea:
-                                <textarea className="text-box new-idea" value={this.state.value} onChange={this.handleChange} />
-                    </label>
-                </form>
-                <ColorPalette setColor={this.setColor} />
-                <TagPicker tags={this.props.tags} setNoteTag={this.setTag} tags_of_note={this.state.tags} />
-                <div className="button-group">
-                    <button className="save-button" onClick={() => {
-                        //                        this.props.closeNoteEdit();
+            <Modal show={this.props.edit} onHide={this.props.closeNoteEdit}>
+                <Modal.Header closeButton>
+                    Edit Note
+                    </Modal.Header>
+                <Modal.Body>
+                    <form onSubmit={this.handleSubmit}>
+                        <label className="block">
+                            Your Idea:
+                                <textarea className="text-box new-idea" value={this.state.value} onChange={this.handleChange} style={{ backgroundColor: (this.props.note.color === this.state.color ? this.props.note.color : this.state.color) }} />
+                        </label>
+                    </form>
+                    <ColorPalette setColor={this.setColor} />
+                    <TagPicker tags={this.props.tags} setNoteTag={this.setTag} tags_of_note={this.state.tags} />
+                    <div className="button-group">
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button bsStyle='success' onClick={() => {
                         this.saveNote();
-                    }}>save</button>
-                    <button className="delete-button" onClick={() => {
-                        //                            this.props.closeNoteEdit();
+                    }}>save</Button>
+                    <Button bsStyle='danger' onClick={() => {
                         this.deleteNote();
-                    }}>delete</button>
-                </div>
-            </div>
+                    }}>delete</Button>
+                </Modal.Footer>
+            </Modal>
         );
     }
 }

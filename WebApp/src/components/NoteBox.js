@@ -5,8 +5,9 @@ import NoteEdit from './NoteEdit';
 import socketIOClient from 'socket.io-client';
 import Draggable from 'react-draggable';
 import Icon from 'react-icons-kit';
-import { pencil, move } from 'react-icons-kit/iconic';
+import { pencil, move,thickTop,thickBottom } from 'react-icons-kit/iconic';
 import BlackTransparent from './BlackTransparent';
+import { Glyphicon } from 'react-bootstrap';
 
 class NoteBox extends Component {
     constructor(props) {
@@ -158,6 +159,11 @@ class NoteBox extends Component {
                             <Icon className="move-button" icon={move} onMouseDown={this.onMousePoint} />
                             <Icon className={obj.writer === this.props.user ? "edit-button" : "edit-button none"} icon={pencil} onClick={this.showNoteEdit} />
                             <div className="body">{obj.text}</div>
+                            <div className="vote">
+                                <span><Icon icon={thickTop} onClick={() => this.props.voteNote(obj._id)}/></span>
+                                <span><Icon icon={thickBottom} onClick={() => this.props.unvoteNote(obj._id)} /></span>
+                                <span>Vote: {obj.voteScore.toString()}</span>
+                            </div>
                         </div>
                     </Draggable>)}
                 <BlackTransparent edit={this.state.edit} />

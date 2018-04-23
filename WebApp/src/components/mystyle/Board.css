@@ -12,5 +12,11 @@
     width: 10%;
     height: 10%;
     word-wrap: break-word;
-    background-color: lightsalmon;
+    background-color: #FFF;
+    color: #000 !important;
+    text-decoration-line: none !important;
+}
+
+.board-box:hover {
+    background-color: #DDD;
 }

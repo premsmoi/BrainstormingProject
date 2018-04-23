@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { Route, BrowserRouter,Redirect } from 'react-router-dom';
+import { Route, BrowserRouter, Redirect } from 'react-router-dom';
 import HeadNav from './components/HeadNav';
-import BoardView from './components/Board';
 import NoteView from './components/Note';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -33,11 +32,9 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <div className='App'>
-                    <Route path="/" component={HeadNav}>
-                    </Route>
+                    <Route exact path="/" component={Login} />
                     <Route path="/login" component={Login} />
                     <Route path="/register" component={Register} />
-                    <Route path="/board" component={BoardView} />
                     <Route path='/view/:board_id' component={NoteView} />
                     <Route path="/home" component={Home} />
                 </div>
