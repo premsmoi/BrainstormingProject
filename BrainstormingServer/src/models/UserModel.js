@@ -25,6 +25,14 @@ var userSchema = new Schema({
     	type: String,
     	required : true, 
     },
+    faculty: {
+        type: String,
+        default: '',
+    },
+    major: {
+        type: String,
+        default: '',
+    },
     boards: [Schema.Types.Mixed],
     loginStatus: {
         type: Number,
@@ -42,12 +50,18 @@ userSchema.plugin(uniqueValidator);
 var User = module.exports = mongoose.model('User', userSchema );
 
 module.exports.createUser = function(newUser, callback){
-	bcrypt.genSalt(10, function(err, salt){
-		bcrypt.hash(newUser.password, salt, function(err, hash){
-			newUser.password = hash;
-			newUser.save(callback);
-		});
-	});
+    if(newUser.password){
+        bcrypt.genSalt(10, function(err, salt){
+            bcrypt.hash(newUser.password, salt, function(err, hash){
+                newUser.password = hash;
+                newUser.save(callback);
+            });
+        });
+    }
+    else {
+        newUser.save(callback);
+    }
+	
 }
 
 module.exports.getUserByUsername = function(username, callback){
@@ -65,3 +79,4 @@ module.exports.comparePassword = function(candidatePassword, hash, callback){
 		callback(null, isMatch);
 	})
 }
+

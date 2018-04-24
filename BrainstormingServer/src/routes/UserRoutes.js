@@ -71,6 +71,7 @@ module.exports = function(app) {
     app.get('/user_list', userList.list_all_user);
     app.post('/get_user', userList.get_user);
     app.post('/register', userList.create_a_user);
+    app.post('/fb_login', userList.fb_login);
         //.put(dormList.update_a_dorm)
     app.post('/user_add_board', userList.add_board);
     //app.post('/user_delete_board', userList.delete_board)

@@ -1,6 +1,7 @@
 import React, {
   Component
 } from 'react';
+import createReactClass from 'create-react-class'
 import {
   Alert,
   AppRegistry,
@@ -31,6 +32,17 @@ import {
   setAppUser
 } from '../App';
 import App from '../App'
+import { LoginButton, AccessToken, GraphRequestManager, GraphRequest } from 'react-native-fbsdk';
+      
+var Login = createReactClass({
+  render: function() {
+    return (
+      <View>
+        
+      </View>
+    );
+  }
+});
 
 class LoginScreen extends Component {
   static navigationOptions = {
@@ -53,7 +65,13 @@ class LoginScreen extends Component {
     BackHandler.addEventListener('hardwareBackPress', () => {
       BackHandler.exitApp()
     });
-
+    AccessToken.getCurrentAccessToken().
+    then( (data) => {
+      if(data)
+        this.fbLogin({id: data.userID, name: '1', email: '1'})
+    }).catch( (err) => {
+      throw err
+    })
     console.log(Dimensions.get('window'))
 
   }
@@ -160,6 +178,34 @@ class LoginScreen extends Component {
     })
   }
 
+  fbLogin(obj){
+    console.log(JSON.stringify(obj))
+    fetch('http://' + ip + '/fb_login', {
+        method: "POST",
+        body: JSON.stringify(obj),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "same-origin"
+      })
+      //.then((response) => response.json())
+      .then((response) => {
+        //console.log(response);
+        var user = JSON.parse(response._bodyText);
+        console.log('body: '+JSON.stringify(user))
+        //console.log(body.user.username + ' -> Login')
+          App.setAppUser(user)
+          App.startAppWebSocket()
+          App.getAppWebSocket().onopen = () => {
+            console.log('ws is opened')
+            this.props.navigation.navigate('Home');
+          }
+      })
+      .catch((error) => {
+        throw error;
+      });
+  }
+
   _renderButton = (text, onPress) => (
     <TouchableOpacity onPress={onPress}>
       <View style={styles.button}>
@@ -237,6 +283,58 @@ class LoginScreen extends Component {
     </View>
   );
 
+  _renderFbLoginButton = () => (
+    <LoginButton
+          readPermissions = {["public_profile", "email"]}
+          //publishPermissions={["publish_actions"]}
+          onLoginFinished={
+            (error, result) => {
+              if (error) {
+                alert("login has error: " + result.error);
+              } else if (result.isCancelled) {
+                alert("login is cancelled.");
+              } else {
+                AccessToken.getCurrentAccessToken().then(
+                  (data) => {
+                    let accessToken = data.accessToken;
+                    //alert(accessToken.toString());
+
+                    const responseInfoCallback = (error, result) => {
+                      if (error) {
+                        console.log(error)
+                        //alert('Error fetching data: ' + error.toString());
+                      } else {
+                        console.log(result)
+                        this.fbLogin(result)
+                        //alert('Success fetching data: ' + result.toString());
+                      }
+                    }
+
+                    const infoRequest = new GraphRequest(
+                      '/me',
+                      {
+                        accessToken: accessToken,
+                        parameters: {
+                          fields: {
+                            string: 'email,name,first_name,middle_name,last_name'
+                          }
+                        }
+                      },
+                      responseInfoCallback
+                    );
+
+                    // Start the graph request.
+                    new GraphRequestManager().addRequest(infoRequest).start();
+
+                  })
+              }
+            }
+          }
+          //onLogoutFinished={() => alert("logout.")}
+          />
+    )
+
+
   render() {
     return (
       <View style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}>
@@ -302,7 +400,9 @@ class LoginScreen extends Component {
             </View>
           <View style={{flex: 1}}/>
         </View>
-        <View style={{flex:2}}/>
+        <View style={{flex:2, flexDirection:'row', justifyContent: 'center'}}>
+          {this._renderFbLoginButton()}
+        </View>
       </KeyboardAwareScrollView>
       </View>
     );

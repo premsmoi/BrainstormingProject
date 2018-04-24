@@ -24,7 +24,8 @@ import {
 import styles from "./../app.style";
 import {
   noteColor,
-  borderColor
+  borderColor,
+  navBarColor,
 } from './../colors'
 import ImagePicker from 'react-native-image-picker';
 import Modal from "react-native-modal";
@@ -351,10 +352,7 @@ class BoardScreen extends Component {
   }
 
   handleBackButtonClick = () => {
-    this.ws.close()
-    this.props.navigation.navigate('Home', {
-      user: this.props.navigation.state.params.user
-    })
+    this.props.navigation.navigate('Home')
     return true;
   };
 
@@ -1044,6 +1042,7 @@ class BoardScreen extends Component {
               <TouchableHighlight
                 onPress = { () => this.setState({visibleMemberDetail: true, currentDetailMember: user.username})}
                 underlayColor = {'#f2f2f2'}
+                key = {user} 
               >
                 <View 
                   style={{
@@ -1051,7 +1050,7 @@ class BoardScreen extends Component {
                     justifyContent: 'space-between',
                     marginVertical: 5,
                   }} 
-                  key = {user} 
+                  
                 >
                   <View style={{}}>
                     <Text 
@@ -1281,16 +1280,15 @@ class BoardScreen extends Component {
             }}>
             <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {true}>
               <View style={{
-                //flex: 1, 
-                flexDirection: 'row', 
-                backgroundColor: 'white',
+                backgroundColor: navBarColor,
+                flexDirection: 'row',
                 borderColor: 'black',
                 borderWidth: 0.5,
               }}>
                   <View style={{ 
                     marginVertical: 5, 
-                    marginHorizontal: 20,
                     flex: 1,
+                    marginHorizontal: 20,
                     justifyContent: 'center',
                     alignItems: 'center'
                   }}>{
@@ -1323,8 +1321,8 @@ class BoardScreen extends Component {
                     marginVertical: 5, 
                     marginHorizontal: 20,
                     justifyContent: 'center',
-                    alignItems: 'center'
-                    //flex: 1 
+                    alignItems: 'center',
+                    flex: 1 
                   }}>
                     <TouchableWithoutFeedback
                       onPressIn={() => this.exitBoard()}
@@ -1462,32 +1460,33 @@ class BoardScreen extends Component {
                         if( ((note.text).includes(this.state.noteSearchQuery) && note.noteType == 'text') || note.noteType == 'image' ){
                           return(
                           //<DoubleClick onClick={this.handleClick}>
-                            <Note 
-                              deleteNote = {this.deleteNote} 
-                              focusNote = {this.focusNote}
-                              updateNotePosition = {this.updateNotePosition}
-                              updateNoteText = {this.updateNoteText}
-                              updateNoteList = {this.updateNoteList}
-                              updateNoteColor = {this.updateNoteColor}
-                              updateNote = {this.updateNote}
-                              getState = {this.getState}
-                              setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
-                              getVoteStatus = {this.getVoteStatus}
-                              voteNote = {this.voteNote}
-                              unvoteNote = {this.unvoteNote}
-                              getLastPress = {this.getLastPress}
-                              setLastPress = {this.setLastPress}
-                              key = {note._id}
-                              id = {note._id}
-                              x = {note.x} 
-                              y = {note.y} 
-                              writer = {note.writer}
-                              color = {note.color}
-                              voteScore = {note.voteScore}
-                              noteType = {note.noteType}
-                              text = {note.text}
-                              img = {note.img}
-                              tags = {note.tags}/>
+                            <View key = {note._id}>
+                              <Note 
+                                deleteNote = {this.deleteNote} 
+                                focusNote = {this.focusNote}
+                                updateNotePosition = {this.updateNotePosition}
+                                updateNoteText = {this.updateNoteText}
+                                updateNoteList = {this.updateNoteList}
+                                updateNoteColor = {this.updateNoteColor}
+                                updateNote = {this.updateNote}
+                                getState = {this.getState}
+                                setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
+                                getVoteStatus = {this.getVoteStatus}
+                                voteNote = {this.voteNote}
+                                unvoteNote = {this.unvoteNote}
+                                getLastPress = {this.getLastPress}
+                                setLastPress = {this.setLastPress}
+                                id = {note._id}
+                                x = {note.x} 
+                                y = {note.y} 
+                                writer = {note.writer}
+                                color = {note.color}
+                                voteScore = {note.voteScore}
+                                noteType = {note.noteType}
+                                text = {note.text}
+                                img = {note.img}
+                                tags = {note.tags}/>
+                              </View>
                           //</DoubleClick>
                           )
                         }
@@ -1532,6 +1531,7 @@ class BoardScreen extends Component {
                       bottom: 0,
                       position: 'absolute',
                       width: 200,
+                      backgroundColor: 'white',
                       //height: 150,
                       borderColor: 'gray',
                       borderWidth: 0.5,

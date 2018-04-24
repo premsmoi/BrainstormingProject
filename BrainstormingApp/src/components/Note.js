@@ -492,7 +492,7 @@ export default class Note extends Component {
             width: 150,
             height: 150,
             position: 'absolute',
-            elevation: 4, 
+            elevation: 8, 
             borderColor: borderColor[this.state.COLOR],
             borderWidth: 0.5,
           }}

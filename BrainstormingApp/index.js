@@ -2,6 +2,7 @@ import { StackNavigator, NavigationActions } from 'react-navigation';
 import { AppRegistry } from 'react-native';
 import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import UserProfileScreen from './src/screens/UserProfileScreen';
 import BoardScreen from './src/screens/BoardScreen';
 import Note from './src/components/Note';
 import SmallNote from './src/components/SmallNote';
@@ -22,7 +23,10 @@ const myNavigator = StackNavigator({
   },
   BoardManager: {
     screen: BoardManagerScreen
-  }
+  },
+  UserProfile: {
+    screen: UserProfileScreen
+  },
 },
 {
   headerMode: 'none',

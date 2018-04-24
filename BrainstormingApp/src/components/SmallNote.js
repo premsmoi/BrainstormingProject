@@ -86,7 +86,7 @@ export default class SmallNote extends Component {
             width: 15,
             height: 15,
             position: 'absolute',
-            elevation: 4, 
+            elevation: 2, 
             borderColor: borderColor[this.state.COLOR],
             borderWidth: 0.5,
           }}

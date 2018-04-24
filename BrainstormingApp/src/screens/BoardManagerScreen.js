@@ -18,6 +18,9 @@ import {
 } from 'react-native';
 import { StackNavigator, NavigationActions } from 'react-navigation';
 import styles from "./../app.style";
+import {
+  navBarColor,
+} from './../colors'
 import {renderButton, renderIconButton} from './../RenderUtilities'
 import Modal from "react-native-modal";
 import {ip} from './../Configuration';
@@ -179,36 +182,23 @@ class BoardManagerScreen extends Component {
             {this._renderNewTagModal()}
           </Modal>
           <View style={{
-            //flex: 1, 
             flexDirection: 'row',
-            alignItems: 'center',
+            backgroundColor: navBarColor,
           }}>
-          	<View style={{ 
-              justifyContent: 'center',
-              alignItems: 'flex-start',
-              flex: 1,
-              marginVertical: 5, 
-              marginHorizontal: 20,
-            }}>
-              {
-                renderButton('Add Tag', () => this.setState({visibleNewTagModal: true}))
-              }
-        		</View>
+          
 
             <View style={{
-              flex: 2,
+              flex: 1,
             }}/>
             <View style={{
               justifyContent: 'center',
               alignItems: 'flex-end', 
               flex: 1,
-              marginVertical: 10, 
+              marginVertical: 5, 
               marginHorizontal: 20,
             }}>
-              {
-                renderButton('Back', () => {
-                  
-
+            <TouchableWithoutFeedback
+              onPressIn={() => {
                   var updateBoardRequest = {
                     from: 'BoardManager',
                     code: 'updateBoard',
@@ -247,8 +237,14 @@ class BoardManagerScreen extends Component {
                     }
                   )
                   }, 0)
-                })
-              }
+                }}
+            >
+              <View>
+                <Text style = {{fontSize: 20, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                  Back
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
             </View>
           </View>
           <View style = {{ 
@@ -450,22 +446,20 @@ class BoardManagerScreen extends Component {
                 </View>
               )
             })}
+            <TouchableWithoutFeedback
+                onPress = {() => this.setState({visibleNewTagModal: true})}
+              >
+                <View style = {{marginHorizontal: 30,}}>
+                  <Text style = {{fontSize: 16, color: '#70cdef'}}>
+                    Add Tag
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
           </View>
         </ScrollView>
       </View>
     );
   }
 }
-
-/*const RootNavigator = StackNavigator({
-    Group: {
-      screen: GroupScreen,
-      navigationOptions: {
-        headerTitle: 'My Group',
-      }
-    }
-  },
-  {headerMode: 'none'});*/
-
 
 export default BoardManagerScreen;

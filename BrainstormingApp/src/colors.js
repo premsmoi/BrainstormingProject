@@ -14,3 +14,5 @@ export const borderColor = {
 	'yellow': '#ffff80',
 	'black': 'black',
 }
+
+export const navBarColor = '#70cdef';

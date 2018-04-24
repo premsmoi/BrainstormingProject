@@ -26,9 +26,14 @@ import styles from "./../app.style";
 import {renderButton, renderIconButton} from './../RenderUtilities';
 import Modal from "react-native-modal";
 import {
+  navBarColor,
+} from './../colors'
+import {
   ip
 } from './../Configuration';
 import App from '../App'
+
+import { LoginButton, LoginManager, AccessToken, GraphRequestManager, GraphRequest } from 'react-native-fbsdk';
 
 
 class HomeScreen extends Component {
@@ -48,6 +53,7 @@ class HomeScreen extends Component {
   constructor(props) {
     super(props);
     this.totalLoad = 2;
+    this.currentLoad = 0;
     this.state = {
       myBoards: [],
       newBoardName: '',
@@ -67,7 +73,7 @@ class HomeScreen extends Component {
       usernameSearchQuery: '',
       numberOfUnreadNotification: 0,
       notifications: [],
-      currentLoad: 0,
+      loadSucceed: false,
     }
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
 
@@ -81,16 +87,9 @@ class HomeScreen extends Component {
         console.log('I got board list')
         this.setState({
           myBoards: obj.body.boards,
-          currentLoad: ++this.state.currentLoad
         })
-      }
+        this.currentLoad++;
 
-      if (obj.body.code == 'getUser') {
-        console.log('I got user')
-        this.setState({
-          user: obj.body.user,
-          //currentLoad: ++this.state.currentLoad
-        })
       }
 
       if (obj.body.code == 'getBoardListTrigger') {
@@ -111,15 +110,18 @@ class HomeScreen extends Component {
         }, () => {
           this.setState({
             numberOfUnreadNotification: this.countUnreadNotification(),
-            currentLoad: ++this.state.currentLoad,
           })
         })
-
+        this.currentLoad++;
       }
 
       if (obj.body.code == 'getNotificationTrigger') {
         console.log('I got notification trigger')
         this.getNotification()
+      }
+      if(this.isLoadingSuccessful()){
+        this.setState({loadSucceed: true})
+        console.log('Loading is successful!')
       }
 
     };
@@ -151,6 +153,14 @@ class HomeScreen extends Component {
     return true;
   }
 
+  isLoadingSuccessful(){
+    if(this.currentLoad == this.totalLoad){
+      this.currentLoad = 0
+      return true;
+    }
+    return false;
+  }
+
   async getUser() {
     console.log('exec getUser')
     var params = {
@@ -171,9 +181,7 @@ class HomeScreen extends Component {
       var user = JSON.parse(response._bodyText)
       //console.log(user)
       //this.setState({myBoards: user.boards})
-      this.setState({
-        user: user
-      })
+      App.setAppUser(user);
 
     } catch (error) {
       throw error;
@@ -181,6 +189,7 @@ class HomeScreen extends Component {
   }
 
   getBoards() {
+    console.log('exec get boards')
     var board_id_list = []
     App.getAppUser().boards.map(function(board) {
       board_id_list.push(board.boardId)
@@ -301,6 +310,7 @@ class HomeScreen extends Component {
       .catch((error) => {
         throw error;
       });
+      LoginManager.logOut();
   }
 
   async updateBoardName() {
@@ -400,6 +410,114 @@ class HomeScreen extends Component {
       />
     </View>
   )
+
+   _renderNavBar = () => (
+    <View style = {{
+      flexDirection: 'row',
+      backgroundColor: navBarColor,
+    }}>
+      <View style={{ 
+        marginVertical: 10,
+        marginHorizontal: 20,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+      }}>
+        
+      </View>
+        <View style={{ 
+          marginVertical: 5, 
+          marginHorizontal: 10,
+          flex: 1,
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+        }}>
+              <TouchableWithoutFeedback
+                onPress={() => this.setState({visibleNotificationModal: true})}
+              >
+                <ImageBackground
+                  style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
+                  source={require('../../img/message.png')}
+                >
+                  {
+                    this.state.numberOfUnreadNotification > 0 && (
+                      <View style = {{
+                        width: this.state.numberOfUnreadNotification > 9? 22 : 16,
+                        height: 16,
+                        borderRadius: 8,
+                        backgroundColor: 'red',
+                        marginLeft: 20,
+                      }}>
+                        <Text style={{
+                          fontSize: 10, 
+                          color: 'white',  
+                          //marginVertical: 20, 
+                          marginHorizontal: 5,
+                        }}>
+                          {this.state.numberOfUnreadNotification}
+                        </Text>
+                      </View>
+                      )
+                  }
+                  
+                </ImageBackground>
+              </TouchableWithoutFeedback>
+              <View style = {{marginHorizontal: 10}}>
+                {renderIconButton(require('../../img/user.png'), () => this.props.navigation.navigate('UserProfile'))}
+              </View>
+              {renderIconButton(require('../../img/logout.png'), () => this.logout())}
+            </View>
+      </View>
+    )
+
+   _renderBoardList =() => (
+      <View>
+      {this.state.myBoards.map((board) => {
+                return(
+                  <TouchableHighlight 
+                    onPress={() => {
+                      this.setState({ visibleBoardDetailModal: false })
+                      this.setState({changeBoardName: ''})
+                      this.props.navigation.navigate('Board', { boardId: board._id})
+                      }
+                    }
+                    onLongPress = {() => {
+                      this.setState({showDetailBoard: board})
+                      this.setState({changeBoardName: board.boardName})
+                      this.setState({visibleBoardDetailModal: true})
+                      //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board.boardId})
+                      }}
+                    key = {board._id}
+                    underlayColor = {'#f2f2f2'}  
+                  >
+                    <View style = {{
+                      borderColor: '#f4f4f4',
+                      borderWidth: 0.5, 
+                    }}>
+                      <Text 
+                        style={{
+                          fontSize: 20, 
+                          color: 'black',  
+                          marginVertical: 10, 
+                          marginHorizontal: 30 
+                        }}>
+                          {board.boardName}
+                      </Text> 
+                    </View>
+                  </TouchableHighlight>
+                )
+              })}
+              <TouchableWithoutFeedback
+                onPress = {() => this.setState({visibleNewBoardModal: true})}
+              >
+                <View style = {{marginHorizontal: 30,}}>
+                  <Text style = {{fontSize: 16, color: '#70cdef'}}>
+                    New Board
+                  </Text>
+                </View>
+              </TouchableWithoutFeedback>
+      </View>
+    )
 
 
    _renderNewBoardModal = () => (
@@ -589,8 +707,8 @@ class HomeScreen extends Component {
   )
 
   render() {
-    console.log('currentLoad: '+this.state.currentLoad)
-    if(this.state.currentLoad >= this.totalLoad){
+    console.log('render')
+    if(this.state.loadSucceed){
       return (
       <View style={{flex: 1, flexDirection: 'column', backgroundColor: 'white'}}>
         <ScrollView keyboardShouldPersistTaps = {'always'}  scrollEnabled = {false}>
@@ -605,79 +723,11 @@ class HomeScreen extends Component {
           </Modal>
           <View style={{
             flex: 1, 
-            flexDirection: 'row',
-            borderColor: 'black',
-            borderWidth: 0.5,
           }}>
-            <View style={{ 
-              marginVertical: 10,
-              marginHorizontal: 20,
-              justifyContent: 'center',
-              alignItems: 'flex-start',
-            }}>
-              {
-                renderButton('New Board', () => this.setState({visibleNewBoardModal: true}))
-              }
-            </View>
-
-            <View style={{ flex: 2 }}>
-            </View>
-
-            <View style={{ 
-              marginVertical: 5, 
-              marginHorizontal: 10, 
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <TouchableWithoutFeedback
-                onPress={() => this.setState({visibleNotificationModal: true})}
-              >
-                <ImageBackground
-                  style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
-                  source={require('../../img/message.png')}
-                >
-                  {
-                    this.state.numberOfUnreadNotification > 0 && (
-                      <View style = {{
-                        width: this.state.numberOfUnreadNotification > 9? 22 : 16,
-                        height: 16,
-                        borderRadius: 8,
-                        backgroundColor: 'red',
-                        marginLeft: 20,
-                      }}>
-                        <Text style={{
-                          fontSize: 10, 
-                          color: 'white',  
-                          //marginVertical: 20, 
-                          marginHorizontal: 5,
-                        }}>
-                          {this.state.numberOfUnreadNotification}
-                        </Text>
-                      </View>
-                      )
-                  }
-                  
-                </ImageBackground>
-              </TouchableWithoutFeedback>
-            </View>
-
-            <View style={{ 
-              marginVertical: 10, 
-              marginHorizontal: 20,
-              flex: 3,
-              justifyContent: 'center',
-              alignItems: 'flex-end',
-            }}>
-              {
-                renderButton('Logout', () => this.logout())
-              }
-            </View>
+            {this._renderNavBar()}
           </View>
           <View style = {{
             flex: 1,
-            borderColor: 'black',
-            borderWidth: 0.5, 
           }}>
             <Text style={{
               fontSize: 30, 
@@ -689,46 +739,8 @@ class HomeScreen extends Component {
 
           <View style = {{
             flex: 14,
-            borderColor: 'black',
-            borderWidth: 0.5, 
           }}>
-            
-              {this.state.myBoards.map((board) => {
-                return(
-                  <TouchableHighlight 
-                    onPress={() => {
-                      this.setState({ visibleBoardDetailModal: false })
-                      this.setState({changeBoardName: ''})
-                      this.props.navigation.navigate('Board', { boardId: board._id})
-                      }
-                    }
-                    onLongPress = {() => {
-                      this.setState({showDetailBoard: board})
-                      this.setState({changeBoardName: board.boardName})
-                      this.setState({visibleBoardDetailModal: true})
-                      //this.props.navigation.navigate('Board',{user: this.props.navigation.state.params.user, boardName : board.boardName, boardId : board.boardId})
-                      }}
-                    key = {board._id}
-                    underlayColor = {'#f2f2f2'}  
-                  >
-                    <View style = {{
-                      borderColor: 'black',
-                      borderWidth: 0.5, 
-                    }}>
-                      <Text 
-                        style={{
-                          fontSize: 20, 
-                          color: 'black',  
-                          marginVertical: 10, 
-                          marginHorizontal: 30 
-                        }}>
-                          {board.boardName}
-                      </Text> 
-                    </View>
-                  </TouchableHighlight>
-                )
-              })}
-            
+            {this._renderBoardList()}
           </View>
         </ScrollView>
       </View>

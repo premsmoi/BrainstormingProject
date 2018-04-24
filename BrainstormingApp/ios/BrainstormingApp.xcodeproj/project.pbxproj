@@ -40,6 +40,7 @@
 		CBF34DDB582A45F28969222D /* libRNSketchView.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5798B2E5574BFAA6CF8774 /* libRNSketchView.a */; };
 		D5B0EA41AC6C40B3AD30F300 /* libRNViewShot.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E233F3DF537942CCBCFF3FB2 /* libRNViewShot.a */; };
 		1F54297B9AAF4B8AADA4D338 /* libRNImagePicker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AB8A5C0294B143BE84539E8F /* libRNImagePicker.a */; };
+		EBC00A04E4F147868FC9123D /* libRCTFBSDK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B345E995B7884049906E5423 /* libRCTFBSDK.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -297,6 +298,8 @@
 		E233F3DF537942CCBCFF3FB2 /* libRNViewShot.a */ = {isa = PBXFileReference; name = "libRNViewShot.a"; path = "libRNViewShot.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 		DF66A50449694D2ABECC067A /* RNImagePicker.xcodeproj */ = {isa = PBXFileReference; name = "RNImagePicker.xcodeproj"; path = "../node_modules/react-native-image-picker/ios/RNImagePicker.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
 		AB8A5C0294B143BE84539E8F /* libRNImagePicker.a */ = {isa = PBXFileReference; name = "libRNImagePicker.a"; path = "libRNImagePicker.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		E9EF8E7416614DF68B9DB4CF /* RCTFBSDK.xcodeproj */ = {isa = PBXFileReference; name = "RCTFBSDK.xcodeproj"; path = "../node_modules/react-native-fbsdk/ios/RCTFBSDK.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		B345E995B7884049906E5423 /* libRCTFBSDK.a */ = {isa = PBXFileReference; name = "libRCTFBSDK.a"; path = "libRCTFBSDK.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -329,6 +332,7 @@
 				CBF34DDB582A45F28969222D /* libRNSketchView.a in Frameworks */,
 				D5B0EA41AC6C40B3AD30F300 /* libRNViewShot.a in Frameworks */,
 				1F54297B9AAF4B8AADA4D338 /* libRNImagePicker.a in Frameworks */,
+				EBC00A04E4F147868FC9123D /* libRCTFBSDK.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -510,6 +514,7 @@
 				73944DDA4BFF40FC93897274 /* RNSketchView.xcodeproj */,
 				1862723DDAC748AB883326FA /* RNViewShot.xcodeproj */,
 				DF66A50449694D2ABECC067A /* RNImagePicker.xcodeproj */,
+				E9EF8E7416614DF68B9DB4CF /* RCTFBSDK.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -1084,6 +1089,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1091,6 +1097,7 @@
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
 					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 					"$(SRCROOT)\..\node_modules\react-native-image-picker\ios",
+					"$(SRCROOT)\..\node_modules\react-native-fbsdk\ios\RCTFBSDK/**",
 				);
 			};
 			name = Debug;
@@ -1115,6 +1122,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1122,6 +1130,7 @@
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
 					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 					"$(SRCROOT)\..\node_modules\react-native-image-picker\ios",
+					"$(SRCROOT)\..\node_modules\react-native-fbsdk\ios\RCTFBSDK/**",
 				);
 			};
 			name = Release;
@@ -1147,6 +1156,7 @@
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
 					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 					"$(SRCROOT)\..\node_modules\react-native-image-picker\ios",
+					"$(SRCROOT)\..\node_modules\react-native-fbsdk\ios\RCTFBSDK/**",
 				);
 			};
 			name = Debug;
@@ -1171,6 +1181,7 @@
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
 					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 					"$(SRCROOT)\..\node_modules\react-native-image-picker\ios",
+					"$(SRCROOT)\..\node_modules\react-native-fbsdk\ios\RCTFBSDK/**",
 				);
 			};
 			name = Release;
@@ -1204,6 +1215,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1211,6 +1223,7 @@
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
 					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 					"$(SRCROOT)\..\node_modules\react-native-image-picker\ios",
+					"$(SRCROOT)\..\node_modules\react-native-fbsdk\ios\RCTFBSDK/**",
 				);
 			};
 			name = Debug;
@@ -1244,6 +1257,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1251,6 +1265,7 @@
 					"$(SRCROOT)\..\node_modules\react-native-sketch-draw\ios/**",
 					"$(SRCROOT)\..\node_modules\react-native-view-shot\ios",
 					"$(SRCROOT)\..\node_modules\react-native-image-picker\ios",
+					"$(SRCROOT)\..\node_modules\react-native-fbsdk\ios\RCTFBSDK/**",
 				);
 			};
 			name = Release;
@@ -1279,6 +1294,7 @@
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 			};
 			name = Debug;
@@ -1303,6 +1319,7 @@
 				TVOS_DEPLOYMENT_TARGET = 10.1;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",

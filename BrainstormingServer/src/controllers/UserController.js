@@ -1,7 +1,8 @@
 var mongoose = require('mongoose'),
   User = mongoose.model('User'),
   passport = require('passport'),
-  LocalStrategy = require('passport-local').Strategy;
+  LocalStrategy = require('passport-local').Strategy,
+  bcrypt = require('bcryptjs');
 
 
 
@@ -53,6 +54,49 @@ exports.create_a_user = function(req, res) {
       }
     });
   }
+};
+
+exports.fb_login = function(req, res) {
+  var username = req.body.id;
+  var name = req.body.name;
+  var email = req.body.email;
+  var password = '12345';
+
+   bcrypt.genSalt(10, function(err, salt){
+      bcrypt.hash(username, salt, function(err, hash){
+        password = hash;
+      });
+    });
+    var newUser = new User({
+      username: username,
+      password: password,
+      name: name,
+      email: email,
+    })
+    User.find({
+      username: username
+    }, function(err, users){
+      if(err)
+        console.log(err)
+      console.log('users length: '+users.length)
+      if(users.length == 0){
+        User.createUser(newUser, function(err, user) {
+          if (err) {
+            console.log(err);
+          }
+        });
+
+      }
+    })
+   
+ User.findOne({
+    username: username
+  }, function(err, user) {
+    if (err)
+      res.send(err)
+    console.log('user: '+user)
+    res.json(user)
+  })
 };
 
 exports.get_user = function(req, res) {
@@ -252,5 +296,22 @@ exports.unvoteNote = function(obj, callback) {
     $pull: {
       'boards.$.votedNotes': obj.unvotedNoteId,
     }
+  }, callback)
+}
+
+
+exports.updateUser = function(updatedObj, callback) {
+  if(updatedObj.password){
+    bcrypt.genSalt(10, function(err, salt){
+      bcrypt.hash(updatedObj.password, salt, function(err, hash){
+        updatedObj.password = hash;
+      });
+    });
+  }
+  
+  User.update({
+    username: updatedObj.username,
+  }, {
+    $set: updatedObj,
   }, callback)
 }
