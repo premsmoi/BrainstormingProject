@@ -346,7 +346,7 @@ wsServer.on('connection', function connection(connection, request) {
                 client.send(json)
               }
             });
-            var now = new Date()
+           /* var now = new Date()
             var newNoti = {
               notificationType: 'normal',
               boardId: board._id,
@@ -379,7 +379,7 @@ wsServer.on('connection', function connection(connection, request) {
                   client.send(json)
                 }
               });
-            })
+            })*/
 
           })
         })
@@ -531,21 +531,15 @@ wsServer.on('connection', function connection(connection, request) {
             //connection.send(json)
             //console.log('json: ' + json)
             wsServer.clients.forEach(function each(client) {
-              if (client['boardId'] == connection['boardId'] && client.readyState === WebSocket.OPEN) {
+              if (client['boardId'] == connection['boardId']) {
                 client.send(json)
                 //console.log('sent json:'+json)
               }
             });
-            var json = JSON.stringify({
-              body: {
-                code: 'closeWebSocket',
-              }
-            })
-            connection.send(json)
           })
         })
       })
-    } else if (obj.code == 'startBoard') {
+    } /*else if (obj.code == 'startBoard') {
       console.log(obj)
       userList.startBoard({
         username: obj.username,
@@ -556,7 +550,7 @@ wsServer.on('connection', function connection(connection, request) {
           console.log(err)
         console.log('numAffected: ' + JSON.stringify(numAffected))
       })
-    } else if (obj.code == 'getBoardStartStatus') {
+    }*/ else if (obj.code == 'getBoardStartStatus') {
       console.log(obj)
       userList.getUserByUsername(obj.username, function(err, user) {
         if (err)
@@ -588,11 +582,7 @@ wsServer.on('connection', function connection(connection, request) {
             timeRemaining: board.timeRemaining
           }
         })
-        wsServer.clients.forEach(function each(client) {
-          if (client['boardId'] == connection['boardId']) {
-            client.send(json)
-          }
-        });
+        connection.send(json);
       })
 
     } else if (obj.code == 'voteNote') {
@@ -715,11 +705,13 @@ wsServer.on('connection', function connection(connection, request) {
             if (boards.length == 0) {
               user_arr.push({
                 username: user.username,
+                name: user.name,
                 joined: false
               })
             } else {
               user_arr.push({
                 username: user.username,
+                name: user.name,
                 joined: true
               })
             }
