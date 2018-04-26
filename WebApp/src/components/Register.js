@@ -5,8 +5,8 @@ import axios from 'axios';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-//const ip = 'localhost:3001';
-const ip = '54.169.35.33:8080';
+const ip = 'localhost:3001';
+//const ip = '54.169.35.33:8080';
 
 class Register extends Component {
     constructor(props) {

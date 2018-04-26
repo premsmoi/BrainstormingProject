@@ -113,6 +113,10 @@ class NoteBox extends Component {
             this.setState({ notes: nextProps.notes });
             console.log(nextProps.notes);
         }
+        if (nextProps.userVotedNotes !== this.props.userVotedNotes) {
+            this.setState({ userVotedNotes: nextProps.userVotedNotes });
+            console.log(nextProps.userVotedNotes);
+        }
     }
 
     render() {
@@ -126,8 +130,8 @@ class NoteBox extends Component {
                             <Icon className={obj.writer === this.props.user ? "edit-button none" : "edit-button"} icon={eye} onClick={this.showNoteView} />
                             <div className="body">{obj.text}</div>
                             <div className="vote">
-                                <span><Icon icon={thickTop} onClick={() => this.props.voteNote(obj._id)} /></span>
-                                <span><Icon icon={thickBottom} onClick={() => this.props.unvoteNote(obj._id)} /></span>
+                                <span style={{ display: this.props.userVotedNotes.indexOf(obj._id) > -1 ? 'none' : 'inline-block' }}><Icon icon={thickTop} onClick={() => this.props.voteNote(obj._id, )} /></span>
+                                <span style={{ display: this.props.userVotedNotes.indexOf(obj._id) > -1 ? 'inline-block' : 'none' }}><Icon icon={thickBottom} onClick={() => this.props.unvoteNote(obj._id)} /></span>
                                 <span>Vote: {obj.voteScore.toString()}</span>
                             </div>
                         </div>

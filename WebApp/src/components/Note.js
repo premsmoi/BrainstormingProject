@@ -13,8 +13,8 @@ import Member from './Member';
 import HeadNav from './HeadNav';
 import { setInterval } from 'timers';
 
-//const ip = 'localhost:3001';
-const ip = '54.169.35.33:8080';
+const ip = 'localhost:3001';
+//const ip = '54.169.35.33:8080';
 
 class NoteView extends Component {
     constructor(props) {
