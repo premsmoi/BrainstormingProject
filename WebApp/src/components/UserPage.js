@@ -3,8 +3,8 @@ import HeadNav from './HeadNav';
 import { Button, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap';
 import './mystyle/UserPage.scss';
 
-const ip = 'localhost:3001';
-//const ip = '54.169.35.33:8080';
+//const ip = 'localhost:3001';
+const ip = '54.169.35.33:8080';
 
 function FieldGroup({ id, label, help, ...props }) {
     return (

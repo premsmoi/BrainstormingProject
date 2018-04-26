@@ -36,7 +36,8 @@ class NoteBox extends Component {
 
     componentDidMount() {
         this.setState({ notes: this.props.notes });
-        console.log(this.state.notes);
+        //console.log(this.state.notes);
+        console.log(this.props.userVotedNotes);
     }
 
     onControlledDrag(e, position) {
