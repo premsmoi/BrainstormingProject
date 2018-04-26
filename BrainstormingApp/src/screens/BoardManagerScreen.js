@@ -23,7 +23,7 @@ import {
 } from './../colors'
 import {renderButton, renderIconButton} from './../RenderUtilities'
 import Modal from "react-native-modal";
-import {ip} from './../Configuration';
+import {ip, scale} from './../Configuration';
 import App from '../App';
 
 class BoardManagerScreen extends Component {
@@ -123,22 +123,37 @@ class BoardManagerScreen extends Component {
     this.ws.send(requestString)
 
     //Alert.alert('delete '+tag)
-  }
+  };
 
-   _renderTextInput = (placeholder, onChange, value) => (
+   _renderTextBeforeTextInput = (text) => (
+    <View>
+      <Text style = {{
+        fontSize: 16*scale,
+        color: 'grey',
+        marginVertical: 5*scale,
+        marginRight: 5*scale
+      }}>
+      {text}
+      </Text>
+    </View>
+    );
+
+  _renderTextInput = (placeholder, onChange, value) => (
     <View>
       <TextInput
           style={{
-            height: 36, 
-            width: 100,
+            height: 36*scale, 
+            width: 200*scale,
+            fontSize: 16*scale
           }}
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
           onChangeText={onChange}
+          underlineColorAndroid = {'black'}
           value = {value}
       />
     </View>
-  )
+  );
 
 
   _renderNewTagModal = () => (
@@ -228,81 +243,49 @@ class BoardManagerScreen extends Component {
                   }
                   }
                   var requestString = JSON.stringify(updateBoardRequest)
-                  console.log('Set BoardManager Time Request')
+                  //console.log('Set BoardManager Time Request')
                   this.ws.send(requestString)
                   setTimeout( () => {
-                    this.props.navigation.navigate(
-                    'Board', {
-                      boardId: App.getAppBoard()._id,
-                    }
-                  )
+                    this.props.navigation.navigate('Board', { boardId: App.getAppBoard()._id})
                   }, 0)
                 }}
             >
               <View>
-                <Text style = {{fontSize: 20, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                <Text style = {{fontSize: 20*scale, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
                   Back
                 </Text>
               </View>
             </TouchableWithoutFeedback>
             </View>
           </View>
-          <View style = {{ 
+          <View style = {{
+            marginVertical: 5, 
+            marginLeft: 20 
           }}>
-            <Text style={{
-              fontSize: 20, 
-              color: 'grey',  
-              marginVertical: 5, 
-              marginLeft: 20 
-            }}>
+            <Text style={styles.headerText}>
               Board Setting
             </Text>
           </View>
           <View style = {{marginLeft: 30}}>
             <View style = {{flexDirection: 'row'}}>
-              <Text style = {{
-                fontSize: 16, 
-                color: 'grey',  
-                marginVertical: 5, 
-                marginRight: 5 
-              }}>
-                Board Name: 
-              </Text>
-              <TextInput
-                style={{
-                  height: 36, 
-                  width: 200,
-                }}
-                placeholderTextColor = 'gray'
-                placeholder = 'Input'
-                onChangeText= {(newBoardName) => this.setState({newBoardName})}
-                value = {String(this.state.newBoardName)}
-                maxLength = {30}
-                textAlign={'left'}
-                underlineColorAndroid = {'black'}
-              />
+              {this._renderTextBeforeTextInput('Board Name: ')}
+              {this._renderTextInput('Input Board Name', (newBoardName) => this.setState({newBoardName}), String(this.state.newBoardName))}
             </View>
           </View>
           <View style = {{marginLeft: 30}}>
             <View style = {{flexDirection: 'row'}}>
-              <Text style = {{
-                fontSize: 16, 
-                color: 'grey',  
-                marginVertical: 5, 
-                marginRight: 5 
-              }}>
-                Description:  
-              </Text>
+              {this._renderTextBeforeTextInput('Description: ')}
               <TextInput
                 style={{
                   marginTop: 10,
                   borderWidth: 0.5,
                   borderColor: 'gray',
-                  width: 200,
+                  width: 200*scale,
                   textAlignVertical: "top",
+                  fontSize: 16*scale
                 }}
                 placeholderTextColor = 'gray'
-                placeholder = 'Input'
+                placeholder = 'Input Description'
                 onChangeText= {(description) => this.setState({description})}
                 value = {String(this.state.description)}
                 //maxLength = {5}
@@ -325,7 +308,7 @@ class BoardManagerScreen extends Component {
                 disabled = {App.getAppBoard().start}
               />
               <Text style={{
-                fontSize: 16, 
+                fontSize: 16*scale, 
                 color: 'grey',  
                 marginVertical: 5, 
                 marginRight: 5 
@@ -334,8 +317,9 @@ class BoardManagerScreen extends Component {
               </Text>
               <TextInput
                 style = {{
-                    height: 36,
-                    width: 50,
+                    height: 36*scale,
+                    width: 50*scale,
+                    fontSize: 16*scale
                 }}
                 placeholderTextColor = 'gray'
                 placeholder = 'Input'
@@ -392,7 +376,7 @@ class BoardManagerScreen extends Component {
           <View style = {{marginLeft: 30}}>
             <View style = {{flexDirection: 'row'}}>
               <Text style = {{
-                fontSize: 16, 
+                fontSize: 16*scale, 
                 color: 'grey',  
                 marginVertical: 5, 
                 marginRight: 5 
@@ -401,8 +385,9 @@ class BoardManagerScreen extends Component {
               </Text>
               <TextInput
                 style={{
-                  height: 36, 
-                  width: 50,
+                  height: 36*scale, 
+                  width: 50*scale,
+                  fontSize: 16*scale
                 }}
                 placeholderTextColor = 'gray'
                 placeholder = 'Input'
@@ -415,7 +400,7 @@ class BoardManagerScreen extends Component {
             </View>
           </View>
           <View style = {{flex: 5 }}>
-            <Text style={{fontSize: 20, 
+            <Text style={{fontSize: 20*scale, 
               color: 'grey',  
               marginVertical: 5, 
               marginHorizontal: 20 
@@ -430,13 +415,13 @@ class BoardManagerScreen extends Component {
                       }
                     >
                     <Image
-                      style={{width: 16, height: 16, marginTop: 8, marginLeft: 30}}
+                      style={{width: 16*scale, height: 16*scale, marginTop: 8, marginLeft: 30}}
                       source={require('../../img/cross.png')}
                     />
                     </TouchableWithoutFeedback>
                     <Text 
                       style={{
-                        fontSize: 18, 
+                        fontSize: 18*scale, 
                         color: 'black',  
                         marginVertical: 5,
                         marginLeft: 10,
@@ -450,7 +435,7 @@ class BoardManagerScreen extends Component {
                 onPress = {() => this.setState({visibleNewTagModal: true})}
               >
                 <View style = {{marginHorizontal: 30,}}>
-                  <Text style = {{fontSize: 16, color: '#70cdef'}}>
+                  <Text style = {{fontSize: 16*scale, color: '#70cdef'}}>
                     Add Tag
                   </Text>
                 </View>

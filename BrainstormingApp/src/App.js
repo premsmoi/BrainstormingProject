@@ -33,6 +33,14 @@ export default class App{
 		     console.log(e.message);
 	    };
 
+	    setInterval(() => {
+	    	var pingRequest = {
+		        from: 'App'
+		      }
+      var requestString = JSON.stringify(pingRequest)
+	    	appWebSocket.send(requestString)
+	    }, 10000)
+
 	}
 
 	static getAppWebSocket(){

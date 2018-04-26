@@ -20,6 +20,7 @@ import styles from "./../app.style";
 import {noteColor, borderColor} from './../colors';
 import {renderButton, renderIconButton} from './../RenderUtilities';
 import App from '../App'
+import {scale} from '../Configuration'
 //var noteColor = {'red': '#ff9999', 'pink': '#ff99c2', 'green': '#99ff99', 'blue': '#99ffff', 'yellow': '#ffff99'}
 //var borderColor = {'red': '#ff8080', 'pink': '#ff80b3', 'green': '#80ff80', 'blue': '#80ffff', 'yellow': '#ffff80'}
 //var COLOR = 'blue';
@@ -74,9 +75,10 @@ export default class Note extends Component {
           tempTagSelection[tag] = false
           //console.log('now tag: '+tag)
           //console.log('tempTagSelection: '+JSON.stringify(tempTagSelection)
-          this.setState({ tagSelection: tempTagSelection }, () => {
+          //this.setState({ tagSelection: tempTagSelection }, () => {
             //this.setState({ newTagSelection: tempTagSelection })
-          })
+          //})
+          this.state.tagSelection = tempTagSelection;
         })
     //console.log('start newTagSelection: '+JSON.stringify(this.state.newTagSelection))
     //console.log('start tagSelection: '+JSON.stringify(this.state.tagSelection))
@@ -154,13 +156,13 @@ export default class Note extends Component {
       
       <View style={{flexDirection: 'row', padding: 6, margin: 8}}>
         <Text style = {{
-          fontSize: 14,
+          fontSize: 14*scale,
         }}>
           Type: 
         </Text>
         <Picker
           selectedValue={this.state.newNoteType}
-          style={{ height: 20, width: 150 }}
+          style={{ height: 20*scale, width: 150*scale,}}
           enabled = {this.isOwner? true : false}
           onValueChange={(newNoteType) => this.setState({newNoteType})}>
           <Picker.Item label="Text" value="text" />
@@ -172,7 +174,7 @@ export default class Note extends Component {
           this.state.newNoteType == 'text' && (
               <TextInput
                 style={{ 
-                  fontSize: 20,
+                  fontSize: 20*scale,
                   marginTop   : 15,
                   marginLeft  : 15,
                   marginRight : 15,
@@ -193,7 +195,7 @@ export default class Note extends Component {
         {
           this.state.newNoteType == 'image' && (
             <View style = {{marginHorizontal: 15}}>
-                <Image style={{ width: 300, height: 300 }} source={{uri: 'data:image/jpg;base64,'+this.state.newImgData}} />
+                <Image style={{ width: 250*scale, height: 250*scale }} source={{uri: 'data:image/jpg;base64,'+this.state.newImgData}} />
               </View>
             )
         }
@@ -202,29 +204,31 @@ export default class Note extends Component {
       <View style = {{flexDirection: 'row'}} >
         <Text 
           style={{
-            fontSize: 16, 
+            fontSize: 16*scale, 
             color: 'grey',  
             marginVertical: 5, 
             marginLeft: 20 
           }}>Tags:</Text>
           {this.state.newNoteTags.map((tag) => {
             return(
-              <Text 
-                style={{
-                  fontSize: 16, 
-                  color: 'black',  
-                  marginVertical: 5, 
-                  marginHorizontal: 5 
-                }}>
-                {tag}
-              </Text>
+              <View key = {tag}>
+                <Text 
+                  style={{
+                    fontSize: 16*scale, 
+                    color: 'black',  
+                    marginVertical: 5, 
+                    marginHorizontal: 5 
+                  }}>
+                  {tag}
+                </Text>
+              </View>
             )
           })}
           {
             this.isOwner && (
               <TouchableOpacity onPress = {() => {this.setState({visibleSelectTagsModal: true})}}>
                 <Image
-                  style={{width: 16, height: 16, marginTop: 8, marginLeft: 5}}
+                  style={{width: 16*scale, height: 16*scale, marginTop: 8, marginLeft: 5}}
                   source={require('../../img/pencil.png')}
                 />
               </TouchableOpacity>
@@ -310,7 +314,8 @@ export default class Note extends Component {
               <View style = {{flexDirection: 'row'}}>
                 <View style = {{flex: 1}}/>
                 <View style = {{flex: 4}}>  
-                  {renderButton(this.state.voteStatus? 'Unvote' : 'Vote', () => {
+                  { !(App.getAppBoard().numberOfVote - this.props.getState().votedNoteList.length == 0 && this.state.voteStatus == false) 
+                    && renderButton(this.state.voteStatus? 'Unvote' : 'Vote', () => {
                     if(this.state.voteStatus){
                       this.props.unvoteNote(this.id)
                       this.setState({voteStatus: false, voteScore: this.state.voteScore--})
@@ -371,7 +376,9 @@ export default class Note extends Component {
       { 
         this.boardState.tags.map((tag) => {
         return(
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexDirection: 'row' }}
+          	key = {tag}
+          >
             <CheckBox
               value={this.state.newTagSelection[tag]}
               onValueChange={() => {
@@ -382,7 +389,7 @@ export default class Note extends Component {
               }
               }
             />
-            <Text style={{marginTop: 5}}>{tag}</Text>
+            <Text style={{fontSize: 16*scale}}>{tag}</Text>
           </View>
         )
       })}
@@ -489,10 +496,10 @@ export default class Note extends Component {
           style={{
             top: 0, 
             bottom: 0,
-            width: 150,
-            height: 150,
+            width: 150*scale,
+            height: 150*scale,
             position: 'absolute',
-            elevation: 8, 
+            elevation: 8*scale, 
             borderColor: borderColor[this.state.COLOR],
             borderWidth: 0.5,
           }}
@@ -504,7 +511,7 @@ export default class Note extends Component {
             {
               this.props.getVoteStatus(this.id) && 
                 <Image 
-                  style={{width: 16, height: 16, marginTop: 5, /*marginHorizontal: 10*/}}
+                  style={{width: 16*scale, height: 16*scale, marginTop: 5*scale, /*marginHorizontal: 10*/}}
                   source={require('../../img/star.png')}
                 />
             
@@ -515,7 +522,7 @@ export default class Note extends Component {
           {
             this.state.noteType == 'text' && (
                 <Text style={{
-                  fontSize: 14,
+                  fontSize: 14*scale,
                   //marginVertical: 10,
                   marginHorizontal: 10,
                   color: 'black',
@@ -524,19 +531,19 @@ export default class Note extends Component {
           }
           {
             this.state.noteType == 'image' && (
-              <View style = {{marginHorizontal: 15}}>
-                <Image style={{ width: 115, height: 115 }} source={{uri: 'data:image/jpg;base64,'+this.state.img.data}} />
+              <View style = {{marginHorizontal: 15*scale}}>
+                <Image style={{ width: 115*scale, height: 115*scale }} source={{uri: 'data:image/jpg;base64,'+this.state.img.data}} />
               </View>
             )
           }
           </View>
           <View style = {{flex: 1, padding: 5}}>
             <Text style={{
-              fontSize: 14,
+              fontSize: 14*scale,
               //marginBottom: 10,
               //marginHorizontal: 10,
               color: 'black',
-            }}>{'Votes: '+this.state.voteScore}</Text>
+            }}>{'Score: '+this.state.voteScore}</Text>
           </View>
         </View>
         

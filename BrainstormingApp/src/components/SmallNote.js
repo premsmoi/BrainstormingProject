@@ -16,6 +16,9 @@ import {
 import TimerMixin from 'react-timer-mixin';
 import styles from "./../app.style";
 import {noteColor, borderColor} from './../colors'
+import {
+  scale
+} from './../Configuration';
 //var noteColor = {'red': '#ff9999', 'pink': '#ff99c2', 'green': '#99ff99', 'blue': '#99ffff', 'yellow': '#ffff99'}
 //var borderColor = {'red': '#ff8080', 'pink': '#ff80b3', 'green': '#80ff80', 'blue': '#80ffff', 'yellow': '#ffff80'}
 //var COLOR = 'blue';
@@ -51,16 +54,7 @@ export default class SmallNote extends Component {
         backgroundColor: noteColor[this.state.COLOR],
       }
     };
-    this.boardState.tags.map((tag) => {
-          let newTagSelection = this.state.tagSelection
-          newTagSelection[tag] = false
-          this.setState({ tagSelection: newTagSelection })
-        })
-    this.state.tags.map((tag) => {
-          let newTagSelection = this.state.tagSelection
-          newTagSelection[tag] = true
-          this.setState({ tagSelection: newTagSelection })
-        })
+   
   }
 
 
@@ -83,10 +77,10 @@ export default class SmallNote extends Component {
           style={{
             top: 0, 
             bottom: 0,
-            width: 15,
-            height: 15,
+            width: 15*scale,
+            height: 15*scale,
             position: 'absolute',
-            elevation: 2, 
+            elevation: 2*scale, 
             borderColor: borderColor[this.state.COLOR],
             borderWidth: 0.5,
           }}

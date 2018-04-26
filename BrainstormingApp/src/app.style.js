@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { scale } from './Configuration' 
 
 export default StyleSheet.create({
   container: {
@@ -6,28 +7,39 @@ export default StyleSheet.create({
     justifyContent: "center",
     alignItems: "center"
   },
-  rectangle: {
-    top: 0, 
-    bottom: 0,
-    width: 150,
-    height: 150,
-    position: 'absolute',
-    elevation: 4,    
+  imageIcon: {
+    width: 24*scale, 
+    height: 24*scale, 
+    marginVertical: 5*scale, 
+    marginHorizontal: 10*scale
   },
-  text: {
-    marginTop   : 5,
-    marginLeft  : 5,
-    marginRight : 5,
-    color       : 'black'
+  headerText: {
+    fontSize: 30*scale, 
+    color: 'grey',
   },
-  button: {
-    backgroundColor: "lightblue",
-    padding: 6,
-    margin: 8,
+  listText: {
+    fontSize: 20*scale, 
+    color: 'black',  
+  },
+  detailText: {
+    fontSize: 16*scale, 
+    color: 'black',  
+  },
+  textButton: {
+    fontSize: 16*scale, 
+    color: '#70cdef'
+  },
+  buttonContainer: {
+    backgroundColor: 'lightblue',
+    borderRadius: 10*scale,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 4,
-    borderColor: "rgba(0, 0, 0, 0.1)"
+  },
+  buttonText: {
+    fontSize: 14*scale,
+    color: 'black',
+    marginVertical: 5*scale,
+    marginHorizontal: 10*scale,
   },
   modalContent: {
     backgroundColor: "white",

@@ -37,6 +37,7 @@ import Note from './../components/Note';
 import SmallNote from './../components/SmallNote';
 import {
   ip,
+  scale,
   boardWidth,
   boardHeight
 } from './../Configuration';
@@ -63,6 +64,7 @@ class BoardScreen extends Component {
       time: new Date().getTime(),
       noteId: null,
     }
+    this.exitThisBoard = false;
     this.currentBoardWidth = 0;
     this.currentBoardHeight = 0;
     this.pressExit = false;
@@ -154,11 +156,6 @@ class BoardScreen extends Component {
       if (obj.body.code == 'getNotesTrigger') {
         console.log('I got notes trigger')
         this.getNotes();
-      }
-
-      if (obj.body.code == 'closeWebSocket') {
-        console.log('closeWebSocket')
-        this.ws.close()
       }
 
       if (obj.body.code == 'getNotes') {
@@ -352,7 +349,7 @@ class BoardScreen extends Component {
   }
 
   handleBackButtonClick = () => {
-    this.props.navigation.navigate('Home')
+    this.exitBoard()
     return true;
   };
 
@@ -362,21 +359,23 @@ class BoardScreen extends Component {
 
 
   countTimer  = () => {
-    if (this.state.currentLoad >= this.totalLoad) {
+    if (this.state.currentLoad >= this.totalLoad && !this.exitThisBoard) {
 
       if(this.state.timeRemaining == 0){
+        console.log(1)
         this.updateBoard({
           timeRemaining: App.getAppBoard().limitedTime,
         })
       }
 
-      if (App.getAppBoard().timeRemaining != App.getAppBoard().limitedTime) {
+      /*if (App.getAppBoard().timeRemaining != App.getAppBoard().limitedTime) {
         if (!App.getAppBoard().start) {
+          console.log(2)
           this.updateBoard({
             timeRemaining: App.getAppBoard().limitedTime
           })
         }
-      }
+      }*/
       //console.log('startedBoard: '+this.state.startedBoard)
 
       if (App.getAppBoard().start && this.state.timeRemaining > 0) {
@@ -573,8 +572,14 @@ class BoardScreen extends Component {
       var requestString = JSON.stringify(exitBoardRequest)
       console.log('exitBoard')
       this.ws.send(requestString)
-      this.props.navigation.navigate('Home')
+      const resetAction = NavigationActions.reset({
+        index: 0,
+        actions: [NavigationActions.navigate({ routeName: 'Home' })],
+      });
+      this.props.navigation.dispatch(resetAction);
+      //this.props.navigation.goBack()
       this.pressExit = true;
+      this.exitThisBoard = true;
     }
   };
 
@@ -590,6 +595,22 @@ class BoardScreen extends Component {
     var requestString = JSON.stringify(starttBoardRequest)
     console.log('Start Board !!!')
     this.ws.send(requestString)
+    this.setState({startButtonText: 'Stop'})
+  };
+
+  stopBoard = () => {
+    var stopBoardRequest = {
+      from: 'Board',
+      code: 'updateBoard',
+      boardId: this.boardId,
+      updatedObj: {
+        start: false,
+      }
+    }
+    var requestString = JSON.stringify(stopBoardRequest)
+    console.log('Stop Board !!!')
+    this.ws.send(requestString)
+    this.setState({startButtonText: 'Start'})
   };
 
   reRenderByNotes = (newNoteList) => {
@@ -601,13 +622,13 @@ class BoardScreen extends Component {
   groupNotesByTag = () => {
     //console.log('tags: '+JSON.stringify(this.state.tags))
     var newNoteList = this.state.noteList
-    var x = -150;
+    var x = -150*scale;
     var y = 0;
     var count = 0
-    var maxY = 150
+    var maxY = 150*scale
     this.state.tags.map((tag) => {
-      x += 175;
-      y  = Math.floor(count/5)*maxY + 50;
+      x += 175*scale;
+      y  = Math.floor(count/5)*maxY + 50*scale;
       var includesNote = false;
       newNoteList.map((note) => {
         if(note.tags.includes(tag)){
@@ -621,18 +642,18 @@ class BoardScreen extends Component {
               updated: new Date().getTime(),
             }
           this.updateNote(updatedObj)
-          y += 40;
-          x += 10
+          y += 40*scale;
+          x += 10*scale
           includesNote = true;
-          if(y + 150 > maxY){
-            maxY = y + 150;
+          if(y + 150*scale > maxY){
+            maxY = y + 150*scale;
           }
         }
       })
       if(includesNote){
         count++
         if(count % 5 == 0){
-          x = -150;
+          x = -150*scale;
         }
       }
     })
@@ -652,11 +673,11 @@ class BoardScreen extends Component {
     //console.log('tags: '+JSON.stringify(this.state.tags))
     var colors = ['red','pink','blue','green','yellow']
     var newNoteList = this.state.noteList
-    var x = -150;
+    var x = -150*scale;
     var y;
     colors.map((color) => {
-      x += 175;
-      y  = 50;
+      x += 175*scale;
+      y  = 50*scale;
       count_note = 0
       newNoteList.map((note) => {
         if(note.color == color){
@@ -670,13 +691,13 @@ class BoardScreen extends Component {
               updated: new Date().getTime(),
             }
           this.updateNote(updatedObj)
-          x += 10;
-          y += 40;
+          x += 10*scale;
+          y += 40*scale;
           count_note++
         }
       })
       if(count_note == 0){
-        x -= 175
+        x -= 175*scale
       }
     })
     this.setState({
@@ -694,11 +715,11 @@ class BoardScreen extends Component {
   spreadNotes = () => {
     //console.log('tags: '+JSON.stringify(this.state.tags))
     var newNoteList = this.state.noteList
-    var x = -150;
-    var y = 25;
+    var x = -150*scale;
+    var y = 25*scale;
     count_note = 0;
     newNoteList.map((note) => {
-      x += 190;
+      x += 190*scale;
       note.x = x;
       note.y = y;
       var updatedObj = {
@@ -710,8 +731,8 @@ class BoardScreen extends Component {
       this.updateNote(updatedObj)
       count_note++;
       if (count_note % 5 == 0) {
-        x = -150;
-        y += 175;
+        x = -150*scale;
+        y += 175*scale;
       }
     })
     this.setState({
@@ -795,8 +816,8 @@ class BoardScreen extends Component {
         backgroundColor: noteColor[color],
         borderColor: 'black',
         borderWidth: 0.5,
-        width: 50,
-        height: 50,}}>
+        width: 50*scale,
+        height: 50*scale,}}>
       </View>
     </TouchableOpacity>
   );
@@ -805,7 +826,9 @@ class BoardScreen extends Component {
     <View>
       <TextInput
           style={{
-            height: 36, 
+            height: 36*scale,
+            width: 100*scale,
+            fontSize: 16*scale
           }}
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
@@ -818,10 +841,10 @@ class BoardScreen extends Component {
   _renderNewNoteModal = () => (
     <View style={{
       backgroundColor: noteColor[this.state.newColor],
-      padding: 22,
+      padding: 22*scale,
       //justifyContent: "center",
       //alignItems: "center",
-      borderRadius: 4,
+      borderRadius: 4*scale,
     }}>
       <View style={{flexDirection: 'row', padding: 6, margin: 8, justifyContent: 'center'}}>
         {this._renderColorPicker('red')}
@@ -832,13 +855,13 @@ class BoardScreen extends Component {
       </View>
       <View style={{flexDirection: 'row', padding: 6, margin: 8}}>
         <Text style = {{
-          fontSize: 14,
+          fontSize: 14*scale,
         }}>
           Type: 
         </Text>
         <Picker
           selectedValue={this.state.newNoteType}
-          style={{ height: 20, width: 150 }}
+          style={{ height: 20*scale, width: 150*scale, }}
           onValueChange={(newNoteType) => this.setState({newNoteType})}>
           <Picker.Item label="Text" value="text" />
           <Picker.Item label="Image" value="image" />
@@ -849,7 +872,7 @@ class BoardScreen extends Component {
           this.state.newNoteType == 'text' && (
               <TextInput
                 style={{ 
-                  fontSize: 20,
+                  fontSize: 20*scale,
                   marginTop   : 15,
                   marginLeft  : 15,
                   marginRight : 15,
@@ -870,7 +893,7 @@ class BoardScreen extends Component {
         {
           this.state.newNoteType == 'image' && (
             <View style = {{marginHorizontal: 15}}>
-                <Image style={{ width: 300, height: 300 }} source={{uri: 'data:image/jpg;base64,'+this.state.newImgData}} />
+                <Image style={{ width: 250*scale, height: 250*scale }} source={{uri: 'data:image/jpg;base64,'+this.state.newImgData}} />
               </View>
             )
         }
@@ -879,7 +902,7 @@ class BoardScreen extends Component {
       <View style = {{flexDirection: 'row'}} >
         <Text 
           style={{
-            fontSize: 16, 
+            fontSize: 16*scale, 
             color: 'grey',  
             marginVertical: 5, 
             marginLeft: 20 
@@ -891,7 +914,7 @@ class BoardScreen extends Component {
                 <Text 
                   key = {tag}
                   style={{
-                    fontSize: 16, 
+                    fontSize: 16*scale, 
                     color: 'black',  
                     marginVertical: 5, 
                     marginHorizontal: 5 
@@ -904,7 +927,7 @@ class BoardScreen extends Component {
           })}
           <TouchableOpacity onPress = {() => {this.setState({visibleSelectTagsModal: true})}}>
             <Image
-              style={{width: 16, height: 16, marginTop: 8, marginLeft: 5}}
+              style={{width: 16*scale, height: 16*scale, marginTop: 8, marginLeft: 5}}
               source={require('../../img/pencil.png')}
             />
           </TouchableOpacity>
@@ -955,7 +978,9 @@ class BoardScreen extends Component {
       { 
         this.state.tags.map((tag) => {
         return(
-          <View style={{ flexDirection: 'row' }}>
+          <View style={{ flexDirection: 'row' }}
+            key = {tag}
+          >
             <CheckBox
               value={this.state.newTagSelection[tag]}
               onValueChange={() => {
@@ -966,7 +991,7 @@ class BoardScreen extends Component {
               }
               }
             />
-            <Text style={{marginTop: 5}}>{tag}</Text>
+            <Text style={{fontSize: 16*scale}}>{tag}</Text>
           </View>
         )
       })}
@@ -1006,7 +1031,7 @@ class BoardScreen extends Component {
 
         }}>
           <Text style={{
-            fontSize: 20, 
+            fontSize: 20*scale, 
             color: 'grey',  
             marginVertical: 5, 
             //marginHorizontal: 20 
@@ -1025,7 +1050,7 @@ class BoardScreen extends Component {
               marginHorizontal: 10,
             }}>    
               <Text style={{
-                fontSize: 16, 
+                fontSize: 16*scale, 
                 color: '#70cdef', 
               }}>
                 Invite
@@ -1042,7 +1067,7 @@ class BoardScreen extends Component {
               <TouchableHighlight
                 onPress = { () => this.setState({visibleMemberDetail: true, currentDetailMember: user.username})}
                 underlayColor = {'#f2f2f2'}
-                key = {user} 
+                key = {user.username} 
               >
                 <View 
                   style={{
@@ -1055,7 +1080,7 @@ class BoardScreen extends Component {
                   <View style={{}}>
                     <Text 
                       style={{
-                        fontSize: 18, 
+                        fontSize: 18*scale, 
                         color: 'black', 
                       }}>
                         {user.username + (user.username == App.getAppBoard().facilitator? ' (facilitator)':'')}
@@ -1066,7 +1091,7 @@ class BoardScreen extends Component {
                   }}>
                     <Text 
                       style={{
-                        fontSize: 18, 
+                        fontSize: 18*scale, 
                         color: user.currentBoard == this.boardId? 'green' : 'red',  
                       }}>
                         {user.currentBoard == this.boardId? 'online' : 'offline'}
@@ -1099,7 +1124,7 @@ class BoardScreen extends Component {
     }}>
         <View style={{flexDirection: 'row'}}>
           <View style={{borderWidth: 3, borderColor: 'white'}}>
-            <Text style={{fontSize: 16, textAlign: 'center'}}>Search username : </Text>
+            <Text style={{fontSize: 16*scale, textAlign: 'center'}}>Search username : </Text>
           </View>
           {this._renderTextInput('Search Input', 
             (usernameSearchQuery) => { this.setState({usernameSearchQuery})},
@@ -1109,7 +1134,7 @@ class BoardScreen extends Component {
             {renderButton("Search", () => {this.searchUsername()})}
           </View>
         </View>
-        <View style={{height: 250}}>
+        <View style={{height: 250*scale}}>
           <ScrollView>
             {this.state.userSearchResult.map((user) => {
               return(
@@ -1118,23 +1143,23 @@ class BoardScreen extends Component {
                       user.joined == true? 
                       this.setState({selectedUserToInvite: ''}) : this.setState({selectedUserToInvite: user.username})
                     }}
-                    key = {user.username}
+                    key = {user.username+user.name}
                   >
                     <View style = {{flexDirection: 'row', backgroundColor: user.username==this.state.selectedUserToInvite && user.joined == false? 
                       'lightblue':'white'}}>
                       <Text 
                         style={{
-                          fontSize: 16, 
+                          fontSize: 16*scale, 
                           color: 'black',  
                           marginVertical: 4, 
                           marginHorizontal: 8 
                         }}
                       >
-                          {user.username}
+                          {user.name}
                       </Text>
                       <Text 
                         style={{
-                          fontSize: 16, 
+                          fontSize: 16*scale, 
                           color: 'red',  
                           marginVertical: 4, 
                           marginHorizontal: 8 
@@ -1288,7 +1313,7 @@ class BoardScreen extends Component {
                   <View style={{ 
                     marginVertical: 5, 
                     flex: 1,
-                    marginHorizontal: 20,
+                    marginHorizontal: 10,
                     justifyContent: 'center',
                     alignItems: 'center'
                   }}>{
@@ -1297,7 +1322,7 @@ class BoardScreen extends Component {
                   </View>
                   <View style={{ 
                     marginVertical: 5, 
-                    marginHorizontal: 20,
+                    marginHorizontal: 10,
                     flex: 1,
                     justifyContent: 'center',
                     alignItems: 'center'
@@ -1309,7 +1334,7 @@ class BoardScreen extends Component {
                   <View style={{
                     flex: 1,
                     marginVertical: 5, 
-                    marginHorizontal: 20,
+                    marginHorizontal: 10,
                     justifyContent: 'center',
                     alignItems: 'center'
                   }}>
@@ -1319,7 +1344,7 @@ class BoardScreen extends Component {
                   </View>
                   <View style={{ 
                     marginVertical: 5, 
-                    marginHorizontal: 20,
+                    marginHorizontal: 10,
                     justifyContent: 'center',
                     alignItems: 'center',
                     flex: 1 
@@ -1328,7 +1353,7 @@ class BoardScreen extends Component {
                       onPressIn={() => this.exitBoard()}
                     >
                       <View>
-                        <Text style = {{fontSize: 20, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                        <Text style = {{fontSize: 20*scale, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
                           Exit
                         </Text>
                       </View>
@@ -1350,10 +1375,10 @@ class BoardScreen extends Component {
                     flex: 2
                   }}>
                     <View style = {{flexDirection: 'row'}}>
-                      <Text style = {{fontSize: 16, color: 'gray', marginTop: 3}}>
+                      <Text style = {{fontSize: 16*scale, color: 'gray', marginTop: 3}}>
                         {App.getAppBoard().hasTime?  (this.state.timeRemaining == 0? '' : 'Time Remaining:') : ''}
                       </Text>
-                      <Text style = {{fontSize: 20, color: 'black', marginHorizontal: 5}}>
+                      <Text style = {{fontSize: 20*scale, color: 'black', marginHorizontal: 5}}>
                         {App.getAppBoard().hasTime?  (this.state.timeRemaining == 0? 'Time\'s up' : this.state.timeRemaining) : ''}
                       </Text>
                     </View>
@@ -1376,21 +1401,11 @@ class BoardScreen extends Component {
                   }}>
                     {
                           !App.getAppBoard().start && App.getAppBoard().hasTime 
-                          &&  <TouchableWithoutFeedback
-                                onPress={() => {
-                                  this.startBoard()
-                                  //this.getBoardStartStatus()
-                                }}
-                              >
-                                <View style ={{
-                                  backgroundColor: 'lightblue',
-                                  borderRadius: 10,
-                                }}>
-                                  <Text style = {{fontSize: 14, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
-                                    {this.state.startButtonText}
-                                  </Text>
-                                </View>
-                              </TouchableWithoutFeedback>
+                          &&  renderButton('Start', () => this.startBoard())
+                    }
+                    {
+                          App.getAppBoard().start && App.getAppBoard().hasTime 
+                          &&  renderButton('Stop', () => this.stopBoard())
                     }
                 </View>  
               </View>
@@ -1497,7 +1512,7 @@ class BoardScreen extends Component {
             </View>
             <View style={{
               //flex: 2,
-              height: 75, 
+              height: boardHeight*scale/10, 
               flexDirection: 'row', 
               backgroundColor: 'white',
               borderColor: 'black',
@@ -1507,8 +1522,9 @@ class BoardScreen extends Component {
                 <View style = {{flex: 1}}>
                   <TextInput
                     style = {{
-                      height: 36,
-                      width: 100,
+                      height: 36*scale,
+                      width: 100*scale,
+                      fontSize: 16*scale,
                     }}
                     placeholderTextColor = 'gray'
                     placeholder = 'Search Note'
@@ -1519,18 +1535,22 @@ class BoardScreen extends Component {
                     underlineColorAndroid = {'black'}
                   />
                   <View style = {{marginLeft: 5}}>
-                    <Text style = {{fontSize: 16, color: 'black',}}>Votes: {App.getAppBoard().numberOfVote - this.state.votedNoteList.length}</Text>
+                    <Text style = {{fontSize: 16*scale, color: 'black',}}>Votes: {App.getAppBoard().numberOfVote - this.state.votedNoteList.length}</Text>
                   </View>
                 </View>
                 <View style = {{flex: 1}}>
                 </View>
               </View>
-              <View style = {{flex: 0.7}}>
+              <View style = {{
+                flex: 0.7, 
+                flexDirection: 'row', 
+                justifyContent: 'flex-end'
+              }}>
                    <View style = {{ 
                       top: 0, 
                       bottom: 0,
                       position: 'absolute',
-                      width: 200,
+                      width: boardWidth*scale/10,
                       backgroundColor: 'white',
                       //height: 150,
                       borderColor: 'gray',
@@ -1554,8 +1574,8 @@ class BoardScreen extends Component {
                                 setVisibleOpenNoteModal = {this.setVisibleOpenNoteModal}
                                 key = {note._id}
                                 id = {note._id}
-                                x = {note.x/10} 
-                                y = {note.y/10} 
+                                x = {note.x*scale/10} 
+                                y = {note.y*scale/10} 
                                 color = {note.color}
                                 //color = {(note.text).includes(this.state.noteSearchQuery)? 'red' : 'black'} 
                                 text = {note.text}

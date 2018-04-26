@@ -29,7 +29,8 @@ import {
   navBarColor,
 } from './../colors'
 import {
-  ip
+  ip,
+  scale
 } from './../Configuration';
 import App from '../App'
 
@@ -100,6 +101,11 @@ class HomeScreen extends Component {
       if (obj.body.code == 'getUserTrigger') {
         console.log('I got user trigger')
         this.getUser();
+      }
+
+      if (obj.body.code == 'getUser') {
+        console.log('I got user')
+        App.setAppUser(obj.body.user)
       }
 
       if (obj.body.code == 'getNotification') {
@@ -304,6 +310,7 @@ class HomeScreen extends Component {
     fetch('http://' + ip + '/logout')
       .then((response) => {
         this.props.navigation.navigate('Login')
+
         //console.log(response);
         return response.json()
       })
@@ -401,7 +408,9 @@ class HomeScreen extends Component {
     <View>
       <TextInput
           style={{
-            height: 36, 
+            height: 36*scale, 
+            width: 200*scale,
+            fontSize: 16*scale
           }}
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
@@ -436,23 +445,23 @@ class HomeScreen extends Component {
                 onPress={() => this.setState({visibleNotificationModal: true})}
               >
                 <ImageBackground
-                  style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
+                  style={styles.imageIcon}
                   source={require('../../img/message.png')}
                 >
                   {
                     this.state.numberOfUnreadNotification > 0 && (
                       <View style = {{
-                        width: this.state.numberOfUnreadNotification > 9? 22 : 16,
-                        height: 16,
-                        borderRadius: 8,
+                        width: this.state.numberOfUnreadNotification > 9*scale? 22*scale : 16*scale,
+                        height: 16*scale,
+                        borderRadius: 8*scale,
                         backgroundColor: 'red',
-                        marginLeft: 20,
+                        marginLeft: 20*scale,
                       }}>
                         <Text style={{
-                          fontSize: 10, 
+                          fontSize: 10*scale, 
                           color: 'white',  
                           //marginVertical: 20, 
-                          marginHorizontal: 5,
+                          marginHorizontal: 5*scale,
                         }}>
                           {this.state.numberOfUnreadNotification}
                         </Text>
@@ -493,14 +502,11 @@ class HomeScreen extends Component {
                     <View style = {{
                       borderColor: '#f4f4f4',
                       borderWidth: 0.5, 
+                      marginVertical: 10, 
+                      marginHorizontal: 30
                     }}>
                       <Text 
-                        style={{
-                          fontSize: 20, 
-                          color: 'black',  
-                          marginVertical: 10, 
-                          marginHorizontal: 30 
-                        }}>
+                        style={styles.listText}>
                           {board.boardName}
                       </Text> 
                     </View>
@@ -511,7 +517,7 @@ class HomeScreen extends Component {
                 onPress = {() => this.setState({visibleNewBoardModal: true})}
               >
                 <View style = {{marginHorizontal: 30,}}>
-                  <Text style = {{fontSize: 16, color: '#70cdef'}}>
+                  <Text style = {{fontSize: 16*scale, color: '#70cdef'}}>
                     New Board
                   </Text>
                 </View>
@@ -592,25 +598,23 @@ class HomeScreen extends Component {
   _renderNormalNotification = (notification) => (
     <TouchableWithoutFeedback
       onPress={() => this.readNotification(notification)}
+      key = {notification._id} 
     >  
       <View style=
         {{ 
           flexDirection: 'row',
-          backgroundColor: notification.read == true? 'white' : '#d9d9d9'
-        }} 
-        key = {notification} >
-        <View style={{
-          flex: 1,
+          backgroundColor: notification.read == true? 'white' : '#d9d9d9',
           borderColor: 'gray',
           borderWidth: 1,
+        }} 
+      >
+        <View style={{
+          flex: 1,
+          marginVertical: 5,
+          marginHorizontal: 5,
         }}>
           <Text 
-            style={{
-              fontSize: 18, 
-              color: 'black', 
-              marginVertical: 5,
-              marginHorizontal: 5,
-            }}>
+            style={styles.detailText}>
               {notification.detail}
           </Text>
         </View>
@@ -625,16 +629,13 @@ class HomeScreen extends Component {
         borderColor: 'gray',
         borderWidth: 1,
       }} 
-        key = {notification} >
+        key = {notification._id} >
         <View style={{
+          marginVertical: 5,
+          marginHorizontal: 5,
         }}>
           <Text 
-            style={{
-              fontSize: 18, 
-              color: 'black', 
-              marginVertical: 5,
-              marginHorizontal: 5,
-            }}>
+            style={styles.detailText}>
               {notification.detail}
           </Text>
         </View>
@@ -662,7 +663,7 @@ class HomeScreen extends Component {
       //alignItems: "center",
       //borderRadius: 4,
     }}>
-      <View style = {{height: 300}}>
+      <View style = {{height: 300*scale}}>
         <ScrollView>
           {this.state.notifications.map((notification) => {
             
@@ -687,7 +688,7 @@ class HomeScreen extends Component {
           { this.state.notifications.length == 0 
             && (
               <View style = {{justifyContent: 'center', alignItems: 'center', marginVertical: 100}}>
-                <Text style = {{fontSize: 30}}>Empty</Text>
+                <Text style = {{fontSize: 30*scale}}>Empty</Text>
               </View>
             )}
         </ScrollView>
@@ -727,14 +728,11 @@ class HomeScreen extends Component {
             {this._renderNavBar()}
           </View>
           <View style = {{
-            flex: 1,
+            flex: 1,          
+            marginVertical: 5,
+            marginHorizontal: 10
           }}>
-            <Text style={{
-              fontSize: 30, 
-              color: 'grey',  
-              marginVertical: 5, 
-              marginHorizontal: 10 
-            }}>My Boards</Text>
+            <Text style={styles.headerText}>My Boards</Text>
           </View>
 
           <View style = {{

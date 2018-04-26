@@ -26,12 +26,15 @@ import {
 import Modal from "react-native-modal";
 import styles from "./../app.style";
 import {
-  ip
+  ip,
+  scale
 } from './../Configuration';
 import {
   setAppUser
 } from '../App';
 import App from '../App'
+
+import {renderButton, renderIconButton} from './../RenderUtilities';
 import { LoginButton, AccessToken, GraphRequestManager, GraphRequest } from 'react-native-fbsdk';
       
 var Login = createReactClass({
@@ -387,7 +390,7 @@ class LoginScreen extends Component {
         <View style={{flex:1, flexDirection: 'row', paddingVertical: 5}}>
           <View style={{flex: 1}}/>
           <View style={{flex: 2}}>
-            {this._renderButton('Login', () => {
+            {renderButton('Login', () => {
               this.login()
             })}
           </View>
@@ -396,11 +399,11 @@ class LoginScreen extends Component {
         <View style={{flex:1, flexDirection: 'row', paddingVertical: 5}}>
           <View style={{flex: 1}}/>
             <View style={{flex: 2}}>
-              {this._renderButton('Register', () => this.setState({visibleRegModal: true}))}
+              {renderButton('Register', () => this.setState({visibleRegModal: true}))}
             </View>
           <View style={{flex: 1}}/>
         </View>
-        <View style={{flex:2, flexDirection:'row', justifyContent: 'center'}}>
+        <View style={{marginVertical: 10, flexDirection: 'row', justifyContent: 'center'}}>
           {this._renderFbLoginButton()}
         </View>
       </KeyboardAwareScrollView>

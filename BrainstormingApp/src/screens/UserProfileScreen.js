@@ -30,7 +30,8 @@ import {
 import {renderButton, renderIconButton} from './../RenderUtilities';
 import styles from "./../app.style";
 import {
-  ip
+  ip,
+  scale
 } from './../Configuration';
 import {
   setAppUser
@@ -87,10 +88,10 @@ class UserProfileScreen extends Component {
   _renderTextBeforeTextInput = (text) => (
     <View>
       <Text style = {{
-        fontSize: 16,
+        fontSize: 16*scale,
         color: 'grey',
-        marginVertical: 5,
-        marginRight: 5
+        marginVertical: 5*scale,
+        marginRight: 5*scale
       }}>
       {text}
       </Text>
@@ -101,8 +102,9 @@ class UserProfileScreen extends Component {
     <View>
       <TextInput
           style={{
-            height: 36, 
-            width: 200,
+            height: 36*scale, 
+            width: 200*scale,
+            fontSize: 16*scale
           }}
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
@@ -148,11 +150,11 @@ class UserProfileScreen extends Component {
             }}>
             <TouchableWithoutFeedback
               onPressIn={() => {
-                  this.props.navigation.navigate('Home')
+                  this.props.navigation.goBack()
                 }}
             >
-              <View>
-                <Text style = {{fontSize: 20, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+              <View style = {{ marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                <Text style = {{fontSize: 20*scale, color: 'black',}}>
                   Back
                 </Text>
               </View>
@@ -167,14 +169,12 @@ class UserProfileScreen extends Component {
       <KeyboardAwareScrollView  keyboardShouldPersistTaps = {'always'} >
         {this._renderNavBar()}
         <View style = {{
-            
+            marginVertical: 5, 
+            marginHorizontal: 10 
           }}>
-            <Text style={{
-              fontSize: 30, 
-              color: 'grey',  
-              marginVertical: 5, 
-              marginHorizontal: 10 
-            }}>My Profile</Text>
+            <Text style={
+              styles.headerText
+            }>My Profile</Text>
           </View>
           <View style = {{
             marginHorizontal: 20 

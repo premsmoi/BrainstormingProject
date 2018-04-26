@@ -11,21 +11,17 @@ import {
   Image,
 } from 'react-native'; 
 
+import styles from "./app.style";
+
 renderButton = (text, onPress,) => (
   <View style = {{padding: 5}}>
   	<TouchableOpacity onPress={onPress}>
-        <View style={{
-        	backgroundColor: 'lightblue',
-          borderRadius: 10,
-          justifyContent: "center",
-        	alignItems: "center",
-        }}>
-          <Text style = {{
-  			fontSize: 14,
-  			color: 'black',
-  			marginVertical: 5,
-  			marginHorizontal: 10,
-          }}>
+        <View style={
+        	styles.buttonContainer
+        }>
+          <Text style = {
+  			     styles.buttonText
+          }>
           	{text}
           </Text>
         </View>
@@ -38,7 +34,7 @@ renderIconButton = (src, onPress) => (
     	onPress= {onPress}
     >
     	<Image 
-        style={{width: 24, height: 24, marginVertical: 5, marginHorizontal: 10}}
+        style={styles.imageIcon}
         source={src}
       />
   </TouchableOpacity>
