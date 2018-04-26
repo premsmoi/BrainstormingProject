@@ -6,8 +6,8 @@ import './mystyle/Home.scss';
 import './mystyle/General.scss';
 import { Button, Modal } from 'react-bootstrap';
 
-const ip = 'localhost:3001';
-//const ip = '54.169.35.33:8080';
+//const ip = 'localhost:3001';
+const ip = '54.169.35.33:8080';
 
 class Home extends Component {
     constructor(props) {
@@ -50,6 +50,7 @@ class Home extends Component {
 
             self.getUser();
             self.getNotification();
+            setInterval(self.getNotification(), 60000);
         }
 
         this.ws.onmessage = function (res) {

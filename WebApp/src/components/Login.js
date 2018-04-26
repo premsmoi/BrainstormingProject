@@ -5,10 +5,9 @@ import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Button } from 'react-bootstrap';
 import Auth from './Auth';
-import Facebook from './Facebook';
 
-const ip = 'localhost:3001';
-//const ip = '54.169.35.33:8080';
+//const ip = 'localhost:3001';
+const ip = '54.169.35.33:8080';
 
 class Login extends Component {
     constructor(props) {

@@ -13,8 +13,8 @@ import Member from './Member';
 import HeadNav from './HeadNav';
 import { setInterval } from 'timers';
 
-const ip = 'localhost:3001';
-//const ip = '54.169.35.33:8080';
+//const ip = 'localhost:3001';
+const ip = '54.169.35.33:8080';
 
 class NoteView extends Component {
     constructor(props) {
@@ -134,7 +134,7 @@ class NoteView extends Component {
             self.getNotification();
             self.getTimeRemaining();
 
-            setInterval(this.getTimeRemaining, 300000);
+            setInterval(this.getTimeRemaining, 60000);
         };
 
         this.ws.onmessage = function (event) {
@@ -613,13 +613,11 @@ class NoteView extends Component {
             update: true
         })
             , () => {
-                // if you need the updated state value, use this.state in this callback
-                // note: make sure you use arrow function to maintain "this" context
                 this.setState({
                     update: false,
                     value: "",
                     noteTag: [],
-                    color: '#FFF'
+                    color: 'red'
                 })
             }
         );
