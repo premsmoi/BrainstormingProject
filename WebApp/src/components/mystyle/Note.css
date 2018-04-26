@@ -1,9 +1,27 @@
 .container {
-    min-width: 100vw;
+    width: auto;
     background-color: #EEE;
-    min-height: 70vh;
-    overflow: scroll;
+    min-height: 80vh;
+    overflow: auto;
     position: relative;
+}
+
+.time {
+    width: 50px;
+}
+
+@media only screen and (max-width: 900px) {
+    .flex-inline {
+        flex-wrap: wrap;
+    }
+
+    .flex {
+        justify-content: flex-start;
+    }
+
+    .header {
+        height: 100px;
+    }
 }
 
 .menu {
@@ -31,6 +49,7 @@
     word-wrap: break-word;
     position: absolute;
     border: 1px solid #AAA;
+    white-space: pre-line;
 }
 
 .input-idea {
@@ -43,8 +62,19 @@
     padding: 20px;
 }
 
-.color-panel {
-    display: flex;
+.create-button {
+    position: fixed !important;
+    right: 30px !important;
+    bottom: 30px !important;
+    top: auto !important;
+    cursor: pointer;
+    font-size: 80px;
+    color: #5cb85c;
+    z-index: 999;
+}
+
+.create-button:hover {
+    color: #4ba74b;
 }
 
 .edit-button {
@@ -89,38 +119,23 @@
 }
 
 .red {
-    margin: 5px;
     background-color: #ff9999;
-    width: 50px;
-    height: 50px;
 }
 
-.blue {
-    margin: 5px;
+.pink {
     background-color: #ff99c2;
-    width: 50px;
-    height: 50px;
 }
 
 .green {
-    margin: 5px;
     background-color: #99ff99;
-    width: 50px;
-    height: 50px;
+}
+
+.blue {
+    background-color: #99ffff;
 }
 
 .yellow {
-    margin: 5px;
-    background-color: #99ffff;
-    width: 50px;
-    height: 50px;
-}
-
-.grey {
-    margin: 5px;
     background-color: #ffff99;
-    width: 50px;
-    height: 50px;
 }
 
 .new-idea {

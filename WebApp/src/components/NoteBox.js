@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
-import './mystyle/Note.css';
 import axios from 'axios';
 import NoteEdit from './NoteEdit';
+import NoteView from './NoteView';
+import CustomPopover from './CustomPopover';
 import socketIOClient from 'socket.io-client';
 import Draggable from 'react-draggable';
 import Icon from 'react-icons-kit';
-import { pencil, move,thickTop,thickBottom } from 'react-icons-kit/iconic';
+import { pencil, move, thickTop, thickBottom, eye } from 'react-icons-kit/iconic';
 import BlackTransparent from './BlackTransparent';
-import { Glyphicon } from 'react-bootstrap';
+import { Glyphicon, Popover, OverlayTrigger, Button } from 'react-bootstrap';
+import './mystyle/Note.css';
 
 class NoteBox extends Component {
     constructor(props) {
@@ -19,11 +21,13 @@ class NoteBox extends Component {
             onDrag: false,
             mousePoint: "",
             noteIndex: 0,
-            selectedNote: {}
+            selectedNote: {},
+            view: false
         };
         this.showNoteEdit = this.showNoteEdit.bind(this);
         this.closeNoteEdit = this.closeNoteEdit.bind(this);
-        this.updateBoard = this.updateBoard.bind(this);
+        this.showNoteView = this.showNoteView.bind(this);
+        this.closeNoteView = this.closeNoteView.bind(this);
         this.moveNote = this.moveNote.bind(this);
         this.sendMovingNote = this.sendMovingNote.bind(this);
         this.onControlledDrag = this.onControlledDrag.bind(this);
@@ -35,24 +39,12 @@ class NoteBox extends Component {
         console.log(this.state.notes);
     }
 
-    showNoteEdit(event) {
-        var index = this.state.notes.findIndex(x => x._id === event.currentTarget.parentNode.id);
-        this.setState({ note: this.state.notes[index], edit: true });
-        console.log(this.state.notes[index]);
-    }
-
     onControlledDrag(e, position) {
         const { x, y } = position;
-        //        console.log(position);
-        //        this.setState({notes[this.state.noteIndex]: x, notes[this.state.noteIndex]: y});
-        //        this.setState({notes[this.state.noteIndex].x: this});
-
         let oldNotes = this.state.notes.slice();
         oldNotes[this.state.noteIndex].x = x;
         oldNotes[this.state.noteIndex].y = y;
         this.setState({ notes: oldNotes });
-
-        //        console.log(x + " " + y);
     }
 
     onMousePoint(e) {
@@ -67,21 +59,8 @@ class NoteBox extends Component {
 
     moveNote(e, position) {
         const { x, y } = position;
-        //        console.log(position);
-        //        console.log(this.state.mousePoint);
-        //        var index = this.state.notes.findIndex(x => x._id === this.state.mousePoint);
-
-        //        var transform = event.target.parentElement.offsetParent.style.transform.toString();
-        //        var l = transform.indexOf('(');
-        //        var m = transform.indexOf(',');
-        //        var r = transform.indexOf(')');
-        //
-        //        var x = parseInt(transform.substring(l + 1, m - 2));
-        //        var y = parseInt(transform.substring(m + 1, r - 2));
-
         console.log(x + " " + y);
         var updatedObj = {
-            from: 'Board',
             code: 'updateNote',
             updatedObj: {
                 id: this.state.mousePoint,
@@ -89,56 +68,40 @@ class NoteBox extends Component {
                 y: this.state.notes[this.state.noteIndex].y,
                 updated: new Date().getTime(),
             },
-            //            tags: this.state.newNoteTags,
             updated: new Date().getTime()
         }
         var requestString = JSON.stringify(updatedObj);
         this.props.ws.send(requestString);
-        //        this.sendMovingNote(requestString);
-        //
-        //        console.log(x + " " + y);
-        //        console.log(this.state.notes[index].x + " " + this.state.notes[index].y);
     }
 
     sendMovingNote(requestString) {
         setTimeout(() => this.props.ws.send(requestString), 1000);
     }
 
+    showNoteEdit(event) {
+        var index = this.state.notes.findIndex(x => x._id === event.currentTarget.parentNode.id);
+        this.setState({ note: this.state.notes[index], edit: true });
+        console.log(this.state.notes[index]);
+    }
+
     closeNoteEdit() {
         this.setState({ edit: false });
     }
 
-    updateBoard(id) {
-        //        var self = this;
-        //        axios.put(`${'http://localhost:3001/api'}/${this.props.linkid}`, {_id: id})
-        //                .then(function (response) {
-        //                    console.log(response);
-        //                    self.fetchNote();
-        //                })
-        //                .catch(err => {
-        //                    console.log(err);
-        //                });
+    showNoteView(event) {
+        var index = this.state.notes.findIndex(x => x._id === event.currentTarget.parentNode.id);
+        this.setState({ note: this.state.notes[index], view: true });
+        console.log(this.state.notes[index]);
+    }
+
+    closeNoteView() {
+        this.setState({ view: false });
     }
 
     componentWillReceiveProps(nextProps) {
         var self = this;
         if (nextProps !== this.props && nextProps.update === true) {
-            //            axios.post('http://localhost:3001/api/notes', nextProps.note)
-            //                    .then(function (response) {
-            //                        console.log(response.data._id);
-            //                        self.updateBoard(response.data._id);
-            //                    })
-            //                    .catch(function (error) {
-            //                        console.log(error);
-            //                    });
-
-            //        this.setState(previousState => {
-            //            var newNoteList = previousState.noteList;
-            //            newNoteList.push(newNote);
-            //            return {noteList: newNoteList};
-            //        });
             var newNoteRequest = {
-                from: 'Board',
                 code: 'createNote',
                 note: nextProps.note
             };
@@ -147,6 +110,7 @@ class NoteBox extends Component {
         }
         if (nextProps.notes !== this.props.notes) {
             this.setState({ notes: nextProps.notes });
+            console.log(nextProps.notes);
         }
     }
 
@@ -155,12 +119,13 @@ class NoteBox extends Component {
             <div className="container" id="Test">
                 {this.state.notes.map((obj, index) =>
                     <Draggable handle=".move-button" defaultPosition={{ x: 0, y: 0 }} position={{ x: this.state.notes[index].x, y: this.state.notes[index].y }} onDrag={this.onControlledDrag} onStop={this.moveNote}>
-                        <div className="idea-box" style={{ backgroundColor: obj.color }} key={obj._id} id={obj._id.toString()}>
+                        <div className={"idea-box " + obj.color} key={obj._id} id={obj._id.toString()}>
                             <Icon className="move-button" icon={move} onMouseDown={this.onMousePoint} />
                             <Icon className={obj.writer === this.props.user ? "edit-button" : "edit-button none"} icon={pencil} onClick={this.showNoteEdit} />
+                            <Icon className={obj.writer === this.props.user ? "edit-button none" : "edit-button"} icon={eye} onClick={this.showNoteView} />
                             <div className="body">{obj.text}</div>
                             <div className="vote">
-                                <span><Icon icon={thickTop} onClick={() => this.props.voteNote(obj._id)}/></span>
+                                <span><Icon icon={thickTop} onClick={() => this.props.voteNote(obj._id)} /></span>
                                 <span><Icon icon={thickBottom} onClick={() => this.props.unvoteNote(obj._id)} /></span>
                                 <span>Vote: {obj.voteScore.toString()}</span>
                             </div>
@@ -168,6 +133,7 @@ class NoteBox extends Component {
                     </Draggable>)}
                 <BlackTransparent edit={this.state.edit} />
                 <NoteEdit linkid={this.props.linkid} ws={this.props.ws} boardId={this.props.linkid} setColor={this.props.setColor} closeNoteEdit={this.closeNoteEdit} edit={this.state.edit} note={this.state.note} tags={this.props.tags}></NoteEdit>
+                <NoteView closeNoteView={this.closeNoteView} view={this.state.view} note={this.state.note} tags={this.props.tags}></NoteView>
             </div>
         );
     }

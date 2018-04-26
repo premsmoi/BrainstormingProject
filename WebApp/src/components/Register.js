@@ -5,8 +5,8 @@ import axios from 'axios';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
-//const ip = 'localhost:3001';
-const ip = '54.169.35.33:8080';
+const ip = 'localhost:3001';
+//const ip = '54.169.35.33:8080';
 
 class Register extends Component {
     constructor(props) {
@@ -82,8 +82,9 @@ class Register extends Component {
     render() {
         return (
             <div className="background">
-                <div className="login-window">
+                <div className="login-window register-mini">
                     <form>
+                        <h2>Register</h2>
                         <label className="block">
                             Username
                                 <input className="text-box block wide" name="username" value={this.state.username} onChange={this.handleChange} type="text" />

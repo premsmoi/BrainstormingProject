@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import BoardList from './BoardList';
 import Notification from './Notification';
+import HeadNav from './HeadNav';
 import './mystyle/Home.scss';
 import './mystyle/General.scss';
 import { Button, Modal } from 'react-bootstrap';
-import './mystyle/HeadNav.css';
 
-//const ip = 'localhost:3001';
-const ip = '54.169.35.33:8080';
+const ip = 'localhost:3001';
+//const ip = '54.169.35.33:8080';
 
 class Home extends Component {
     constructor(props) {
@@ -36,14 +36,14 @@ class Home extends Component {
         this.setUnreadNotification = this.setUnreadNotification.bind(this);
         this.logout = this.logout.bind(this);
         this.goHome = this.goHome.bind(this);
+        this.goUserPage = this.goUserPage.bind(this);
 
         this.ws = new WebSocket('ws://'+ip+'/');
         var self = this;
         this.ws.onopen = function () {
             var req = {
-                from: 'Home',
                 code: 'tagUser',
-                username: self.props.location.state.username
+                username: self.state.username
             };
             var json = JSON.stringify(req);
             self.ws.send(json);
@@ -60,7 +60,7 @@ class Home extends Component {
                 });
             } else if (message.body.code === 'getBoardList') {
                 self.setState({ boards: message.body.boards }, () => {
-                    console.log(self.state.boards);
+                    //console.log(self.state.boards);
                 });
             } else if (message.body.code === 'getBoardListTrigger') {
                 var board_id_list = [];
@@ -68,7 +68,6 @@ class Home extends Component {
                     board_id_list.push(board.boardId)
                 });
                 const boardReq = {
-                    from: 'Home',
                     code: 'getBoardList',
                     board_id_list: board_id_list
                 };
@@ -80,16 +79,18 @@ class Home extends Component {
                         unreadNotification: self.countUnreadNotification()
                     });
                 });
-                console.log(self.countUnreadNotification());
+                //console.log(self.countUnreadNotification());
             } else if (message.body.code === 'getNotificationTrigger') {
-                console.log('I got notification trigger')
+                //console.log('I got notification trigger')
                 self.getNotification()
             }
         }
     }
 
     componentWillMount() {
-        this.setState({ username: this.props.location.state.username, name: this.props.location.state.name });
+        const username = localStorage.getItem("username") || this.props.location.state.username;
+        const name = localStorage.getItem("name") || this.props.location.state.name;
+        this.setState({ username: username, name: name });
     }
 
     openCreateModal() {
@@ -102,9 +103,19 @@ class Home extends Component {
 
     goHome() {
         var self = this;
+        this.ws.close();
         const location = {
             pathname: '/home',
             state: { username: self.state.username, name: self.state.name }
+        };
+        this.props.history.push(location);
+    }
+
+    goUserPage() {
+        this.ws.close();
+        const location = {
+            pathname: '/profile',
+            state: { username: this.state.username, name: this.state.name }
         };
         this.props.history.push(location);
     }
@@ -118,9 +129,8 @@ class Home extends Component {
 
     deleteBoard(e, id) {
         e.preventDefault();
-        console.log(id);
+        //console.log(id);
         var deleteReq = {
-            from: 'Home',
             code: 'deleteBoard',
             boardId: id
         };
@@ -130,7 +140,6 @@ class Home extends Component {
 
     getUser() {
         var userReq = {
-            from: 'Home',
             code: 'getUser',
             username: this.state.username
         };
@@ -140,7 +149,6 @@ class Home extends Component {
 
     getNotification() {
         var notiReq = {
-            from: 'Home',
             code: 'getNotification',
             username: this.state.username
         };
@@ -154,7 +162,6 @@ class Home extends Component {
             board_id_list.push(board.boardId)
         });
         const boardReq = {
-            from: 'Home',
             code: 'getBoardList',
             board_id_list: board_id_list
         };
@@ -164,19 +171,18 @@ class Home extends Component {
 
     countUnreadNotification() {
         var count = 0;
-        console.log(this.state.notifications);
+        //console.log(this.state.notifications);
         this.state.notifications.map(function (notification) {
             if (!notification.read) {
                 count++;
             }
         });
-        console.log('count: ' + count);
+        //console.log('count: ' + count);
         return count;
     }
 
     acceptInvite(notification) {
         var acceptInviteRequest = {
-            from: 'Home',
             code: 'acceptInvite',
             username: this.state.username,
             boardId: notification.boardId,
@@ -188,7 +194,6 @@ class Home extends Component {
 
     readNotification(notification) {
         var readNotificationRequest = {
-            from: 'Home',
             code: 'readNotification',
             id: notification._id,
             username: this.state.username,
@@ -212,7 +217,7 @@ class Home extends Component {
             body: JSON.stringify({ creator: self.state.username, boardName: self.state.boardNameInput }),
             credentials: "same-origin"
         }).then((res) => res.json()).then((text) => {
-            console.log(text);
+            //console.log(text);
             if (text.status === 1) {
                 window.fetch('http://'+ip+'/user_add_board', {
                     method: 'POST',
@@ -242,18 +247,18 @@ class Home extends Component {
                 throw error;
             });
         this.ws.close()
+        window.localStorage.removeItem("username");
+        window.localStorage.removeItem("name");
     }
+    
+                    //<Notification notifications={this.state.notifications} unreadNotification={this.state.unreadNotification} readNotification={this.readNotification} setUnreadNotification={this.setUnreadNotification} getNotification={this.getNotification} acceptInvite={this.acceptInvite} ws={this.ws} />
 
     render() {
         return (
             <div>
-                <div className="Nav">
-                    <div className="Nav-member" onClick={this.goHome} style={{ cursor: 'pointer' }}>Home</div>
-                    <div className="Nav-member" onClick={this.logout} style={{ cursor: 'pointer' }}>Log out</div>
-                </div>
+                <HeadNav goHome={this.goHome} goUserPage={this.goUserPage} logout={this.logout} notifications={this.state.notifications} unreadNotification={this.state.unreadNotification} readNotification={this.readNotification} setUnreadNotification={this.setUnreadNotification} getNotification={this.getNotification} acceptInvite={this.acceptInvite} ws={this.ws} />
                 <div className="flex flex-inline header">
                     <h1>Hello {this.state.username}</h1>
-                    <Notification notifications={this.state.notifications} unreadNotification={this.state.unreadNotification} readNotification={this.readNotification} setUnreadNotification={this.setUnreadNotification} getNotification={this.getNotification} acceptInvite={this.acceptInvite} ws={this.ws} />
                 </div>
                 <div className="flex flex-inline sub-header">
                     <h4>My Board</h4>

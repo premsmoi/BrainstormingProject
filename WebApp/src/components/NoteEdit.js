@@ -44,7 +44,6 @@ class NoteEdit extends Component {
 
     deleteNote() {
         var deleteNote = {
-            from: 'Board',
             code: 'deleteNote',
             boardId: this.props.boardId,
             noteId: this.props.note._id.toString()
@@ -57,7 +56,6 @@ class NoteEdit extends Component {
 
     saveNote() {
         var updatedObj = {
-            from: 'Board',
             code: 'updateNote',
             updatedObj: {
                 id: this.props.note._id.toString(),
@@ -111,7 +109,7 @@ class NoteEdit extends Component {
                     <form onSubmit={this.handleSubmit}>
                         <label className="block">
                             Your Idea:
-                                <textarea className="text-box new-idea" value={this.state.value} onChange={this.handleChange} style={{ backgroundColor: (this.props.note.color === this.state.color ? this.props.note.color : this.state.color) }} />
+                                <textarea className={"text-box new-idea " + (this.props.note.color === this.state.color ? this.props.note.color : this.state.color)} value={this.state.value} onChange={this.handleChange} />
                         </label>
                     </form>
                     <ColorPalette setColor={this.setColor} />
@@ -119,8 +117,8 @@ class NoteEdit extends Component {
                     <div className="button-group">
                     </div>
                 </Modal.Body>
-                <Modal.Footer>
-                    <Button bsStyle='success' onClick={() => {
+                <Modal.Footer className='edit-modal-footer'>
+                    <Button bsStyle='success' style={{float:'right'}} onClick={() => {
                         this.saveNote();
                     }}>save</Button>
                     <Button bsStyle='danger' onClick={() => {
