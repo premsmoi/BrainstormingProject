@@ -410,7 +410,7 @@ class HomeScreen extends Component {
           style={{
             height: 36*scale, 
             width: 200*scale,
-            fontSize: 16*scale
+            fontSize: 14*scale
           }}
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
