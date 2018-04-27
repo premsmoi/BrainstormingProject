@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import './mystyle/Login.scss';
 import './mystyle/General.scss';
-import axios from 'axios';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
