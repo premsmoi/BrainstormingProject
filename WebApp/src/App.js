@@ -6,7 +6,6 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
 import Auth from './components/Auth';
-import UserPage from './components/UserPage';
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
     <Route
@@ -37,7 +36,6 @@ class App extends Component {
                     <Route path="/login" component={Login} />
                     <Route path="/register" component={Register} />
                     <Route path='/view/:board_id' component={NoteView} />
-                    <Route path='/profile' component={UserPage} />
                     <Route path="/home" component={Home} />
                 </div>
             </BrowserRouter>

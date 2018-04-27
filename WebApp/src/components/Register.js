@@ -82,9 +82,8 @@ class Register extends Component {
     render() {
         return (
             <div className="background">
-                <div className="login-window register-mini">
+                <div className="login-window">
                     <form>
-                        <h2>Register</h2>
                         <label className="block">
                             Username
                                 <input className="text-box block wide" name="username" value={this.state.username} onChange={this.handleChange} type="text" />

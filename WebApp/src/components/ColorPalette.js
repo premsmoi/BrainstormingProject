@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './mystyle/ColorPalette.scss';
+import './mystyle/Note.css';
 
 class ColorPalette extends Component {
     constructor(props) {
@@ -9,11 +9,11 @@ class ColorPalette extends Component {
     render() {
         return (
             <div className="color-panel">
-                <button className="red-panel" onClick={() => this.props.setColor("red")}></button>
-                <button className="pink-panel" onClick={() => this.props.setColor("pink")}></button>
-                <button className="green-panel" onClick={() => this.props.setColor("green")}></button>
-                <button className="blue-panel" onClick={() => this.props.setColor("blue")}></button>
-                <button className="yellow-panel" onClick={() => this.props.setColor("yellow")}></button>
+                <button className="red" onClick={() => this.props.setColor("#ff9999")}></button>
+                <button className="blue" onClick={() => this.props.setColor("#ff99c2")}></button>
+                <button className="green" onClick={() => this.props.setColor("#99ff99")}></button>
+                <button className="yellow" onClick={() => this.props.setColor("#99ffff")}></button>
+                <button className="grey" onClick={() => this.props.setColor("#ffff99")}></button>
             </div>
         );
     }

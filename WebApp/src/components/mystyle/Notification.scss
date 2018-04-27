@@ -23,19 +23,6 @@
     min-width: 30vw;
 }
 
-@media only screen and (max-width: 600px) {
-    .noti-item {
-        width: 70vw;
-    }
-
-    .noti-menu {
-        height: 70vh;
-        min-width: 70vw;
-        left: 0 !important;
-        right: auto !important;
-    }
-}
-
 .unread {
     background-color: #eee;
 }

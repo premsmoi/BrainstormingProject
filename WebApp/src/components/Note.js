@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
 import Icon from 'react-icons-kit';
 import { cog } from 'react-icons-kit/iconic';
-import { Modal, Button, DropdownButton, MenuItem, ButtonToolbar, Glyphicon } from 'react-bootstrap';
+import { Modal, Button, DropdownButton, MenuItem, ButtonToolbar } from 'react-bootstrap';
+import './mystyle/bootstrap.scss';
 import './mystyle/General.scss';
 import './mystyle/Note.css';
+import './mystyle/HeadNav.css';
 import UserList from './UserList';
 import NoteBox from './NoteBox';
 import ColorPalette from './ColorPalette';
 import TagInput from './TagInput';
 import TagPicker from './TagPicker';
 import Member from './Member';
-import HeadNav from './HeadNav';
-import { setInterval } from 'timers';
 
 //const ip = 'localhost:3001';
 const ip = '54.169.35.33:8080';
@@ -24,7 +24,7 @@ class NoteView extends Component {
             username: '',
             boardId: '',
             show: false,
-            color: "red",
+            color: "#FFF",
             note: {},
             update: false,
             tags: [],
@@ -41,12 +41,7 @@ class NoteView extends Component {
             boardMember: false,
             userSearchResult: [],
             userVotedNotes: [],
-            notifications: [],
-            unreadNotification: 0,
-            name: '',
-            timeRemaining: 0,
-            board: {},
-            start: false
+            name: ''
         };
         this.toggleAdd = this.toggleAdd.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -76,16 +71,8 @@ class NoteView extends Component {
         this.unvoteNote = this.unvoteNote.bind(this);
         this.logout = this.logout.bind(this);
         this.goHome = this.goHome.bind(this);
-        this.startTiming = this.startTiming.bind(this);
-        this.goUserPage = this.goUserPage.bind(this);
-        this.readNotification = this.readNotification.bind(this);
-        this.setUnreadNotification = this.setUnreadNotification.bind(this);
-        this.countUnreadNotification = this.countUnreadNotification.bind(this);
-        this.acceptInvite = this.acceptInvite.bind(this);
-        this.getNotification = this.getNotification.bind(this);
-        this.getTimeRemaining = this.getTimeRemaining.bind(this);
 
-        this.ws = new WebSocket('ws://' + ip + '/');
+        this.ws = new WebSocket('ws://'+ip+'/');
         var self = this;
 
         this.ws.onopen = function () {
@@ -96,10 +83,11 @@ class NoteView extends Component {
             var getTags = JSON.stringify(req);
             self.ws.send(getTags);
 
-            var json = JSON.stringify({ code: 'getNotes', boardId: self.props.match.params.board_id });
+            var json = JSON.stringify({ from: 'Board', code: 'getNotes', boardId: self.props.match.params.board_id });
             self.ws.send(json);
 
             var tagClientRequest = {
+                from: 'Board',
                 code: 'tagBoard',
                 username: self.state.username,
                 boardId: self.props.match.params.board_id
@@ -109,6 +97,7 @@ class NoteView extends Component {
             console.log('req: ' + requestString);
 
             var enterBoardRequest = {
+                from: 'Board',
                 code: 'enterBoard',
                 username: self.state.username,
                 boardId: self.props.match.params.board_id,
@@ -117,6 +106,7 @@ class NoteView extends Component {
             self.ws.send(requestString)
 
             var getBoardRequest = {
+                from: 'Board',
                 code: 'getBoard',
                 boardId: self.props.match.params.board_id,
             }
@@ -124,17 +114,13 @@ class NoteView extends Component {
             self.ws.send(requestString)
 
             var getUserVotedNoteRequest = {
+                from: 'Board',
                 code: 'getUserVotedNotes',
                 username: self.state.username,
                 boardId: self.props.match.params.board_id,
             }
             var requestString = JSON.stringify(getUserVotedNoteRequest)
             self.ws.send(requestString)
-
-            self.getNotification();
-            self.getTimeRemaining();
-
-            setInterval(this.getTimeRemaining, 60000);
         };
 
         this.ws.onmessage = function (event) {
@@ -148,12 +134,8 @@ class NoteView extends Component {
                     //                    console.log(self.state.notes);
                 });
             } else if (message.body.code == 'getBoard') {
-                console.log(message.body.board);
-                self.setState({ board: message.body.board, boardName: message.body.board.boardName, newBoardName: message.body.board.boardName });
-                if (message.body.board.start === true) {
-                    setInterval(self.getTimeRemaining, 1000);
-                    self.setState({ start: true });
-                }
+                console.log('I got board');
+                self.setState({ board: message.body.board, timeRemaining: message.body.board.limitedTime });
             } else if (message.body.code === 'getNotes') {
                 //var json = JSON.stringify({ from: 'Board', code: 'getNotes', boardId: self.props.match.params.board_id });
                 //self.ws.send(json);
@@ -173,11 +155,10 @@ class NoteView extends Component {
                 })
                 console.log(message.body.members);
             } else if (message.body.code == 'getNotesTrigger') {
-                var json = JSON.stringify({ code: 'getNotes', boardId: self.props.match.params.board_id });
+                var json = JSON.stringify({ from: 'Board', code: 'getNotes', boardId: self.props.match.params.board_id });
                 self.ws.send(json);
             } else if (message.body.code == 'getBoardStartStatus') {
                 console.log('I got board start status')
-                console.log(message.body.status);
                 self.setState({
                     startedBoard: message.body.status
                 });
@@ -192,34 +173,21 @@ class NoteView extends Component {
             } else if (message.body.code == 'getVotedNotes') {
                 self.setState({ userVotedNotes: message.body.votedNotes });
                 console.log(message.body.votedNotes);
-            } else if (message.body.code === 'getNotification') {
-                self.setState({ notifications: message.body.notifications }, () => {
-                    self.setState({
-                        unreadNotification: self.countUnreadNotification()
-                    });
-                });
-                console.log(self.countUnreadNotification());
-            } else if (message.body.code === 'getNotificationTrigger') {
-                console.log('I got notification trigger')
-                self.getNotification()
-            } else if (message.body.code === 'getTimeRemaining') {
-                console.log(message.body.timeRemaining);
-                self.setState({ timeRemaining: message.body.timeRemaining });
             }
         };
     }
 
     componentWillMount() {
-        const boardName = '' || this.props.location.state.boardName;
-        const username = localStorage.getItem("username") || this.props.location.state.username;
-        const name = localStorage.getItem("name") || this.props.location.state.name;
+        const { boardName } = this.props.location.state;
+        const { username } = this.props.location.state;
+        const { name } = this.props.location.state;
         const boardId = this.props.match.params.board_id;
         this.setState({ boardName: boardName, newBoardName: boardName, username: username, boardId: boardId, name: name });
     }
 
     logout() {
         this.ws.close();
-        window.fetch('http://' + ip + '/logout')
+        window.fetch('http://'+ip+'/logout')
             .then((response) => {
                 const location = {
                     pathname: '/login'
@@ -231,8 +199,6 @@ class NoteView extends Component {
             .catch((error) => {
                 throw error;
             });
-        window.localStorage.removeItem("username");
-        window.localStorage.removeItem("name");
     }
 
     goHome() {
@@ -244,17 +210,9 @@ class NoteView extends Component {
         this.props.history.push(location);
     }
 
-    goUserPage() {
-        this.ws.close();
-        const location = {
-            pathname: '/profile',
-            state: { username: this.state.username, name: this.state.name }
-        };
-        this.props.history.push(location);
-    }
-
     updateBoard() {
         var updateBoardReq = {
+            from: 'BoardManager',
             code: 'updateBoard',
             boardId: this.state.board._id,
             updatedObj: {
@@ -264,52 +222,6 @@ class NoteView extends Component {
         var json = JSON.stringify(updateBoardReq);
         this.ws.send(json);
         this.setState({ boardName: this.state.newBoardName });
-    }
-
-    getNotification() {
-        var notiReq = {
-            code: 'getNotification',
-            username: this.state.username
-        };
-        const notiReqJSON = JSON.stringify(notiReq);
-        this.ws.send(notiReqJSON);
-    }
-
-    countUnreadNotification() {
-        var count = 0;
-        console.log(this.state.notifications);
-        this.state.notifications.map(function (notification) {
-            if (!notification.read) {
-                count++;
-            }
-        });
-        console.log('count: ' + count);
-        return count;
-    }
-
-    acceptInvite(notification) {
-        var acceptInviteRequest = {
-            code: 'acceptInvite',
-            username: this.state.username,
-            boardId: notification.boardId,
-            boardName: notification.boardName,
-        };
-        var requestString = JSON.stringify(acceptInviteRequest);
-        this.ws.send(requestString);
-    }
-
-    readNotification(notification) {
-        var readNotificationRequest = {
-            code: 'readNotification',
-            id: notification._id,
-            username: this.state.username,
-        };
-        var requestString = JSON.stringify(readNotificationRequest);
-        this.ws.send(requestString);
-    }
-
-    setUnreadNotification(a) {
-        this.setState({ unreadNotification: a });
     }
 
     showSetting() {
@@ -343,6 +255,7 @@ class NoteView extends Component {
 
     boardDeleteTag(tag) {
         var boardDeleteTagReq = {
+            from: 'BoardManager',
             code: 'boardDeleteTag',
             boardId: this.props.match.params.board_id,
             tag: tag
@@ -354,6 +267,7 @@ class NoteView extends Component {
     searchUser(e) {
         e.preventDefault();
         var searchReq = {
+            from: 'Board',
             code: 'searchUser',
             username: this.state.userSearch,
             boardId: this.state.boardId
@@ -364,6 +278,7 @@ class NoteView extends Component {
 
     voteNote(a) {
         var voteNoteReq = {
+            from: 'Board',
             code: 'voteNote',
             username: this.state.username,
             boardId: this.state.boardId,
@@ -375,6 +290,7 @@ class NoteView extends Component {
 
     unvoteNote(a) {
         var unvoteNoteReq = {
+            from: 'Board',
             code: 'unvoteNote',
             username: this.state.username,
             boardId: this.state.boardId,
@@ -382,56 +298,6 @@ class NoteView extends Component {
         };
         var json = JSON.stringify(unvoteNoteReq);
         this.ws.send(json);
-    }
-
-    startTiming(e) {
-        e.preventDefault();
-        if (this.state.start === false) {
-            var startBoard = {
-                code: 'updateBoard',
-                boardId: this.state.boardId,
-                updatedObj: {
-                    start: true,
-                    limitedTime: this.state.timeRemaining,
-                    timeRemaining: this.state.timeRemaining
-                }
-            }
-            var json = JSON.stringify(startBoard);
-            this.ws.send(json);
-            this.setState({ start: true });
-
-            setInterval(this.getTimeRemaining, 1000);
-        } else {
-            var stopBoard = {
-                code: 'updateBoard',
-                boardId: this.state.boardId,
-                updatedObj: {
-                    start: false,
-                    limitedTime: this.state.timeRemaining,
-                    timeRemaining: this.state.timeRemaining
-                }
-            }
-            var json = JSON.stringify(stopBoard);
-            this.ws.send(json);
-
-            this.setState({ start: false });
-        }
-    }
-
-    getTimeRemaining() {
-        var self = this;
-        var getTimeRemaining = {
-            code: 'getTimeRemaining',
-            boardId: self.state.boardId
-        }
-        var json = JSON.stringify(getTimeRemaining);
-        this.ws.send(json);
-
-        if (this.state.start === true) {
-            if (this.state.timeRemaining === 0) {
-                this.setState({ start: false });
-            }
-        }
     }
 
     setInvitedUser(user) {
@@ -449,6 +315,7 @@ class NoteView extends Component {
 
     updateNote(note) {
         var updatedObj = {
+            from: 'Board',
             code: 'updateNote',
             updatedObj: {
                 id: note._id.toString(),
@@ -465,6 +332,7 @@ class NoteView extends Component {
 
     boardAddTag(tag) {
         var boardAddTagReq = {
+            from: 'BoardManager',
             code: 'boardAddTag',
             boardId: this.props.match.params.board_id,
             tag: tag
@@ -538,7 +406,7 @@ class NoteView extends Component {
         console.log("color");
 
         var self = this;
-        var color_list = ["red", "pink", "green", "blue", "yellow"];
+        var color_list = ["#ff9999", "#ff99c2", "#99ff99", "#99ffff", "#ffff99"];
         var newNoteList = this.state.notes;
         var positionXValue = 50;
         var positionYValue = 50;
@@ -586,6 +454,7 @@ class NoteView extends Component {
 
     inviteUser() {
         var inviteUserRequest = {
+            from: 'Board',
             code: 'inviteUser',
             username: this.state.invitedUser,
             boardId: this.state.boardId,
@@ -613,11 +482,13 @@ class NoteView extends Component {
             update: true
         })
             , () => {
+                // if you need the updated state value, use this.state in this callback
+                // note: make sure you use arrow function to maintain "this" context
                 this.setState({
                     update: false,
                     value: "",
                     noteTag: [],
-                    color: 'red'
+                    color: '#FFF'
                 })
             }
         );
@@ -626,25 +497,15 @@ class NoteView extends Component {
     render() {
         return (
             <div>
-                <HeadNav goHome={this.goHome} goUserPage={this.goUserPage} logout={this.logout} notifications={this.state.notifications} unreadNotification={this.state.unreadNotification} readNotification={this.readNotification} setUnreadNotification={this.setUnreadNotification} getNotification={this.getNotification} acceptInvite={this.acceptInvite} ws={this.ws} />
+                <div className="Nav">
+                    <div className="Nav-member" onClick={this.goHome} style={{ cursor: 'pointer' }}>Home</div>
+                    <div className="Nav-member" onClick={this.logout} style={{ cursor: 'pointer' }}>Log out</div>
+                </div>
                 <div className="flex flex-inline header">
                     <h1>{this.state.boardName}</h1>
                     <Icon icon={cog} onClick={this.showSetting} className='setting-button lrmargin' />
 
                     <div className="flex flex-inline flex-right">
-                        <label style={{ marginBottom: '0', display: (this.state.board.facilitator === this.state.username) ? '' : 'none' }}>
-                            Time remaining:
-                        <input className='text-box time' name='timeRemaining' value={this.state.timeRemaining} style={{ marginBottom: '0' }} type='text' onChange={this.handleChange} disabled={this.state.start}></input>
-                            <Button bsStyle={this.state.start === true ? "warning" : "info"} className="lrmargin" bsSize="small" onClick={this.startTiming} style={{ display: (this.state.board.facilitator === this.state.username) ? 'inline-block' : 'none' }}>
-                                {this.state.start === true ? "Stop" : "Start"}
-                            </Button>
-                        </label>
-
-                        <label style={{ marginBottom: '0', display: (this.state.board.facilitator === this.state.username) ? 'none' : '' }}>
-                            Time remaining:
-                        <input className='text-box time' name='timeRemaining' value={this.state.timeRemaining} style={{ marginBottom: '0' }} type='text' onChange={this.handleChange} disabled></input>
-                        </label>
-
                         <ButtonToolbar className="lrmargin" >
                             <DropdownButton bsSize="small" title="Filter" pullRight id="dropdown-size-small" >
                                 <MenuItem eventKey="1" onClick={this.groupByTag} >Grouping by tag</MenuItem>
@@ -660,9 +521,12 @@ class NoteView extends Component {
                         <Button className="lrmargin" bsStyle="primary" bsSize="small" onClick={this.showInvite}>
                             Invite
                         </Button>
+
+                        <Button className="lrmargin" onClick={this.toggleAdd} bsStyle='success' bsSize="small">
+                            Create
+                        </Button>
                     </div>
                 </div>
-                <Glyphicon className='create-button' onClick={this.toggleAdd} glyph="plus-sign" />
 
                 <Modal show={this.state.boardSetting} onHide={this.closeSetting}>
                     <Modal.Header closeButton>
@@ -671,15 +535,19 @@ class NoteView extends Component {
                     <Modal.Body>
                         <label className="block">
                             Board name:
-                                <input name="newBoardName" value={this.state.newBoardName} className="text-box" type="text" onChange={this.handleChange} style={{ width: '70%' }} />
-                            <Button bsStyle='primary' onClick={this.updateBoard}>
+                                <input name="newBoardName" value={this.state.newBoardName} className="text-box" type="text" onChange={this.handleChange} />
+                            <Button onClick={this.updateBoard}>
                                 Save
                                 </Button>
                         </label>
                         <TagInput tags={this.state.tags} setTag={(tags) => this.setTag(tags)} boardAddTag={this.boardAddTag} boardDeleteTag={this.boardDeleteTag} />
+                        <label className="block">
+                            Time:
+                                <input name="timeRemaining" value={this.state.timeRemaining} className="text-box" type="text" onChange={this.handleChange} />
+                        </label>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={this.closeSetting}>Close</Button>
+                        <Button onClick={this.closeSetting}>Save</Button>
                     </Modal.Footer>
                 </Modal>
 
@@ -726,7 +594,7 @@ class NoteView extends Component {
                     <Modal.Body>
                         <label className="block">
                             Your Idea:
-                                <textarea name="value" className={"text-box new-idea " + this.state.color} value={this.state.value} onChange={this.handleChange} />
+                                <textarea name="value" className="text-box new-idea" value={this.state.value} onChange={this.handleChange}  style={{ backgroundColor: this.state.color }} />
                         </label>
                         <ColorPalette setColor={this.setColor} />
                         <TagPicker tags={this.state.tags} setNoteTag={this.setNoteTag} />

@@ -18,13 +18,9 @@ $primary-color: #333;
 }
 
 .header {
-    height: 100px;
-
+    height: 50px;
     h1 {
         margin: 0;
-        max-width: 800px;
-        text-overflow: ellipsis;
-        overflow: hidden;
     }
 }
 
@@ -70,7 +66,7 @@ $primary-color: #333;
 }
 
 .list {
-    line-height: 2em;
+    line-height: 1.5em;
 }
 
 .relative {
@@ -78,46 +74,5 @@ $primary-color: #333;
 }
 
 .medium {
-    height: 50vh;
-    overflow: auto;
-}
-
-@media only screen and (max-height: 700px) {
-    .header {
-        h1 {
-            max-width: 70vh;
-        }
-    }
-}
-
-@media only screen and (max-width: 1300px) {
-    .header {
-        h1 {
-            max-width: 50%;
-        }
-    }
-}
-
-@media only screen and (max-width: 900px) {
-    .header {
-        h1 {
-            max-width: 80%;
-        }
-    }
-}
-
-@media only screen and (max-width: 400px) {
-    .flex-inline {
-        flex-wrap: wrap;
-    }
-
-    .flex {
-        justify-content: flex-start;
-    }
-
-    .header {
-        h1 {
-            max-width: 80%;
-        }
-    }
+    height: 500px;
 }
