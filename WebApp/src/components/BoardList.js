@@ -11,11 +11,7 @@ class BoardList extends Component {
             boards: [],
             username: ''
         };
-        this.fetchBoard = this.fetchBoard.bind(this);
         this.accessBoard = this.accessBoard.bind(this);
-    }
-
-    fetchBoard() {
     }
 
     accessBoard(e, name, id) {
@@ -24,7 +20,6 @@ class BoardList extends Component {
             pathname: '/view/' + id,
             state: { boardName: name, boardId: id }
         };
-        //        this.props.history.push(location);
     }
 
     componentWillMount() {
@@ -32,26 +27,19 @@ class BoardList extends Component {
         this.setState({ boards: this.props.boards });
     }
 
-    componentDidMount() {
-        //this.fetchBoard();
-    }
-
     componentWillReceiveProps(nextProps) {
-        //console.log(nextProps.boards);
         if (nextProps !== this.props) {
             this.setState({ boards: nextProps.boards, username: nextProps.username, name: nextProps.name });
         }
     }
 
-    //{this.state.boards.map((obj) => <Link to={"/view/"+obj._id.toString()} key={obj._id} id={obj._id.toString()} className="idea-box">{obj.boardName}</Link>)}
-    //
     render() {
         return (
             <div className="container">
                 {this.state.boards.map((obj) =>
                     <Link to={{ pathname: "/view/" + obj._id.toString(), state: {boardName: obj.boardName, username: this.state.username, name: this.state.name} }} key={obj._id} id={obj._id.toString()} className="board-box" onClick={(e) => this.accessBoard(e, obj.boardName, obj._id.toString())}>
-                        <div>{obj.boardName}</div>
-                        <Button bsSize='xsmall' className='flex-right' bsStyle='danger' style={{display: obj.facilitator === this.props.username ? "block" : "none"}} onClick={(e) => { this.props.deleteBoard(e, obj._id) }}>delete</Button>
+                        <div className='board-name'>{obj.boardName}</div>
+                        <Button bsSize='xsmall' className='flex-right' bsStyle='danger' style={{display: obj.facilitator === this.props.username ? "block" : "none", alignSelf: 'flex-end'}} onClick={(e) => { this.props.deleteBoard(e, obj._id) }}>delete</Button>
                     </Link>)}
             </div>
         );

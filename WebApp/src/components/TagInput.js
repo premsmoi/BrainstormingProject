@@ -63,7 +63,7 @@ class TagInput extends React.Component {
                         onChange={this.handleInputChange}
                         onKeyDown={this.handleInputKeyDown} />
                 </ul>
-                <Button onClick={this.handleAdd}>
+                <Button bsStyle='success' onClick={this.handleAdd}>
                     Add
                 </Button>
             </label>

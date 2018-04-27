@@ -18,7 +18,19 @@ class Login extends Component {
 
         this.login = this.login.bind(this);
         this.handleChange = this.handleChange.bind(this);
-        //this.Auth = new Auth();
+        
+    }
+
+    componentWillMount() {
+        var self = this;
+
+        if (window.localStorage.getItem("username")) {
+            const location = {
+                pathname: '/home',
+                state: { username: window.localStorage.getItem("username"), name: window.localStorage.getItem("name") }
+            };
+            self.props.history.push(location);
+        }
     }
 
     login(e) {
@@ -30,8 +42,7 @@ class Login extends Component {
         params['password'] = this.state.password;
 
         //this.Auth.login(this.state.username, this.state.password);
-
-        window.fetch('http://'+ip+'/login', {
+        window.fetch('http://' + ip + '/login', {
             method: "POST",
             body: JSON.stringify(params),
             headers: {
@@ -42,6 +53,8 @@ class Login extends Component {
             return response.json().then(function (text) {
                 if (text.loginSuccess === true) {
                     console.log(text.user.username + ' -> Login');
+                    localStorage.setItem("username", text.user.username);
+                    localStorage.setItem("name", text.user.name);
                     const location = {
                         pathname: '/home',
                         state: { username: text.user.username, name: text.user.name }
@@ -61,8 +74,10 @@ class Login extends Component {
     render() {
         return (
             <div className="background">
+                <div id="fb-root"></div>
                 <div className="login-window">
                     <form>
+                        <h2>Login</h2>
                         <label className="block">
                             Username
                                 <input name="username" className="text-box block wide" onChange={this.handleChange} value={this.state.username} type="text" />

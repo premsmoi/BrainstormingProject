@@ -76,27 +76,25 @@ class Notification extends Component {
     detectDropdown(e) {
         e.preventDefault();
         const cn = e.target.parentNode.className;
-        if (cn.indexOf("open") === -1 && this.state.read === false) {
+
+        if (this.state.read === false) {
             this.setState({ read: true });
-            console.log(this.state.unreadNotification);
-        }
-        if (cn.indexOf("open") !== -1 && this.state.read === true && this.state.unreadNotification > 0) {
-            if (this.state.unreadNotification > 0) {
-                this.read();
-                console.log("done");
-            }
+        } else {
             this.setState({ read: false });
+            this.read();
         }
     }
 
     render() {
         return (
             <div>
-                <Dropdown bsStyle='default' onClick={this.detectDropdown} >
-                    <Dropdown.Toggle>
-                        <Glyphicon glyph="envelope" />
+                <Dropdown pullRight onClick={this.read} >
+                    <div className="Nav-member" bsRole='toggle'>
+                        <Glyphicon className='margin' glyph="envelope" />
+                        <span>Notification</span>
                         <Label>{this.state.unreadNotification}</Label>
-                    </Dropdown.Toggle>
+                    </div>
+
                     <Dropdown.Menu className="super-colors noti-menu">
                         {this.state.notifications.map((noti, index) => {
                             if (noti.notificationType === 'reply') {

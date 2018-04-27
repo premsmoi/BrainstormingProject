@@ -13,5 +13,31 @@
     position: fixed;
     top: calc(50% - 500px/2);
     left: calc(50% - 400px/2);
-    padding: 30px;
+    padding: 10px 30px 30px 30px;
+}
+
+.center {
+    text-align: center;
+}
+
+@media only screen and (max-width: 500px) {
+    .login-window {
+        width: 90vw;
+        height: 90vh;
+        top: calc(50% - 90vh/2);
+        left: calc(50% - 90vw/2);
+    }
+}
+
+@media only screen and (max-height: 500px) {
+    .login-window {
+        height: 90vh;
+        top: calc(50% - 90vh/2);
+    }
+}
+
+@media only screen and (max-height: 470px) {
+    .register-mini {
+        overflow: auto;
+    }
 }
