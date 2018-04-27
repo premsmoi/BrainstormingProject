@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './mystyle/Login.scss';
 import './mystyle/General.scss';
+import axios from 'axios';
 import { Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
@@ -61,17 +62,20 @@ class Register extends Component {
             },
             credentials: "same-origin"
         })
-            .then((res) => res.json()).then((body) => {
+            .then((response) => {
+                var body = JSON.parse(response._bodyText);
+                console.log(body)
+                console.log(body['status'])
                 if (body['status'] === 0) {
-                    alert("Register incomplete! please try again");
-                } else {
                     alert("Register complete");
                     const location = {
                         pathname: '/login'
                     };
                     self.props.history.push(location);
-                    console.log(body);
+                } else {
+                    alert("Register incomplete! please try again");
                 }
+                return response.json()
             })
             .catch((error) => {
                 throw error;
