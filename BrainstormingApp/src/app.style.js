@@ -26,7 +26,7 @@ export default StyleSheet.create({
     color: 'black',  
   },
   textButton: {
-    fontSize: 16*scale, 
+    fontSize: 14*scale, 
     color: '#70cdef'
   },
   buttonContainer: {
@@ -36,10 +36,10 @@ export default StyleSheet.create({
     alignItems: "center",
   },
   buttonText: {
-    fontSize: 14*scale,
+    fontSize: 12*scale,
     color: 'black',
     marginVertical: 5*scale,
-    marginHorizontal: 10*scale,
+    marginHorizontal: 5*scale,
   },
   modalContent: {
     backgroundColor: "white",

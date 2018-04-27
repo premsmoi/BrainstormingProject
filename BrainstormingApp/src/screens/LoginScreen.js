@@ -352,7 +352,7 @@ class LoginScreen extends Component {
             <View>
               <TextInput
                   style={{
-                    height: 40, fontSize: 20,
+                    height: 40, fontSize: 16,
                   }}
                   placeholderTextColor = 'gray'
                   placeholder = 'Username'
@@ -372,7 +372,7 @@ class LoginScreen extends Component {
             <View>
               <TextInput
                   style={{
-                    height: 40, fontSize: 20,
+                    height: 40, fontSize: 16,
                   }}
                   placeholderTextColor = 'gray'
                   placeholder = 'Password'

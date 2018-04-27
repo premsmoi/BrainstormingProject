@@ -828,7 +828,7 @@ class BoardScreen extends Component {
           style={{
             height: 36*scale,
             width: 100*scale,
-            fontSize: 16*scale
+            fontSize: 14*scale
           }}
           placeholderTextColor = 'gray'
           placeholder = {placeholder}
@@ -1353,7 +1353,7 @@ class BoardScreen extends Component {
                       onPressIn={() => this.exitBoard()}
                     >
                       <View>
-                        <Text style = {{fontSize: 20*scale, color: 'black', marginVertical: 5, marginHorizontal: 10, alignItems: 'center'}}>
+                        <Text style = {{fontSize: 20*scale, color: 'black', marginVertical: 5, marginHorizontal: 5, alignItems: 'center'}}>
                           Exit
                         </Text>
                       </View>
